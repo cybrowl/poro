@@ -1,0 +1,38 @@
+{
+	"canisters": {
+		"internet_identity": {
+			"type": "custom",
+			"candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+			"wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+			"shrink": true,
+			"remote": {
+				"id": {
+					"ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+				}
+			}
+		},
+		"ui": {
+			"dependencies": [],
+			"frontend": {
+				"entrypoint": "build/index.html"
+			},
+			"source": ["build"],
+			"gzip": true,
+			"optimize": "cycles",
+			"type": "assets"
+		}
+	},
+	"defaults": {
+		"build": {
+			"packtool": "mops sources"
+		}
+	},
+	"networks": {
+		"staging": {
+			"providers": ["https://icp0.io"],
+			"type": "persistent"
+		}
+	},
+	"dfx": "0.24.0",
+	"version": 1
+}
