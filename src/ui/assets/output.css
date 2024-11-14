@@ -154,7 +154,7 @@ html,
   -o-tab-size: 4;
      tab-size: 4;
   /* 3 */
-  font-family: Roboto, sans-serif;
+  font-family: Nano Sans, sans-serif;
   /* 4 */
   font-feature-settings: normal;
   /* 5 */
@@ -554,6 +554,180 @@ video {
   display: none;
 }
 
+.container {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1536px;
+  }
+}
+
+@media (min-width: 2222px) {
+  .container {
+    max-width: 2222px;
+  }
+}
+
+.fixed {
+  position: fixed;
+}
+
+.right-0 {
+  right: 0px;
+}
+
+.top-8 {
+  top: 2rem;
+}
+
+.col-start-1 {
+  grid-column-start: 1;
+}
+
+.col-start-7 {
+  grid-column-start: 7;
+}
+
+.col-end-13 {
+  grid-column-end: 13;
+}
+
+.col-end-7 {
+  grid-column-end: 7;
+}
+
+.row-start-1 {
+  grid-row-start: 1;
+}
+
+.row-end-auto {
+  grid-row-end: auto;
+}
+
+.mt-40 {
+  margin-top: 10rem;
+}
+
+.flex {
+  display: flex;
+}
+
+.grid {
+  display: grid;
+}
+
+.hidden {
+  display: none;
+}
+
+.h-16 {
+  height: 4rem;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.h-screen {
+  height: 100vh;
+}
+
+.w-1\/4 {
+  width: 25%;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.grid-cols-12 {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.place-items-center {
+  place-items: center;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.gap-y-2 {
+  row-gap: 0.5rem;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.bg-black-a {
+  --tw-bg-opacity: 1;
+  background-color: rgb(10 10 11 / var(--tw-bg-opacity));
+}
+
+.bg-black-b {
+  --tw-bg-opacity: 1;
+  background-color: rgb(30 30 30 / var(--tw-bg-opacity));
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+.text-4xl {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+}
+
+.text-white {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
 html, body {
   background-color: #1B1A22;
+}
+
+@media (min-width: 1024px) {
+  .lg\:grid {
+    display: grid;
+  }
+
+  .lg\:hidden {
+    display: none;
+  }
 }
