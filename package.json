@@ -11,13 +11,11 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@milkdown/kit": "^7.5.5",
-		"@milkdown/plugin-tooltip": "^7.5.3",
-		"@milkdown/theme-nord": "^7.5.0",
+		"carta-md": "^4.6.7",
 		"dotenv": "16.4.5",
 		"lodash": "4.17.21",
 		"luxon": "3.5.0",
-		"poro-components-ui": "^0.1.4"
+		"poro-components-ui": "^0.2.5"
 	},
 	"devDependencies": {
 		"@dfinity/agent": "2.1.3",
@@ -26,7 +24,7 @@
 		"@dfinity/identity": "2.1.3",
 		"@dfinity/principal": "2.1.3",
 		"@sveltejs/adapter-static": "3.0.6",
-		"@sveltejs/kit": "2.7.4",
+		"@sveltejs/kit": "2.8.1",
 		"autoprefixer": "10.4.20",
 		"cookie": "0.7.0",
 		"postcss": "8.4.47",
