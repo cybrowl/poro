@@ -9,7 +9,7 @@ Poro is the best interface and most affordable platform for accessing all advanc
 ## Features
 - **Unified API**: Single endpoint for diverse AI models, simplifying queries and integrations.
 - **Privacy Tools**: End-to-end encryption and zero-knowledge proofs ensure data sovereignty.
-- **Payment Integration**: USDC via Coinbase Commerce or direct wallet deposits; easy onboarding for unbanked users.
+- **Payment Integration**: USDC via direct wallet deposits; easy onboarding for unbanked users.
 - **Rate-Limited Access**: Balanced usage with unlimited open-source and capped proprietary queries to manage costs.
 
 ## Installation
