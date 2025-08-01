@@ -1,4 +1,4 @@
-# Poro: Decentralized AI Access Platform on ICP
+# Poro
 Poro is the best interface and most affordable platform for accessing all advanced AI models at just $4/month, built on the Internet Computer Protocol (ICP) to democratize AI while prioritizing user privacy and financial inclusion. By leveraging end-to-end encryption and on-chain execution. Targeted at developers and the 1.3 billion unbanked adults worldwide, it offers borderless payments via USDC stablecoin, bypassing traditional banking barriers.
 
 ## Key Highlights
