@@ -1,8 +1,9 @@
+<!-- MainToolbar.svelte -->
 <script>
-	import Icon from '../basic_elements/Icon.svelte';
+	import Icon from '../basic_elems/Icon.svelte';
 
 	let { selected_icon = 'gpt' } = $props();
-	let selectedIcon = $state(selected_icon); // Make selected_icon reactive
+	let selectedIcon = $state(selected_icon);
 
 	const icons = [
 		{
@@ -13,7 +14,7 @@
 			class: 'fill_none'
 		},
 		{
-			selectedName: 'line', // No gold version since it's not clickable
+			selectedName: 'line',
 			unselectedName: 'line',
 			size: '1.5rem',
 			viewSize: { width: 24, height: 24 },
@@ -39,7 +40,7 @@
 			viewSize: { width: 24, height: 24 }
 		},
 		{
-			selectedName: 'new_session_white', // No gold version needed
+			selectedName: 'new_session_white',
 			unselectedName: 'new_session_white',
 			size: '2rem',
 			viewSize: { width: 32, height: 32 },
@@ -48,7 +49,7 @@
 	];
 
 	function select_icon(icon_name) {
-		selectedIcon = icon_name; // Update the reactive state
+		selectedIcon = icon_name;
 	}
 
 	function getIconName(icon) {
@@ -64,7 +65,7 @@
 			viewSize={icon.viewSize}
 			size={icon.size}
 			clickable={icon.clickable !== false}
-			on:icon-click={() => icon.clickable !== false && select_icon(icon.selectedName)}
+			onIconClick={() => icon.clickable !== false && select_icon(icon.selectedName)}
 		/>
 	{/each}
 </div>

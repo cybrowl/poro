@@ -1,6 +1,6 @@
 <!-- ButtonSignOn.svelte -->
 <script>
-	import Icon from '../basic_elements/Icon.svelte';
+	import Icon from './Icon.svelte';
 
 	let {
 		label = 'Continue with Google',
