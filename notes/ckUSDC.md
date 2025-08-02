@@ -3,7 +3,7 @@
 
 - **Convert ICP to ckUSDC**: On-chain via ICP DEX like Sonic or ICPSwap (integrated with ckUSDC since 2024). Fee ~0.3% swap + negligible ICP tx. Automate in canister using HTTPS outcalls to DEX APIs or direct ledger calls.
 
-- **Pay $4 in ckUSDC for Service**: Deduct $4 equivalent from ckUSDC balance (using ICP's token ledger); activate sub if sufficient. Excess stays as credit for future months.
+- **Pay $4.20 in ckUSDC for Service**: Deduct $4.20 equivalent from ckUSDC balance (using ICP's token ledger); activate sub if sufficient. Excess stays as credit for future months.
 
 - **Weekly Convert ckUSDC to USDC**: Burn ckUSDC via ICP's Ethereum integration (ckUSDC Sepolia bridge) to get USDC on Ethereum/L2 (~$1-5 fee per batch, 0.1-0.5% effective for volume). Deposit to Coinbase via wallet transfer (free).
 
