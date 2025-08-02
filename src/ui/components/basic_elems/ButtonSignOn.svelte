@@ -11,7 +11,7 @@
 	} = $props();
 
 	let buttonClasses = $derived(
-		`sign_in_button ${variant === 'highlighted' ? 'bg-graphite' : ''}`
+		`font-sans flex items-center w-80 gap-6 p-4 text-xl text-white border-solid rounded-xl border border-white/25 ${variant === 'highlighted' ? 'bg-graphite' : ''}`
 	);
 </script>
 
@@ -26,9 +26,3 @@
 	/>
 	<p>{label}</p>
 </button>
-
-<style lang="postcss">
-	.sign_in_button {
-		@apply font-sans flex items-center w-80 gap-6 p-4 text-xl text-white border-solid rounded-xl border border-white/25;
-	}
-</style>
