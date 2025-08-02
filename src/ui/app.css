@@ -1,9 +1,12 @@
-/* app.css */
+@import 'tailwindcss';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-html, body {
-    background-color: #1B1A22;
+@theme {
+	--color-deep-charcoal: #0c0c0d;
+	--color-dark-slate: #111113;
+	--color-graphite: #313135;
+	--color-carbon-black: #161618;
+	--color-midnight-slate: #44444b;
+	--color-marigold: #daa520;
+	--color-silver-mist: #aaaaaf;
+	--color-misty-green: #86f977;
 }

@@ -1,5 +1,6 @@
 <script>
 	let name = 'World';
+	import Button from '$components/basic_elems/Button.svelte';
 </script>
 
 <main
@@ -7,6 +8,8 @@
 >
 	<div class="text-center">
 		<h1 class="text-5xl font-bold text-white mb-4">Hello, {name}!</h1>
+		<Button />
+
 		<p class="text-xl text-gray-200">Welcome to Svelte 5 with Tailwind CSS 4.</p>
 		<input
 			type="text"
