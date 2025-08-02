@@ -3,27 +3,27 @@
 # dependencies
 /node_modules
 
+# environment and configuration
+.env
+
 # dfx
 .dfx
 
 # svelte
 .svelte-kit
 
-# env
-.env
+# mops
+.mops
 
-#locks
+# package management locks
 package-lock.json
 
-# production
+# production builds
 /build
 
-# misc
+# miscellaneous artifacts
 .DS_Store
 *.pem
 
-# debug
+# debug logs
 npm-debug.log*
-
-# mops
-.mops

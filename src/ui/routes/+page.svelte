@@ -1,72 +1,18 @@
 <script>
-	import { Icon, MainToolBar } from 'poro-components-ui';
-
-	import { Carta, MarkdownEditor } from 'carta-md';
-	import '../carta_default.css';
-
-	const carta = new Carta({
-		theme: 'dracula'
-	});
-
-	let value = '';
-
-	export let has_chats = true;
+	let name = 'World';
 </script>
 
-<div class="grid_layout">
-	<div class="read_main_layout">
-		{#if has_chats === true}
-			<Icon
-				name="poro_logo"
-				class="cursor_default"
-				size="12rem"
-				scale="1"
-				viewSize={{
-					width: 221,
-					height: 59
-				}}
-			/>
-		{/if}
+<main
+	class="flex items-center justify-center h-screen bg-gradient-to-r from-blue-500 to-purple-600"
+>
+	<div class="text-center">
+		<h1 class="text-5xl font-bold text-white mb-4">Hello, {name}!</h1>
+		<p class="text-xl text-gray-200">Welcome to Svelte 5 with Tailwind CSS 4.</p>
+		<input
+			type="text"
+			bind:value={name}
+			class="mt-4 px-4 py-2 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-purple-300"
+			placeholder="Enter your name"
+		/>
 	</div>
-	<div class="write_main_layout">
-		<div class="toolbar">
-			<MainToolBar />
-		</div>
-		<div class="editor_root">
-			<div class="markdown">
-				<MarkdownEditor bind:value mode="split" {carta} disableToolbar={true} placeholder="#" />
-			</div>
-		</div>
-	</div>
-</div>
-
-<!-- Mobile Not Supported -->
-<div class="grid lg:hidden h-screen place-items-center text-white text-4xl">
-	<h1>Sorry, Mobile Not Supported</h1>
-</div>
-
-<style lang="postcss">
-	:global(.carta-font-code) {
-		font-family: '...', monospace;
-		font-size: 1.1rem;
-	}
-
-	.grid_layout {
-		@apply hidden lg:grid grid-cols-12 gap-y-2 place-items-center h-screen fixed inset-0;
-	}
-	.read_main_layout {
-		@apply col-start-1 col-end-7 row-start-1 row-end-auto flex justify-center items-center bg-black-a w-full h-full;
-	}
-	.write_main_layout {
-		@apply col-start-7 col-end-13 row-start-1 row-end-auto justify-between flex flex-col bg-black-b w-full h-full;
-	}
-	.toolbar {
-		@apply w-full h-16 bg-black-b z-10 flex items-center justify-end p-10;
-	}
-	.editor_root {
-		@apply flex-grow p-4;
-	}
-	.markdown {
-		@apply overflow-auto w-full h-full fixed mb-10 z-10;
-	}
-</style>
+</main>
