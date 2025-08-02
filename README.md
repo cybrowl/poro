@@ -1,8 +1,8 @@
 # Poro
-Poro is the best interface and most affordable platform for accessing all advanced AI models at just $4/month, built on the Internet Computer Protocol (ICP) to democratize AI while prioritizing user privacy and financial inclusion. By leveraging end-to-end encryption and on-chain execution. Targeted at developers and the 1.3 billion unbanked adults worldwide, it offers borderless payments via USDC stablecoin, bypassing traditional banking barriers.
+Poro is the best interface and most affordable platform for accessing all advanced AI models at just $4.20/month, built on the Internet Computer Protocol (ICP) to democratize AI while prioritizing user privacy and financial inclusion. By leveraging end-to-end encryption and on-chain execution. Targeted at developers and the 1.3 billion unbanked adults worldwide, it offers borderless payments via USDC stablecoin, bypassing traditional banking barriers.
 
 ## Key Highlights
-- **Affordable Subscription**: $4/month in USDC for unlimited open-source models (e.g., Llama 3.1, Mistral) and rate-limited proprietary ones (e.g., GPT-4o, Claude).
+- **Affordable Subscription**: $4.20/month in USDC for unlimited open-source models (e.g., Llama 3.1, Mistral) and rate-limited proprietary ones (e.g., GPT-4o, Claude).
 - **Privacy-First**: Secure, user-controlled data processing with no centralized logging.
 - **Web3 Native**: On-chain smart agents for autonomous AI tasks in decentralized apps.
 
@@ -20,7 +20,7 @@ Poro is the best interface and most affordable platform for accessing all advanc
 
 ### As a User
 - Sign up via the app or wallet.
-- Pay $4 in USDC to activate subscription.
+- Pay $4.20 in USDC to activate subscription.
 
 ## Contact
 - X: [@poro_app](https://x.com/poro_app)
