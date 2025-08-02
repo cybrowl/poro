@@ -11,7 +11,7 @@
 	} = $props();
 
 	let buttonClasses = $derived(
-		`font-sans flex items-center w-80 gap-6 p-4 text-xl text-white border-solid rounded-xl border border-white/25 ${variant === 'highlighted' ? 'bg-graphite' : ''}`
+		`font-sans cursor-pointer flex items-center w-80 gap-6 p-4 text-xl text-white border-solid rounded-xl border border-white/25 ${variant === 'highlighted' ? 'bg-graphite' : ''}`
 	);
 </script>
 
