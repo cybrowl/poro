@@ -1,3 +1,4 @@
+<!-- ButtonSignOn.svelte -->
 <script>
 	import Icon from '../basic_elements/Icon.svelte';
 
@@ -17,9 +18,10 @@
 <button class={buttonClasses}>
 	<Icon
 		name={logo_name}
+		clickable={false}
 		class="cursor-pointer"
 		size={logo_size}
-		scale="1"
+		scale={1}
 		viewSize={logo_view_size}
 	/>
 	<p>{label}</p>
@@ -27,7 +29,6 @@
 
 <style lang="postcss">
 	.sign_in_button {
-		@apply font-sans flex items-center w-80 gap-6 p-4 text-xl text-white border-solid rounded-xl border border-white;
-		border-color: rgba(255, 255, 255, 0.25);
+		@apply font-sans flex items-center w-80 gap-6 p-4 text-xl text-white border-solid rounded-xl border border-white/25;
 	}
 </style>

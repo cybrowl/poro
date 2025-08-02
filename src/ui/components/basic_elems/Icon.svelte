@@ -1,17 +1,15 @@
+<!-- Icon.svelte -->
 <script>
 	import * as icons from './icons';
-	import { createEventDispatcher } from 'svelte';
-
-	const dispatch = createEventDispatcher();
 
 	let {
 		name,
 		clickable = true,
-		focusable = false,
 		viewSize = { width: 24, height: 24 },
 		size = '2rem',
 		scale = 1,
-		class: className = ''
+		class: className = '',
+		onIconClick = () => {}
 	} = $props();
 
 	let viewbox = $derived({
@@ -19,11 +17,9 @@
 		height: viewSize.height / scale
 	});
 
-	function onClick(event) {
-		if (clickable) {
-			event.stopPropagation();
-			dispatch('icon-click', { name });
-		}
+	function handleClick(event) {
+		event.stopPropagation();
+		onIconClick(name);
 	}
 </script>
 
@@ -39,7 +35,7 @@
 {/snippet}
 
 {#if clickable}
-	<button onclick={onClick}>
+	<button onclick={handleClick}>
 		{@render IconSvg()}
 	</button>
 {:else}
