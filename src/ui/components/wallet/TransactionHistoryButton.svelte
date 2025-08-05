@@ -1,31 +1,20 @@
+<!-- TransactionHistoryButton.svelte -->
 <script>
-	import Icon from '../basic_elements/Icon.svelte';
+	import Icon from '../basic_elems/Icon.svelte';
 
-	let {title = 'Transaction History'} = $props();
+	let { title = 'Transaction History' } = $props();
 </script>
 
-<div class="transaction-history-container">
-	<div class="transaction-header">
-		<span class="header-title">{title}</span>
+<div class="flex items-center h-12 text-white cursor-pointer">
+	<div
+		class="flex items-center justify-center w-full hover:text-marigold transition-colors duration-200"
+	>
+		<span class="text-base font-medium pr-3">{title}</span>
 		<Icon
 			name="arrow_right"
-			class="cursor_pointer fill_white"
+			class="cursor-pointer fill-white"
 			size="1rem"
-			viewSize={{width: 7, height: 12}}
+			viewSize={{ width: 7, height: 12 }}
 		/>
 	</div>
 </div>
-
-<style lang="postcss">
-	.transaction-history-container {
-		@apply flex items-center h-12 text-white cursor-pointer;
-	}
-
-	.transaction-header {
-		@apply flex items-center justify-center w-full hover:text-merigold transition-colors duration-200;
-	}
-
-	.header-title {
-		@apply text-base font-medium pr-3;
-	}
-</style>

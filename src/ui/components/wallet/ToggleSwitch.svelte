@@ -1,55 +1,24 @@
+<!-- ToggleSwitch.svelte -->
 <script>
-	let {checked = true} = $props();
+	let { mode = 'deposit' } = $props();
 
-	function handleToggle(newState) {
-		checked = newState;
+	function handleToggle(newMode) {
+		mode = newMode;
 	}
+
+	const commonClasses =
+		'font-sans font-bold text-2xl px-10 py-3 rounded-full transition-all duration-300 ease-in-out focus:outline-none bg-transparent text-white cursor-pointer relative z-10';
+
+	const depositClasses = $derived(
+		`${commonClasses} rounded-l-full -mr-[10%] ${mode === 'deposit' ? 'bg-graphite text-white shadow-lg transform translate-x-0 z-10' : 'bg-white text-carbon-black z-20 hover:bg-graphite/50 hover:text-white'}`
+	);
+
+	const cashOutClasses = $derived(
+		`${commonClasses} rounded-r-full ${mode === 'cashout' ? 'bg-graphite text-white shadow-lg transform translate-x-0 z-10' : 'bg-white text-carbon-black z-20 hover:bg-graphite/50 hover:text-white'}`
+	);
 </script>
 
-<div class="toggle-switch">
-	<button
-		class="toggle-button {checked ? 'active' : ''}"
-		onclick={() => handleToggle(true)}
-	>
-		Deposit
-	</button>
-	<button
-		class="toggle-button {!checked ? 'active' : ''}"
-		onclick={() => handleToggle(false)}
-	>
-		Cash Out
-	</button>
+<div class="inline-flex">
+	<button class={depositClasses} onclick={() => handleToggle('deposit')}> Deposit </button>
+	<button class={cashOutClasses} onclick={() => handleToggle('cashout')}> Cash Out </button>
 </div>
-
-<style lang="postcss">
-	.toggle-switch {
-		@apply inline-flex;
-	}
-
-	.toggle-button {
-		@apply font-sans font-bold text-2xl px-10 py-3 rounded-full transition-all duration-300 ease-in-out focus:outline-none;
-		@apply bg-transparent text-white cursor-pointer;
-		@apply relative z-10;
-	}
-
-	.toggle-button.active {
-		@apply bg-graphite text-white shadow-lg transform translate-x-0 z-20;
-	}
-
-	.toggle-button:first-child {
-		@apply rounded-l-full;
-		@apply -mr-[10%];
-	}
-
-	.toggle-button:last-child {
-		@apply rounded-r-full;
-	}
-
-	.toggle-button:not(.active) {
-		@apply bg-white text-carbon-black z-10;
-	}
-
-	.toggle-button:hover:not(.active) {
-		@apply bg-graphite bg-opacity-50 text-white;
-	}
-</style>

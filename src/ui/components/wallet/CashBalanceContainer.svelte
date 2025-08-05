@@ -1,5 +1,6 @@
+<!-- CashBalanceContainer.svelte -->
 <script>
-	import Icon from '../basic_elements/Icon.svelte';
+	import Icon from '../basic_elems/Icon.svelte';
 
 	let {
 		amount = '0',
@@ -11,57 +12,23 @@
 	let currencyLabel = $derived(`United States Dollar (${currency})`);
 </script>
 
-<div class="cash-balance-container">
-	<div class="cash-icon">
+<div class="flex items-center justify-between w-full h-12">
+	<div class="mr-4 flex-shrink-0">
 		<Icon
 			name="ckUSDC"
-			class="cursor_default"
+			class="cursor-default"
 			size="3.125rem"
-			viewSize={{width: 50, height: 50}}
+			viewSize={{ width: 50, height: 50 }}
 		/>
 	</div>
 
-	<div class="cash-details">
-		<p class="prompt-label">{promptLabel}</p>
-		<p class="currency-label">{currencyLabel}</p>
+	<div class="flex flex-col justify-center flex-1">
+		<p class="text-white text-base font-bold leading-none">{promptLabel}</p>
+		<p class="text-silver-mist text-base font-normal leading-tight mt-1">{currencyLabel}</p>
 	</div>
 
-	<div class="cash-amount">
-		<p class="amount-label">${amount}</p>
-		<p class="status-label">Available</p>
+	<div class="flex flex-col items-end justify-center">
+		<p class="text-silver-mist text-xl font-bold leading-none">${amount}</p>
+		<p class="text-silver-mist text-base font-normal leading-tight mt-1">Available</p>
 	</div>
 </div>
-
-<style lang="postcss">
-	.cash-balance-container {
-		@apply flex items-center justify-between w-full h-12;
-	}
-
-	.cash-icon {
-		@apply mr-4 flex-shrink-0;
-	}
-
-	.cash-details {
-		@apply flex flex-col justify-center flex-1;
-	}
-
-	.prompt-label {
-		@apply text-white text-base font-bold leading-none;
-	}
-
-	.currency-label {
-		@apply text-silver-mist text-base font-normal leading-tight mt-1;
-	}
-
-	.cash-amount {
-		@apply flex flex-col items-end justify-center;
-	}
-
-	.amount-label {
-		@apply text-silver-mist text-xl font-bold leading-none;
-	}
-
-	.status-label {
-		@apply text-silver-mist text-base font-normal leading-tight mt-1;
-	}
-</style>

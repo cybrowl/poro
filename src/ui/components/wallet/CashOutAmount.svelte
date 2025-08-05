@@ -1,3 +1,4 @@
+<!-- CashOutAmount.svelte -->
 <script>
 	export let coinType = 'ckUSDC';
 	export let amount = 0;
@@ -13,9 +14,9 @@
 	}
 </script>
 
-<div class="balance-info">
+<div class="flex items-baseline gap-6 text-8xl">
 	<input
-		class="balance"
+		class="text-white bg-transparent border-none outline-none [-moz-appearance:textfield]"
 		type="text"
 		bind:value={amount}
 		on:input={sanitize}
@@ -24,20 +25,5 @@
 		pattern="[0-9]*[.]?[0-9]*"
 		style="width: {String(amount).length || 1}ch"
 	/>
-	<span class="token">{coinType}</span>
+	<span class="text-midnight-slate">{coinType}</span>
 </div>
-
-<style lang="postcss">
-	.balance-info {
-		@apply flex items-baseline gap-6 text-8xl;
-	}
-
-	.balance {
-		@apply text-white bg-transparent border-none outline-none;
-		-moz-appearance: textfield;
-	}
-
-	.token {
-		@apply text-midnight-slate;
-	}
-</style>

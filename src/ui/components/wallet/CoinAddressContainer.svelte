@@ -1,6 +1,7 @@
+<!-- CoinAddressContainer.svelte -->
 <script>
-	import Icon from '../basic_elements/Icon.svelte';
-	import Button from '../basic_elements/Button.svelte';
+	import Icon from '../basic_elems/Icon.svelte';
+	import Button from '../basic_elems/Button.svelte';
 
 	let {
 		coinType = 'ICP',
@@ -29,19 +30,24 @@
 </script>
 
 {#snippet AddressInfo()}
-	<div class="address-info">
-		<p class="label">{coinType} Address</p>
-		<p class="address-text" title={address}>{address}</p>
+	<div class="flex flex-col justify-center min-w-0 flex-grow">
+		<p class="text-lg text-white">{coinType} Address</p>
+		<p
+			class="font-mono text-sm text-silver-mist truncate hover:overflow-visible hover:whitespace-normal"
+			title={address}
+		>
+			{address}
+		</p>
 	</div>
 {/snippet}
 
-<div class="coin-address-container">
-	<div class="coin-icon">
+<div class="flex items-center w-full h-14 gap-4">
+	<div class="flex-shrink-0">
 		<Icon
 			name={coinIconMap[coinType] || 'internet_computer_protocol'}
-			class="cursor_default"
+			class="cursor-default"
 			size="3.125rem"
-			viewSize={{width: 50, height: 50}}
+			viewSize={{ width: 50, height: 50 }}
 		/>
 	</div>
 
@@ -51,7 +57,7 @@
 		class="copy-button"
 		label="Ok"
 		variant="dark"
-		--width="w-20"
+		width="w-20"
 		height="h-14"
 		onclick={handleCopy}
 	>
@@ -62,26 +68,3 @@
 		{/if}
 	</Button>
 </div>
-
-<style lang="postcss">
-	.coin-address-container {
-		@apply flex items-center w-full h-14 gap-4;
-	}
-
-	.coin-icon {
-		@apply flex-shrink-0; /* Prevent icon from shrinking */
-	}
-
-	.address-info {
-		@apply flex flex-col justify-center min-w-0 flex-grow; /* min-w-0 allows truncation */
-	}
-
-	.label {
-		@apply text-lg text-white;
-	}
-
-	.address-text {
-		@apply font-mono text-sm text-silver-mist truncate;
-		@apply hover:overflow-visible hover:whitespace-normal;
-	}
-</style>
