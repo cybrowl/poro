@@ -1,5 +1,5 @@
-Login Page
-No Funds Page
 Wallet Page
+Login Page
 History & Favs Page
+No Funds Page
 Settings Page
