@@ -11,7 +11,7 @@
 </script>
 
 <main
-	class="bg-deep-charcoal flex items-center justify-center h-screen bg-gradient-to-r from-deep-charcoal to-dark-slate overflow-y-auto"
+	class="bg-deep-charcoal flex items-center justify-center bg-gradient-to-r from-deep-charcoal to-dark-slate overflow-y-auto"
 >
 	<div class="flex flex-col items-center gap-12 text-center text-white max-w-4xl p-8">
 		<h1 class="text-4xl font-bold mb-6">Poro Wallet Component Visual Guide</h1>
@@ -58,7 +58,7 @@
 		<section class="w-full flex flex-col gap-6 border-t border-silver-mist/30 pt-6">
 			<h2 class="text-3xl font-semibold">ToggleSwitch</h2>
 			<p class="text-sm text-silver-mist mb-4">Toggle between deposit and cash-out modes.</p>
-			<ToggleSwitch checked={true} />
+			<ToggleSwitch mode="deposit" />
 		</section>
 
 		<section class="w-full flex flex-col gap-6 border-t border-silver-mist/30 pt-6">
