@@ -25,18 +25,33 @@ export async function initAuth() {
 }
 
 export async function login() {
-	await authClient.login({
+	const options = {
 		identityProvider:
 			process.env.DEPLOY_ENV === 'local'
-				? 'http://localhost:4943?canisterId=uzt4z-lp777-77774-qaabq-cai'
-				: 'https://identity.ic0.app',
-		maxTimeToLive: BigInt(8 * 60 * 60 * 1000 * 1000 * 1000), // 8 hours
-		onSuccess: () => handleSuccess(authClient),
-		onError: (err) => console.error('Login failed:', err)
-	});
+				? 'http://uxrrr-q7777-77774-qaaaq-cai.localhost:4943'
+				: 'https://id.ai',
+		maxTimeToLive: BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000), // 7 days for prod UX
+		windowOpenerFeatures: 'toolbar=0,location=0,menubar=0,width=500,height=500,left=100,top=100', // Popup for seamless flow
+		onSuccess: () => {
+			console.log('Login success! Updating store...');
+			handleSuccess(authClient);
+		},
+		onError: (err) => {
+			console.error('Login failed:', err);
+			alert('Auth error: ' + err.message);
+		}
+	};
+
+	// Add derivationOrigin only in production for privacy
+	if (process.env.DEPLOY_ENV !== 'local') {
+		options.derivationOrigin = window.location.origin;
+	}
+
+	await authClient.login(options);
 }
 
 function handleSuccess(client) {
+	console.log('Handling success...');
 	const identity = client.getIdentity();
 	const agent = new HttpAgent({ identity });
 
@@ -50,6 +65,7 @@ function handleSuccess(client) {
 		agent,
 		principal: identity.getPrincipal().toText()
 	});
+	console.log('Store updated with principal:', identity.getPrincipal().toText());
 }
 
 export async function logout() {
