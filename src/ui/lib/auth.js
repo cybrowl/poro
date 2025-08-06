@@ -2,9 +2,6 @@ import { AuthClient } from '@dfinity/auth-client';
 import { HttpAgent } from '@dfinity/agent';
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import * as dotenv from 'dotenv';
-
-if (!browser) dotenv.config(); // Load .env server-side
 
 export const authStore = writable({
 	isAuthenticated: false,
@@ -27,7 +24,7 @@ export async function initAuth() {
 export async function login() {
 	const options = {
 		identityProvider:
-			process.env.DEPLOY_ENV === 'local'
+			import.meta.env.VITE_DEPLOY_ENV === 'local'
 				? 'http://uxrrr-q7777-77774-qaaaq-cai.localhost:4943'
 				: 'https://id.ai',
 		maxTimeToLive: BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000), // 7 days for prod UX
@@ -43,7 +40,7 @@ export async function login() {
 	};
 
 	// Add derivationOrigin only in production for privacy
-	if (process.env.DEPLOY_ENV !== 'local') {
+	if (import.meta.env.VITE_DEPLOY_ENV !== 'local') {
 		options.derivationOrigin = window.location.origin;
 	}
 
@@ -55,7 +52,7 @@ function handleSuccess(client) {
 	const identity = client.getIdentity();
 	const agent = new HttpAgent({ identity });
 
-	if (process.env.DEPLOY_ENV === 'local') {
+	if (import.meta.env.VITE_DEPLOY_ENV === 'local') {
 		agent.fetchRootKey().catch(console.error);
 	}
 
