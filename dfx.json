@@ -20,6 +20,12 @@
 			"gzip": true,
 			"optimize": "cycles",
 			"type": "assets"
+		},
+		"user": {
+			"main": "src/actor_user/User.mo",
+			"type": "motoko",
+			"optimize": "cycles",
+			"dependencies": []
 		}
 	},
 	"defaults": {
@@ -33,6 +39,6 @@
 			"type": "persistent"
 		}
 	},
-	"dfx": "0.27.0",
+	"dfx": "0.28.0",
 	"version": 1
 }
