@@ -12,19 +12,20 @@
 			}
 		},
 		"ui": {
-			"dependencies": [],
 			"frontend": {
 				"entrypoint": "build/index.html"
 			},
 			"source": ["build"],
 			"gzip": true,
 			"optimize": "cycles",
-			"type": "assets"
+			"type": "assets",
+			"dependencies": []
 		},
 		"user": {
 			"main": "src/actor_user/User.mo",
 			"type": "motoko",
 			"optimize": "cycles",
+			"args": "--enhanced-orthogonal-persistence",
 			"dependencies": []
 		}
 	},
