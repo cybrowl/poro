@@ -1,15 +1,33 @@
-module.exports = {
-	root: true,
-	extends: ['eslint:recommended', 'prettier'],
-	plugins: ['svelte3'],
-	overrides: [{ files: ['*.svelte'], processor: 'svelte3/svelte3' }],
-	parserOptions: {
-		sourceType: 'module',
-		ecmaVersion: 2020
+import js from '@eslint/js';
+import svelte from 'eslint-plugin-svelte';
+import globals from 'globals';
+import svelteConfig from './svelte.config.js';
+
+/** @type {import('eslint').Linter.Config[]} */
+export default [
+	js.configs.recommended,
+	...svelte.configs.recommended,
+	...svelte.configs.prettier,
+	{
+		languageOptions: {
+			ecmaVersion: 'latest',
+			sourceType: 'module',
+			globals: {
+				...globals.browser,
+				...globals.es2021,
+				...globals.node
+			}
+		}
 	},
-	env: {
-		browser: true,
-		es2017: true,
-		node: true
+	{
+		files: ['**/*.svelte'],
+		languageOptions: {
+			parserOptions: {
+				svelteConfig
+			}
+		}
+	},
+	{
+		rules: {}
 	}
-};
+];

@@ -1,12 +1,12 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
-	--color-deep-charcoal: #0c0c0d;
-	--color-dark-slate: #111113;
-	--color-graphite: #313135;
-	--color-carbon-black: #161618;
-	--color-midnight-slate: #44444b;
-	--color-marigold: #daa520;
-	--color-silver-mist: #aaaaaf;
-	--color-misty-green: #86f977;
+  --color-deep-charcoal: #0c0c0d;
+  --color-dark-slate: #111113;
+  --color-graphite: #313135;
+  --color-carbon-black: #161618;
+  --color-midnight-slate: #44444b;
+  --color-marigold: #daa520;
+  --color-silver-mist: #aaaaaf;
+  --color-misty-green: #86f977;
 }

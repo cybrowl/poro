@@ -1,71 +1,80 @@
-import { AuthClient } from '@dfinity/auth-client';
-import { HttpAgent } from '@dfinity/agent';
-import { writable } from 'svelte/store';
-import { browser } from '$app/environment';
+import { AuthClient } from "@dfinity/auth-client";
+import { HttpAgent } from "@dfinity/agent";
+import { writable } from "svelte/store";
+import { browser } from "$app/environment";
 
 export const authStore = writable({
-	isAuthenticated: false,
-	identity: null,
-	agent: null,
-	principal: null
+  isAuthenticated: false,
+  identity: null,
+  agent: null,
+  principal: null,
 });
 
 let authClient;
 
 export async function initAuth() {
-	authClient = await AuthClient.create({
-		idleOptions: { disableIdle: false, idleTimeout: 30 * 60 * 1000 } // Auto-logout after 30 min inactivity
-	});
-	if (await authClient.isAuthenticated()) {
-		handleSuccess(authClient);
-	}
+  authClient = await AuthClient.create({
+    idleOptions: { disableIdle: false, idleTimeout: 30 * 60 * 1000 }, // Auto-logout after 30 min inactivity
+  });
+  if (await authClient.isAuthenticated()) {
+    handleSuccess(authClient);
+  }
 }
 
 export async function login() {
-	const options = {
-		identityProvider:
-			import.meta.env.VITE_DEPLOY_ENV === 'local'
-				? 'http://uxrrr-q7777-77774-qaaaq-cai.localhost:4943'
-				: 'https://id.ai',
-		maxTimeToLive: BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000), // 7 days for prod UX
-		windowOpenerFeatures: 'toolbar=0,location=0,menubar=0,width=500,height=500,left=100,top=100', // Popup for seamless flow
-		onSuccess: () => {
-			console.log('Login success! Updating store...');
-			handleSuccess(authClient);
-		},
-		onError: (err) => {
-			console.error('Login failed:', err);
-			alert('Auth error: ' + err.message);
-		}
-	};
+  const options = {
+    identityProvider:
+      import.meta.env.VITE_DEPLOY_ENV === "local"
+        ? "http://uxrrr-q7777-77774-qaaaq-cai.localhost:4943"
+        : "https://id.ai",
+    maxTimeToLive: BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000), // 7 days for prod UX
+    windowOpenerFeatures:
+      "toolbar=0,location=0,menubar=0,width=500,height=500,left=100,top=100", // Popup for seamless flow
+    onSuccess: () => {
+      console.log("Login success! Updating store...");
+      handleSuccess(authClient);
+    },
+    onError: (err) => {
+      console.error("Login failed:", err);
+      alert("Auth error: " + err.message);
+    },
+  };
 
-	// Add derivationOrigin only in production for privacy
-	if (import.meta.env.VITE_DEPLOY_ENV !== 'local') {
-		options.derivationOrigin = window.location.origin;
-	}
+  // Add derivationOrigin only in production for privacy
+  if (import.meta.env.VITE_DEPLOY_ENV !== "local") {
+    options.derivationOrigin = window.location.origin;
+  }
 
-	await authClient.login(options);
+  await authClient.login(options);
 }
 
 function handleSuccess(client) {
-	console.log('Handling success...');
-	const identity = client.getIdentity();
-	const agent = new HttpAgent({ identity });
+  console.log("Handling success...");
+  const identity = client.getIdentity();
+  const agent = new HttpAgent({ identity });
 
-	if (import.meta.env.VITE_DEPLOY_ENV === 'local') {
-		agent.fetchRootKey().catch(console.error);
-	}
+  if (import.meta.env.VITE_DEPLOY_ENV === "local") {
+    agent.fetchRootKey().catch(console.error);
+  }
 
-	authStore.set({
-		isAuthenticated: true,
-		identity,
-		agent,
-		principal: identity.getPrincipal().toText()
-	});
-	console.log('Store updated with principal:', identity.getPrincipal().toText());
+  authStore.set({
+    isAuthenticated: true,
+    identity,
+    agent,
+    principal: identity.getPrincipal().toText(),
+  });
+  console.log(
+    "Store updated with principal:",
+    identity.getPrincipal().toText()
+  );
 }
 
 export async function logout() {
-	await authClient?.logout();
-	authStore.set({ isAuthenticated: false, identity: null, agent: null, principal: null });
+  await authClient?.logout();
+  authStore.set({
+    isAuthenticated: false,
+    identity: null,
+    agent: null,
+    principal: null,
+  });
 }

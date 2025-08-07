@@ -1,14 +1,14 @@
 <script>
-	import { onMount } from 'svelte';
-	import { initAuth } from '$lib/auth';
+  import { onMount } from "svelte";
+  import { initAuth } from "$lib/auth";
 
-	let { children } = $props();
+  let { children } = $props();
 
-	import '../app.css';
+  import "../app.css";
 
-	onMount(async () => {
-		await initAuth();
-	});
+  onMount(async () => {
+    await initAuth();
+  });
 </script>
 
 {@render children()}
