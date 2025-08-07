@@ -15,7 +15,7 @@
   async function testGetCaller() {
     try {
       error = null;
-      const actor = getActor(); // From canister.js; assumes it returns the actor with agent/canisterId handled
+      const actor = getActor("user"); // From canister.js; assumes it returns the actor with agent/canisterId handled
       console.log("actor", actor);
       callerPrincipal = await actor.getCaller();
       console.log("Caller Principal from canister:", callerPrincipal.toText());

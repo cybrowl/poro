@@ -1,7 +1,6 @@
 import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent } from "@dfinity/agent";
 import { writable } from "svelte/store";
-import { browser } from "$app/environment";
 
 export const authStore = writable({
   isAuthenticated: false,

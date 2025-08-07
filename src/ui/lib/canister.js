@@ -1,25 +1,48 @@
 import { Actor } from "@dfinity/agent";
-import { idlFactory } from "../../../.dfx/local/canisters/user/service.did.js"; // Use local-generated IDL; consistent for prod if interface matches
+
+import { idlFactory as userIdlFactory } from "../../../.dfx/local/canisters/user/service.did.js";
+
 import { authStore } from "./auth.js";
 
-let cachedActor = null;
+// Cache actors by canister name for efficiency
+const cachedActors = new Map();
 
-export function getActor() {
+// Canister configurations: Map names to IDL and IDs (local/prod)
+const canisterConfigs = {
+  user: {
+    idlFactory: userIdlFactory,
+    localId: "uzt4z-lp777-77774-qaabq-cai",
+    prodId: "o4m5w-fiaaa-aaaaj-a2fjq-cai",
+  },
+};
+
+export function getActor(canisterName) {
+  if (!canisterConfigs[canisterName]) {
+    throw new Error(`Unknown canister: ${canisterName}`);
+  }
+
+  if (cachedActors.has(canisterName)) {
+    return cachedActors.get(canisterName);
+  }
+
   let agent;
   authStore.subscribe(({ agent: storeAgent }) => {
     agent = storeAgent;
   });
 
-  if (!agent) throw new Error("Not authenticated");
-
-  if (!cachedActor) {
-    console.log("import.meta.env:", import.meta.env);
-    const canisterId =
-      import.meta.env.VITE_DEPLOY_ENV === "local"
-        ? "uzt4z-lp777-77774-qaabq-cai"
-        : "o4m5w-fiaaa-aaaaj-a2fjq-cai";
-    console.log("Using canisterId:", canisterId);
-    cachedActor = Actor.createActor(idlFactory, { agent, canisterId });
+  if (!agent) {
+    throw new Error("Not authenticated");
   }
-  return cachedActor;
+
+  console.log("import.meta.env:", import.meta.env);
+  const config = canisterConfigs[canisterName];
+  const canisterId =
+    import.meta.env.VITE_DEPLOY_ENV === "local"
+      ? config.localId
+      : config.prodId;
+  console.log(`Using ${canisterName} canisterId:`, canisterId);
+
+  const actor = Actor.createActor(config.idlFactory, { agent, canisterId });
+  cachedActors.set(canisterName, actor);
+  return actor;
 }
