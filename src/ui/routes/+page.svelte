@@ -56,11 +56,13 @@
     justify-content: center;
     height: 100vh;
     font-family: sans-serif;
+    background-color: #333;
   }
 
   p {
     font-size: 1.2em;
     margin-bottom: 1em;
+    color: #fafafa;
   }
 
   button {
