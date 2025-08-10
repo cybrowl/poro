@@ -30,6 +30,8 @@
     "@dfinity/auth-client": "^3.1.0",
     "@dfinity/candid": "^3.1.0",
     "@dfinity/identity": "^3.1.0",
-    "@dfinity/principal": "^3.1.0"
+    "@dfinity/principal": "^3.1.0",
+    "carta-md": "^4.11.1",
+    "isomorphic-dompurify": "^2.26.0"
   }
 }

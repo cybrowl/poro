@@ -1,83 +1,37 @@
 <script>
-  import { authStore, login, logout } from "$lib/auth";
-  import { getActor } from "$lib/canister"; // Import from your canister lib
+  import { Carta, MarkdownEditor } from "$lib/carta/index";
+  import dracula from "shiki/dist/themes/dracula.mjs";
+  import "$lib/carta/default.css";
+  import DOMPurify from "isomorphic-dompurify";
 
-  // Reactive logging of auth store changes
-  $: console.log("Auth store updated:", $authStore);
+  const carta = new Carta({
+    /* 🔑 point at the theme’s *name* (must match dracula.name) */
+    theme: { light: "github-light", dark: "dracula" },
 
-  // Destructure store values reactively
-  $: ({ isAuthenticated, principal } = $authStore);
+    /* XSS protection */
+    sanitizer: DOMPurify.sanitize,
 
-  let callerPrincipal = null;
-  let error = null;
+    /* Load the theme + languages into Shiki */
+    shikiOptions: {
+      themes: [dracula], // array is fine
+      langs: ["js", "ts", "bash", "json"], // 'md'/'markdown' already covered
+    },
+  });
 
-  // Function to test calling the Motoko getCaller method using the lib
-  async function testGetCaller() {
-    try {
-      error = null;
-      const actor = getActor("user"); // From canister.js; assumes it returns the actor with agent/canisterId handled
-      console.log("actor", actor);
-      callerPrincipal = await actor.getCaller();
-      console.log("Caller Principal from canister:", callerPrincipal.toText());
-    } catch (err) {
-      error = err.message;
-      console.error("Error calling getCaller:", err);
-    }
-  }
+  let value = "";
 </script>
 
-<main>
-  {#if isAuthenticated}
-    <p>Welcome, {principal}!</p>
-    <button on:click={testGetCaller}>Test Caller Principal</button>
-    {#if callerPrincipal}
-      <p>Caller Principal from Canister: {callerPrincipal.toText()}</p>
-      <p>
-        Matches Frontend Principal: {callerPrincipal.toText() === principal
-          ? "Yes"
-          : "No"}
-      </p>
-    {/if}
-    {#if error}
-      <p style="color: red;">Error: {error}</p>
-    {/if}
-    <button on:click={logout}>Logout</button>
-  {:else}
-    <button on:click={login}>Login with Internet Identity</button>
-  {/if}
-</main>
+<div class="bg-deep-charcoal grid grid-cols-12 min-h-screen gap-y-2 pt-6">
+  <div class="col-start-2 col-end-12 w-full">
+    <!-- no h-screen here -->
+    <MarkdownEditor bind:value {carta} mode="tabs" placeholder="Type here!" />
+  </div>
+</div>
 
-<style>
-  /* Basic styling for improved UX */
-  main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    font-family: sans-serif;
-    background-color: #333;
-  }
-
-  p {
-    font-size: 1.2em;
-    margin-bottom: 1em;
-    color: #fafafa;
-  }
-
-  button {
-    padding: 0.5em 1em;
-    font-size: 1em;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-bottom: 1em;
-  }
-
-  button:hover {
-    background-color: #0056b3;
+<style lang="postcss">
+  :global(.carta-font-code) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.1rem;
+    line-height: 1.1rem;
   }
 </style>
