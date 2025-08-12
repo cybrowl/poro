@@ -49,13 +49,29 @@
     class="col-start-7 col-end-13 w-full h-screen"
     bind:this={rightContainer}
   >
-    <div class="h-full">
-      <MarkdownEditor
-        bind:value
-        {carta}
-        mode="tabs"
-        placeholder="Enter command here"
-      />
+    <div class="h-full flex flex-col">
+      <div class="first-row flex justify-end p-2 bg-[#282a36]">
+        <button
+          class="bg-[#44475a] text-[#f8f8f2] px-4 py-2 rounded hover:bg-[#6272a4]"
+          >Button 1</button
+        >
+      </div>
+      <div class="flex-grow overflow-auto mb-4">
+        <div
+          class="second-row sticky top-0 flex justify-end p-2 bg-[#282a36] z-10"
+        >
+          <button
+            class="bg-[#44475a] text-[#f8f8f2] px-4 py-2 rounded hover:bg-[#6272a4]"
+            >Button 2</button
+          >
+        </div>
+        <MarkdownEditor
+          bind:value
+          {carta}
+          mode="tabs"
+          placeholder="Enter command here"
+        />
+      </div>
     </div>
   </div>
 </div>
@@ -68,7 +84,8 @@
   }
 
   :global(.carta-editor) {
-    height: 100%;
+    height: auto;
+    min-height: 100%;
     display: flex;
     flex-direction: column;
   }
@@ -80,14 +97,16 @@
   :global(.carta-wrapper) {
     margin-top: 2rem;
     flex-grow: 1;
-    overflow: auto;
+    overflow: visible;
+    height: auto;
   }
 
   :global(.carta-container) {
-    height: 100%;
+    height: auto;
   }
 
   :global(.carta-input, .carta-renderer) {
+    height: auto;
     margin-bottom: 1rem;
     margin-top: 1rem;
     padding-bottom: 200px;
