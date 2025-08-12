@@ -50,7 +50,12 @@
     bind:this={rightContainer}
   >
     <div class="h-full">
-      <MarkdownEditor bind:value {carta} mode="tabs" placeholder="Type here!" />
+      <MarkdownEditor
+        bind:value
+        {carta}
+        mode="tabs"
+        placeholder="Enter command here"
+      />
     </div>
   </div>
 </div>
