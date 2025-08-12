@@ -4,20 +4,20 @@
   --focus-outline: #bd93f9;
   --hover-color: #44475a;
   --caret-color: #f8f8f2;
-  --text-color: #000000;
+  --text-color: #fff;
 
   --border-color-dark: #44475a;
   --selection-color-dark: #ffffff;
   --focus-outline-dark: #bd93f9;
   --hover-color-dark: #44475a;
   --caret-color-dark: #f8f8f2;
-  --text-color-dark: #000000;
+  --text-color-dark: #fff;
 }
 
 .carta-theme__default.carta-editor {
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  background: #313135;
+  background: #111113;
   color: var(--text-color);
 }
 
@@ -43,7 +43,7 @@
 .carta-theme__default .carta-input {
   caret-color: var(--caret-color);
   font-size: 0.95rem;
-  background: #313135;
+  background: #111113;
   color: var(--text-color);
 }
 
