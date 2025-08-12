@@ -1,17 +1,12 @@
 <script>
   import { Carta, MarkdownEditor } from "$lib/carta/index";
-  import dracula from "shiki/dist/themes/dracula.mjs";
   import "$lib/carta/default.css";
   import DOMPurify from "isomorphic-dompurify";
   const carta = new Carta({
-    /* 🔑 point at the theme’s *name* (must match dracula.name) */
-    theme: { light: "github-light", dark: "dracula" },
-    /* XSS protection */
+    theme: { light: "solarized-light", dark: "monokai" },
     sanitizer: DOMPurify.sanitize,
-    /* Load the theme + languages into Shiki */
     shikiOptions: {
-      themes: [dracula], // array is fine
-      langs: ["js", "ts", "bash", "json"], // 'md'/'markdown' already covered
+      langs: ["js", "ts", "bash", "json"],
     },
   });
   let value = "";

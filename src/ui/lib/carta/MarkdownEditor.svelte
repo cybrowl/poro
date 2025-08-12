@@ -74,7 +74,7 @@
     value = $bindable(""),
     mode = "auto",
     scroll = "sync",
-    disableToolbar = false,
+    disableToolbar = true,
     placeholder = "",
     textarea = {},
     selectedTab = "write",
