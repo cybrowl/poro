@@ -61,7 +61,7 @@
 
 <div class="bg-deep-charcoal grid grid-cols-12 min-h-screen">
   <div class="col-start-1 col-end-7 w-full p-4">
-    <div class="bg-graphite h-full rounded-lg p-10 text-white">
+    <div class="h-full rounded-lg p-10 text-white">
       <h2 class="text-xl font-bold mb-4">Conversation</h2>
       <p>Placeholder for AI and user messages.</p>
     </div>
@@ -120,7 +120,6 @@
     display: flex;
     justify-content: flex-end;
     padding: 0.5rem 1rem;
-    background: #282a36;
   }
 
   :global(.second-row) {
