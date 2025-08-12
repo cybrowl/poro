@@ -58,8 +58,8 @@
 <style lang="postcss">
   :global(.carta-font-code) {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 1.1rem;
-    line-height: 1.1rem;
+    font-size: 1rem;
+    line-height: 2rem;
   }
 
   :global(.carta-editor) {

@@ -1,12 +1,10 @@
 .carta-theme__default {
-  --border-color: #44475a;
   --selection-color: #ffffff;
   --focus-outline: #bd93f9;
   --hover-color: #44475a;
   --caret-color: #f8f8f2;
   --text-color: #fff;
 
-  --border-color-dark: #44475a;
   --selection-color-dark: #ffffff;
   --focus-outline-dark: #bd93f9;
   --hover-color-dark: #44475a;
