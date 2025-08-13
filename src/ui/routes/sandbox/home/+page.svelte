@@ -55,8 +55,8 @@
         target: button2,
         props: {
           name: "submit",
-          size: "3rem",
-          viewSize: { width: 56, height: 56 },
+          size: "3.6rem",
+          viewSize: { width: 59, height: 56 },
         },
       });
 
