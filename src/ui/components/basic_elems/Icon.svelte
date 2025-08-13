@@ -1,7 +1,6 @@
 <!-- Icon.svelte -->
 <script>
   import * as icons from "./icons";
-
   let {
     name,
     clickable = true,
@@ -11,12 +10,10 @@
     class: className = "",
     onIconClick = () => {},
   } = $props();
-
   let viewbox = $derived({
     width: viewSize.width / scale,
     height: viewSize.height / scale,
   });
-
   function handleClick(event) {
     event.stopPropagation();
     onIconClick(name);
@@ -33,9 +30,8 @@
     {@html icons[name]}
   </svg>
 {/snippet}
-
 {#if clickable}
-  <button onclick={handleClick}>
+  <button class="cursor-pointer" onclick={handleClick}>
     {@render IconSvg()}
   </button>
 {:else}

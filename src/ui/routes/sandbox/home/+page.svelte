@@ -1,8 +1,9 @@
 <script>
   import { Carta, MarkdownEditor } from "$lib/carta/index";
+  import Icon from "$components/basic_elems/Icon.svelte";
   import "$lib/carta/default.css";
   import DOMPurify from "isomorphic-dompurify";
-  import { onMount } from "svelte";
+  import { onMount, mount } from "svelte";
 
   const carta = new Carta({
     theme: { light: "solarized-light", dark: "monokai" },
@@ -44,7 +45,20 @@
       };
 
       const firstRow = createRow("first-row", "Button 1");
-      const secondRow = createRow("second-row", "Button 2");
+
+      const secondRow = document.createElement("div");
+      secondRow.classList.add("second-row");
+      const button2 = document.createElement("button");
+      button2.classList.add("custom-button");
+      secondRow.appendChild(button2);
+      mount(Icon, {
+        target: button2,
+        props: {
+          name: "submit",
+          size: "3rem",
+          viewSize: { width: 56, height: 56 },
+        },
+      });
 
       wrapper.insertBefore(firstRow, container);
       wrapper.insertBefore(secondRow, container);
@@ -129,15 +143,9 @@
   }
 
   :global(.custom-button) {
-    background: #44475a;
-    color: #f8f8f2;
     padding: 0.5rem 1rem;
     border-radius: 4px;
     border: none;
     cursor: pointer;
-  }
-
-  :global(.custom-button:hover) {
-    background: #6272a4;
   }
 </style>
