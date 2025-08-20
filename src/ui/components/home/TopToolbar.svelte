@@ -11,7 +11,6 @@
       unselectedName: "gpt_white",
       size: "1.5rem",
       viewSize: { width: 24, height: 24 },
-      class: "fill_none",
     },
     {
       selectedName: "line",
@@ -19,7 +18,6 @@
       size: "1.5rem",
       viewSize: { width: 24, height: 24 },
       clickable: false,
-      class: "fill_white",
     },
     {
       selectedName: "history_gold",
@@ -44,7 +42,6 @@
       unselectedName: "new_session_white",
       size: "2rem",
       viewSize: { width: 32, height: 32 },
-      class: "fill_none ml-6",
     },
   ];
 
