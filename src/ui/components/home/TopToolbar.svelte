@@ -1,4 +1,4 @@
-<!-- MainToolbar.svelte -->
+<!-- TopToolbar.svelte -->
 <script>
   import Icon from "../basic_elems/Icon.svelte";
 
@@ -59,7 +59,7 @@
   }
 </script>
 
-<div class="main">
+<div class="flex flex-row gap-6 items-center">
   {#each icons as icon}
     <Icon
       name={getIconName(icon)}
@@ -72,9 +72,3 @@
     />
   {/each}
 </div>
-
-<style lang="postcss">
-  .main {
-    @apply flex flex-row gap-6 items-center;
-  }
-</style>

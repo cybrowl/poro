@@ -1,5 +1,5 @@
 <script>
-  // Import your components here as needed
+  import TopToolbar from "$components/home/TopToolbar.svelte";
 </script>
 
 <main
@@ -10,15 +10,17 @@
       Home Components Template
     </h1>
     <div class="grid grid-cols-1 gap-8 w-full">
-      <!-- Add your component sections here -->
-      <!-- Example section: -->
-      <!--
-      <section class="flex flex-col gap-4 bg-dark-slate/50 p-6 rounded-lg border border-silver-mist/30 text-left">
-        <h2 class="text-2xl font-semibold">Component Name</h2>
-        <p class="text-sm text-silver-mist mb-2">Component description.</p>
-        <YourComponent prop="value" />
+      <!-- TopToolbar section -->
+      <section
+        class="flex flex-col gap-4 bg-dark-slate/50 p-6 rounded-lg border border-silver-mist/30 text-left"
+      >
+        <h2 class="text-2xl font-semibold">TopToolbar</h2>
+        <p class="text-sm text-silver-mist mb-2">
+          A toolbar component for the top of the home page, including navigation
+          icons and actions.
+        </p>
+        <TopToolbar />
       </section>
-      -->
     </div>
   </div>
 </main>
