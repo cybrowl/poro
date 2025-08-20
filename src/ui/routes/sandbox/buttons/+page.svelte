@@ -1,6 +1,5 @@
 <script>
   import Button from "$components/basic_elems/Button.svelte";
-  import ButtonSignOn from "$components/basic_elems/ButtonSignOn.svelte";
 </script>
 
 <main
@@ -19,15 +18,6 @@
       <Button label="Dark Button" variant="dark" />
       <Button label="Gold Button" variant="gold" />
       <Button label="Custom Width" variant="dark" width="w-full" />
-    </section>
-
-    <section class="w-full flex flex-col gap-4">
-      <h2 class="text-2xl font-semibold">Sign-On Buttons</h2>
-      <p class="text-sm text-silver-mist mb-2">
-        Sign-on buttons with standard and highlighted variants.
-      </p>
-      <ButtonSignOn label="Continue with Google" variant="none" />
-      <ButtonSignOn label="Highlighted Sign-On" variant="highlighted" />
     </section>
   </div>
 </main>

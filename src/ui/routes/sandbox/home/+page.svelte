@@ -1,6 +1,7 @@
 <script>
   import { Carta, MarkdownEditor } from "$lib/carta/index";
   import Icon from "$components/basic_elems/Icon.svelte";
+  import Button from "$components/basic_elems/Button.svelte";
   import "$lib/carta/default.css";
   import DOMPurify from "isomorphic-dompurify";
   import { onMount, mount } from "svelte";
@@ -45,6 +46,14 @@
       };
 
       const firstRow = createRow("first-row", "Button 1");
+      firstRow.innerHTML = "";
+      mount(Button, {
+        target: firstRow,
+        props: {
+          label: "Login / Signup",
+          variant: "dark",
+        },
+      });
 
       const secondRow = document.createElement("div");
       secondRow.classList.add("second-row");
