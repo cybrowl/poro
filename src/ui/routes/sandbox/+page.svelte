@@ -11,6 +11,13 @@
     wallet: { component: Wallet, name: "Wallet Components" },
   };
 
+  // Mapping for full screen URLs
+  const viewUrls = {
+    home: "/sandbox/home",
+    "home-components": "/sandbox/home/components",
+    wallet: "/sandbox/wallet/components",
+  };
+
   // Reactive state for selected view and props (use URL params for persistence)
   let selectedView = $page.url.searchParams.get("view") || "home";
   let props = {}; // Dynamic props object, e.g., { isLoading: false, userData: { name: 'Test' } }
@@ -60,14 +67,12 @@
       {/each}
     </ul>
   </aside>
-
   <!-- Main Preview Area -->
   <main class="bg-[#44475a] shadow-md rounded-lg p-6 overflow-auto">
     {#if views[selectedView]}
       <svelte:component this={views[selectedView].component} {...props} />
     {/if}
   </main>
-
   <!-- Controls Panel -->
   <aside class="bg-[#44475a] shadow-md rounded-lg p-6 flex flex-col">
     <h2 class="text-lg font-semibold text-[#f8f8f2] mb-4">Controls</h2>
@@ -85,7 +90,6 @@
           {/each}
         </select>
       </label>
-
       <!-- Dynamic Prop Controls -->
       <label class="flex items-center space-x-3">
         <span class="text-sm font-medium text-[#f8f8f2]">isLoading:</span>
@@ -96,7 +100,6 @@
           class="h-4 w-4 text-[#bd93f9] border-[#6272a4] rounded focus:ring-[#bd93f9] bg-[#282a36]"
         />
       </label>
-
       <label class="block">
         <span class="text-sm font-medium text-[#f8f8f2]"
           >Custom Prop (e.g., userName):</span
@@ -109,6 +112,12 @@
         />
       </label>
       <!-- For complex props, use JSON textarea and parse it -->
+      <button
+        on:click={() => window.open(viewUrls[selectedView], "_blank")}
+        class="mt-4 w-full px-4 py-2 border border-[#bd93f9] text-[#bd93f9] rounded-md font-medium hover:bg-[#bd93f9]/20 transition-colors"
+      >
+        Open in Full Screen
+      </button>
     </div>
   </aside>
 </div>
