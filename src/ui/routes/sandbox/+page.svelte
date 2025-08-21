@@ -1,13 +1,14 @@
 <script>
   import { page } from "$app/stores"; // For URL params
   import Home from "./home/+page.svelte"; // Import your views
+  import HomeComponents from "./home/components/+page.svelte"; // Added Home Components
   import Wallet from "./wallet/components/+page.svelte"; // Adjust path as needed
 
   // Define available views
   const views = {
     home: { component: Home, name: "Home Page" },
+    "home-components": { component: HomeComponents, name: "Home Components" },
     wallet: { component: Wallet, name: "Wallet Components" },
-    // Add more as needed, e.g., buttons: { component: Buttons, name: 'Buttons' }
   };
 
   // Reactive state for selected view and props (use URL params for persistence)
