@@ -1,5 +1,6 @@
 <script>
   import { page } from "$app/stores"; // For URL params
+  import { replaceState } from "$app/navigation"; // For updating URL without navigation
   import Home from "./home/+page.svelte"; // Import your views
   import HomeComponents from "./home/components/+page.svelte"; // Added Home Components
   import Wallet from "./wallet/components/+page.svelte"; // Adjust path as needed
@@ -20,25 +21,46 @@
 
   // Reactive state for selected view and props (use URL params for persistence)
   let selectedView = $page.url.searchParams.get("view") || "home";
-  let props = {}; // Dynamic props object, e.g., { isLoading: false, userData: { name: 'Test' } }
+  let selectedVariant = $page.url.searchParams.get("variant") || "default";
+
+  // Base props
+  const baseProps = {
+    isLoading: false,
+    isSignedIn: false,
+    error: null,
+    userName: "",
+  };
 
   // Example variants/states for quick switching (like Storybook stories)
   const variants = {
-    default: { isLoading: false, error: null },
+    default: {},
     loading: { isLoading: true },
-    error: { isLoading: false, error: "Failed to load" },
+    signed_in: { isSignedIn: true },
+    error: { error: "Failed to load" },
     // Customize per view if needed
   };
-  let selectedVariant = "default";
+
+  // Initialize props from variant and override with direct URL params
+  let props = { ...baseProps, ...variants[selectedVariant] };
+
+  // Override with direct params if present
+  const params = $page.url.searchParams;
+  if (params.has("isLoading"))
+    props.isLoading = params.get("isLoading") === "true";
+  if (params.has("isSignedIn"))
+    props.isSignedIn = params.get("isSignedIn") === "true";
+  if (params.has("userName")) props.userName = params.get("userName") || "";
+  if (params.has("error")) props.error = params.get("error") || null;
 
   // Update props when variant changes
-  $: props = variants[selectedVariant] || {};
+  $: props = { ...baseProps, ...variants[selectedVariant] };
 
   // Function to update URL params (for shareable states)
   function updateParams(key, value) {
     const params = new URLSearchParams($page.url.searchParams);
     params.set(key, value);
-    history.replaceState({}, "", `${$page.url.pathname}?${params}`);
+    const newUrl = `${$page.url.pathname}?${params}`;
+    replaceState(newUrl, {});
   }
 </script>
 
@@ -97,6 +119,15 @@
           type="checkbox"
           bind:checked={props.isLoading}
           on:change={() => updateParams("isLoading", props.isLoading)}
+          class="h-4 w-4 text-[#bd93f9] border-[#6272a4] rounded focus:ring-[#bd93f9] bg-[#282a36]"
+        />
+      </label>
+      <label class="flex items-center space-x-3">
+        <span class="text-sm font-medium text-[#f8f8f2]">isSignedIn:</span>
+        <input
+          type="checkbox"
+          bind:checked={props.isSignedIn}
+          on:change={() => updateParams("isSignedIn", props.isSignedIn)}
           class="h-4 w-4 text-[#bd93f9] border-[#6272a4] rounded focus:ring-[#bd93f9] bg-[#282a36]"
         />
       </label>
