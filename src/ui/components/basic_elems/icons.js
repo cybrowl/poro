@@ -22,7 +22,7 @@ export const new_session_gold = `
 
 export const wallet_white = `
   <path d="M3 6V3H13.9062V6H15V3C15 2.44772 14.5523 2 14 2H3C2.44772 2 2 2.44772 2 3V6H3Z" fill="white"/>
-  <path d="M2.5 6.5H21C21.2761 6.5 21.5 6.72386 21.5 7V20C21.5 20.2761 21.2761 20.5 21 20.5H3C2.72386 20.5 2.5 20.2761 2.5 20V6.5Z" stroke="white"/>
+  <path d="M2.5 6.5H21C21.2761 6.5 21.5 6.72386 21.5 7V20C21.5 20.2761 21.2761 20.5 21 20.5H3C2.72386 20.5 2.5 20.2761 2.5 20V6.5Z" stroke="white" fill="none" />
   <circle cx="16.5" cy="13.5" r="1.5" fill="white"/>
 `;
 
