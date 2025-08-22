@@ -144,7 +144,11 @@
       </label>
       <!-- For complex props, use JSON textarea and parse it -->
       <button
-        on:click={() => window.open(viewUrls[selectedView], "_blank")}
+        on:click={() =>
+          window.open(
+            `${viewUrls[selectedView]}?${$page.url.searchParams.toString()}`,
+            "_blank"
+          )}
         class="mt-4 w-full px-4 py-2 border border-[#bd93f9] text-[#bd93f9] rounded-md font-medium hover:bg-[#bd93f9]/20 transition-colors"
       >
         Open in Full Screen

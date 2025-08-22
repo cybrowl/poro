@@ -4,8 +4,15 @@ export const poro_logo = `<path d="M31.6913 23.6644C31.6913 26.2635 29.5843 28.3
 `;
 
 export const new_session_white = `
-<rect x="0.5" y="0.5" width="31" height="31" rx="5.5" stroke="white"/>
-<path d="M15.3334 10.6667H16.6667V15.3333H21.3334V16.6667H16.6667V21.3333H15.3334V16.6667H10.6667V15.3333H15.3334V10.6667Z" fill="white" stroke="white"//>
+  <g clip-path="url(#clip0_8315_55)">
+  <rect x="0.5" y="0.5" width="31" height="31" rx="5.5" stroke="#AAAAAF" fill="none" />
+  <path d="M15.3334 10.6667H16.6667V15.3334H21.3334V16.6667H16.6667V21.3334H15.3334V16.6667H10.6667V15.3334H15.3334V10.6667Z" fill="#AAAAAF"/>
+  </g>
+  <defs>
+  <clipPath id="clip0_8315_55">
+  <rect width="32" height="32" fill="white"/>
+  </clipPath>
+  </defs>
 `;
 
 export const new_session_gold = `

@@ -2,14 +2,40 @@
   import { Carta, MarkdownEditor } from "$lib/carta/index";
   import Icon from "$components/basic_elems/Icon.svelte";
   import Button from "$components/basic_elems/Button.svelte";
+  import TopToolbar from "$components/home/TopToolbar.svelte";
   import "$lib/carta/default.css";
   import DOMPurify from "isomorphic-dompurify";
   import { onMount, mount } from "svelte";
+  import { page } from "$app/stores";
 
   export let isLoading = false;
   export let error = null;
   export let userName = "";
   export let isSignedIn = false;
+
+  let effectiveIsLoading = isLoading;
+  let effectiveError = error;
+  let effectiveUserName = userName;
+  let effectiveIsSignedIn = isSignedIn;
+
+  $: {
+    const variant = $page.url.searchParams.get("variant") || "default";
+    effectiveIsLoading =
+      isLoading ||
+      variant === "loading" ||
+      $page.url.searchParams.get("isLoading") === "true";
+    effectiveError =
+      error ||
+      (variant === "error"
+        ? "Failed to load"
+        : $page.url.searchParams.get("error"));
+    effectiveUserName =
+      userName || $page.url.searchParams.get("userName") || "";
+    effectiveIsSignedIn =
+      isSignedIn ||
+      variant === "signed_in" ||
+      $page.url.searchParams.get("isSignedIn") === "true";
+  }
 
   const carta = new Carta({
     theme: { light: "solarized-light", dark: "monokai" },
@@ -18,9 +44,10 @@
       langs: ["js", "ts", "bash", "json"],
     },
   });
-  let value = `Hello, ${userName}!`;
+  let value = `Ask me anything!`;
   let rightContainer;
-  let firstRow;
+  let loginRow;
+  let toolbarRow;
   onMount(() => {
     rightContainer.addEventListener("click", (e) => {
       if (e.target.closest(".carta-toolbar")) return;
@@ -38,33 +65,29 @@
     const wrapper = rightContainer.querySelector(".carta-wrapper");
     const container = rightContainer.querySelector(".carta-container");
     if (wrapper && container) {
-      const createRow = (className, buttonText) => {
-        const row = document.createElement("div");
-        row.classList.add(className);
-        const button = document.createElement("button");
-        button.textContent = buttonText;
-        button.classList.add("custom-button");
-        row.appendChild(button);
-        return row;
-      };
-      firstRow = createRow("first-row", "Button 1");
-      firstRow.innerHTML = "";
+      loginRow = document.createElement("div");
+      loginRow.classList.add("first-row");
+      loginRow.innerHTML = "";
       mount(Button, {
-        target: firstRow,
+        target: loginRow,
         props: {
           label: "Login / Signup",
           variant: "dark",
         },
       });
-      wrapper.insertBefore(firstRow, container);
+
+      toolbarRow = document.createElement("div");
+      toolbarRow.classList.add("first-row");
+      toolbarRow.innerHTML = "";
+      mount(TopToolbar, {
+        target: toolbarRow,
+        props: {},
+      });
 
       const secondRow = document.createElement("div");
       secondRow.classList.add("second-row");
-      const button2 = document.createElement("button");
-      button2.classList.add("custom-button");
-      secondRow.appendChild(button2);
       mount(Icon, {
-        target: button2,
+        target: secondRow,
         props: {
           name: "submit",
           size: "3.6rem",
@@ -72,10 +95,11 @@
         },
       });
       wrapper.insertBefore(secondRow, container);
+      wrapper.insertBefore(toolbarRow, secondRow);
+      wrapper.insertBefore(loginRow, secondRow);
       updatePadding();
     }
   });
-
   function updatePadding() {
     const secondRow = rightContainer?.querySelector(".second-row");
     if (secondRow) {
@@ -87,9 +111,9 @@
         });
     }
   }
-
-  $: if (firstRow) {
-    firstRow.style.display = isSignedIn ? "none" : "flex";
+  $: if (loginRow && toolbarRow) {
+    loginRow.style.display = effectiveIsSignedIn ? "none" : "flex";
+    toolbarRow.style.display = effectiveIsSignedIn ? "flex" : "none";
     updatePadding();
   }
 </script>
@@ -97,14 +121,14 @@
 <div class="bg-deep-charcoal grid grid-cols-12 min-h-screen">
   <div class="col-start-1 col-end-7 w-full p-4">
     <div class="h-full rounded-lg p-10 text-white">
-      {#if isLoading}
+      {#if effectiveIsLoading}
         <p class="text-xl font-bold mb-4">Loading...</p>
-      {:else if error}
+      {:else if effectiveError}
         <h2 class="text-xl font-bold mb-4">Error</h2>
-        <p>{error}</p>
+        <p>{effectiveError}</p>
       {:else}
         <h2 class="text-xl font-bold mb-4">
-          Conversation for {userName || "User"}
+          Conversation for {effectiveUserName || "User"}
         </h2>
         <p>Placeholder for AI and user messages.</p>
       {/if}
@@ -121,7 +145,7 @@
         mode="tabs"
         placeholder="Enter command here"
       />
-      {#if isLoading}
+      {#if effectiveIsLoading}
         <div
           class="absolute inset-0 bg-black/50 flex items-center justify-center text-white"
         >
@@ -164,7 +188,7 @@
   :global(.second-row) {
     display: flex;
     justify-content: flex-end;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1rem 2rem;
   }
   :global(.second-row) {
     position: sticky;
