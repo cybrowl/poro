@@ -6,166 +6,145 @@
   import Icon from "$components/basic_elems/Icon.svelte";
   import Button from "$components/basic_elems/Button.svelte";
   import TopToolbar from "$components/home/TopToolbar.svelte";
-  import { onMount, mount } from "svelte";
+
+  let value = "";
+  let rightContainer: HTMLDivElement;
+  let isSignedIn = true;
+
   const carta = new Carta({
-    /* 🔑 point at the theme’s *name* (must match dracula.name) */
     theme: { light: "github-light", dark: "dracula" },
-    /* XSS protection */
     sanitizer: DOMPurify.sanitize,
-    /* Load the theme + languages into Shiki */
     shikiOptions: {
-      themes: [dracula], // array is fine
-      langs: ["js", "ts", "bash", "json"], // 'md'/'markdown' already covered
+      themes: [dracula],
+      langs: ["js", "ts", "bash", "json"],
     },
   });
-  let value = "";
-  let rightContainer;
-  let loginRow;
-  let toolbarRow;
-  let isSignedIn = true;
-  onMount(() => {
-    rightContainer.addEventListener("click", (e) => {
-      if (e.target.closest(".carta-toolbar, .first-row, .second-row")) return;
-      const input = rightContainer.querySelector(".carta-input");
-      if (input) {
-        input.focus();
-        const range = document.createRange();
-        range.selectNodeContents(input);
-        range.collapse(false);
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-      }
-    });
-    const wrapper = rightContainer.querySelector(".carta-wrapper");
-    const container = rightContainer.querySelector(".carta-container");
-    if (wrapper && container) {
-      loginRow = document.createElement("div");
-      loginRow.classList.add("first-row");
-      loginRow.innerHTML = "";
-      mount(Button, {
-        target: loginRow,
-        props: {
-          label: "Login / Signup",
-          variant: "dark",
-        },
-      });
 
-      toolbarRow = document.createElement("div");
-      toolbarRow.classList.add("first-row");
-      toolbarRow.innerHTML = "";
-      mount(TopToolbar, {
-        target: toolbarRow,
-        props: {},
-      });
+  $: topOffset = isSignedIn ? "120px" : "60px";
 
-      const secondRow = document.createElement("div");
-      secondRow.classList.add("second-row");
-      mount(Icon, {
-        target: secondRow,
-        props: {
-          name: "submit",
-          size: "3.6rem",
-          viewSize: { width: 59, height: 56 },
-        },
-      });
-      wrapper.insertBefore(secondRow, container);
-      wrapper.insertBefore(toolbarRow, secondRow);
-      wrapper.insertBefore(loginRow, secondRow);
-      updatePadding();
+  function focusEditor(e: MouseEvent) {
+    const target = e.target as HTMLElement | null;
+    if (!target || !rightContainer) return;
+
+    // Don't steal focus if clicking toolbar, buttons, etc.
+    if (
+      target.closest(
+        "button, a, input, select, textarea, .top-row, .action-row, .carta-toolbar"
+      )
+    ) {
+      return;
     }
-  });
-  function updatePadding() {
-    let totalHeight = 0;
-    rightContainer
-      ?.querySelectorAll(".first-row, .second-row")
-      .forEach((row) => {
-        if (row.style.display !== "none") {
-          totalHeight += row.offsetHeight || 0;
-        }
-      });
-    rightContainer
-      ?.querySelectorAll(".carta-input, .carta-renderer")
-      ?.forEach((el) => {
-        el.style.paddingTop = `${totalHeight}px`;
-      });
-  }
 
-  $: if (loginRow && toolbarRow) {
-    loginRow.style.display = isSignedIn ? "none" : "flex";
-    toolbarRow.style.display = isSignedIn ? "flex" : "none";
-    updatePadding();
+    // Simple & reliable — just like your original
+    const editor = rightContainer.querySelector(
+      ".carta-input textarea"
+    ) as HTMLTextAreaElement | null;
+
+    if (editor) {
+      editor.focus();
+      const len = editor.value.length;
+      editor.setSelectionRange(len, len);
+    }
   }
 </script>
 
-<div class="bg-deep-charcoal grid grid-cols-12 min-h-screen">
-  <!-- Left half: Conversation (chat/responses from AI and user) - Placeholder for now -->
-  <div class="col-start-1 col-end-7 w-full p-4">
-    <!-- Add your conversation/chat component here later -->
-    <div class="bg-graphite h-full rounded-lg p-4 text-white">
-      <h2 class="text-xl font-bold mb-4">Conversation</h2>
+<div
+  class="app-shell bg-deep-charcoal grid h-screen grid-cols-12 overflow-hidden"
+>
+  <div class="col-start-1 col-end-7 h-full min-h-0 p-4">
+    <div
+      class="bg-graphite h-full min-h-0 overflow-y-auto rounded-lg p-4 text-white"
+    >
+      <h2 class="mb-4 text-xl font-bold">Conversation</h2>
       <p>Placeholder for AI and user messages.</p>
-      <!-- Future: Message bubbles, input field, etc. -->
     </div>
   </div>
-  <!-- Right half: MarkdownEditor -->
-  <div
-    class="col-start-7 col-end-13 w-full h-screen"
-    bind:this={rightContainer}
-  >
-    <div class="h-full relative">
+
+  <div class="col-start-7 col-end-13 h-full min-h-0">
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div
+      class="editor-host relative h-full min-h-0"
+      bind:this={rightContainer}
+      on:click={focusEditor}
+      role="button"
+      tabindex="0"
+      style={`--editor-top-padding: ${topOffset};`}
+    >
+      {#if !isSignedIn}
+        <div class="top-row">
+          <Button label="Login / Signup" variant="dark" />
+        </div>
+      {:else}
+        <div class="top-row">
+          <TopToolbar />
+        </div>
+      {/if}
+
+      <div class="action-row">
+        <Icon
+          name="submit"
+          size="3.6rem"
+          viewSize={{ width: 59, height: 56 }}
+        />
+      </div>
+
       <MarkdownEditor bind:value {carta} mode="tabs" placeholder="Type here!" />
     </div>
   </div>
 </div>
 
 <style lang="postcss">
+  /* Your original styles — unchanged */
   :global(.carta-font-code) {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 1.1rem;
     line-height: 1.1rem;
   }
-
   :global(.carta-editor) {
     height: 100%;
+    min-height: 0;
     display: flex;
     flex-direction: column;
   }
-
   :global(.carta-toolbar) {
     flex-shrink: 0;
   }
-
   :global(.carta-wrapper) {
-    flex-grow: 1;
-    overflow: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
-
   :global(.carta-container) {
-    height: 100%;
+    min-height: 100%;
   }
-
-  :global(.carta-input, .carta-renderer) {
-    margin-bottom: 1rem;
+  .editor-host :global(.carta-input),
+  .editor-host :global(.carta-renderer) {
     margin-top: 1rem;
+    margin-bottom: 1rem;
+    padding-top: var(--editor-top-padding);
     padding-bottom: 200px;
     box-sizing: border-box;
   }
-
-  :global(.first-row),
-  :global(.second-row) {
+  .top-row,
+  .action-row {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 20;
     display: flex;
     justify-content: flex-end;
     padding: 0.5rem 1rem 2rem;
-    position: sticky;
-    z-index: 10;
+    pointer-events: none;
   }
-
-  :global(.first-row) {
+  .top-row > :global(*),
+  .action-row > :global(*) {
+    pointer-events: auto;
+  }
+  .top-row {
     top: 0;
   }
-
-  :global(.second-row) {
+  .action-row {
     top: 60px;
   }
 </style>
