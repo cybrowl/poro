@@ -2,8 +2,7 @@
 <script>
   import Icon from "../basic_elems/Icon.svelte";
 
-  let { selected_icon: selectedIconProp = "gpt" } = $props();
-  let selectedIcon = $state(selectedIconProp);
+  let selectedIcon = $state("gpt");
 
   const icons = [
     {

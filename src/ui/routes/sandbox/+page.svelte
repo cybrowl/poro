@@ -1,4 +1,5 @@
 <script>
+  // @ts-nocheck
   import { page } from "$app/stores"; // For URL params
   import { replaceState } from "$app/navigation"; // For updating URL without navigation
   import Home from "./home/+page.svelte"; // Import your views

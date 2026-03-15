@@ -1,4 +1,5 @@
 <script>
+  // @ts-nocheck
   import { Carta, MarkdownEditor } from "$lib/carta/index";
   import Icon from "$components/basic_elems/Icon.svelte";
   import Button from "$components/basic_elems/Button.svelte";

@@ -3,7 +3,7 @@
 </script>
 
 <main
-  class="bg-deep-charcoal flex items-center justify-center bg-gradient-to-r from-deep-charcoal to-dark-slate overflow-y-auto"
+  class="bg-deep-charcoal flex items-center justify-center bg-linear-to-r from-deep-charcoal to-dark-slate overflow-y-auto"
 >
   <div class="flex flex-col items-center gap-8 text-white max-w-6xl p-8 w-full">
     <h1 class="text-4xl font-bold mb-6 text-center">
