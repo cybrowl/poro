@@ -28,7 +28,7 @@
             <Button
               label="Dark Button"
               variant="dark"
-              onClick={() => handleClick("Dark Button")}
+              onclick={() => handleClick("Dark Button")}
             />
           </div>
 
@@ -38,7 +38,7 @@
             <Button
               label="Gold Button"
               variant="gold"
-              onClick={() => handleClick("Gold Button")}
+              onclick={() => handleClick("Gold Button")}
             />
           </div>
 
@@ -49,7 +49,7 @@
               label="Custom Width Button"
               variant="dark"
               width="w-full"
-              onClick={() => handleClick("Full Width")}
+              onclick={() => handleClick("Full Width")}
             />
           </div>
         </div>

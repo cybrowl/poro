@@ -31,7 +31,7 @@
 
   let elem: HTMLDivElement | undefined = $state();
 
-  let rendered = $state(carta.renderSSR(value));
+  let rendered = $derived(carta.renderSSR(value));
   onMount(async () => {
     if (!elem) {
       throw new Error("No element found.");
