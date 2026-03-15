@@ -48,28 +48,19 @@
   }
 </script>
 
-<div
-  class="app-shell bg-deep-charcoal grid h-screen grid-cols-12 overflow-hidden"
->
-  <div class="col-start-1 col-end-7 h-full min-h-0 p-4">
-    <div
-      class="bg-graphite h-full min-h-0 overflow-y-auto rounded-lg p-4 text-white"
-    >
+<div class="bg-deep-charcoal grid grid-cols-12 min-h-screen">
+  <div class="col-start-1 col-end-7 w-full p-4">
+    <div class="h-full rounded-lg p-10 text-white">
       <h2 class="mb-4 text-xl font-bold">Conversation</h2>
       <p>Placeholder for AI and user messages.</p>
     </div>
   </div>
 
-  <div class="col-start-7 col-end-13 h-full min-h-0">
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <div
-      class="editor-host relative h-full min-h-0"
-      bind:this={rightContainer}
-      on:click={focusEditor}
-      role="button"
-      tabindex="0"
-      style={`--editor-top-padding: ${topOffset};`}
-    >
+  <div
+    class="col-start-7 col-end-13 w-full h-screen"
+    bind:this={rightContainer}
+  >
+    <div class="h-full relative">
       {#if !isSignedIn}
         <div class="top-row">
           <Button label="Login / Signup" variant="dark" />

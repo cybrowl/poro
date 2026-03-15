@@ -64,6 +64,8 @@
 </main>
 
 <style lang="postcss">
+  @reference "../../../app.css";
+
   .wallet-card {
     @apply bg-dark-slate/50 rounded-2xl border border-silver-mist/30 transition-all hover:border-silver-mist/50;
   }

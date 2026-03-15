@@ -136,7 +136,9 @@
 </main>
 
 <style lang="postcss">
+  @reference "../../../../app.css";
+
   .wallet-card {
-    @apply bg-dark-slate/50 p-6 rounded-2xl border border-silver-mist/30 text-left transition-all hover:border-silver-mist/50;
+    @apply bg-dark-slate/50 rounded-2xl border border-silver-mist/30 transition-all hover:border-silver-mist/50;
   }
 </style>
