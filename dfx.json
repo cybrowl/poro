@@ -23,10 +23,13 @@
       "dependencies": []
     },
     "user": {
-      "type": "rust",
-      "candid": "src/user/user.did",
-      "package": "user",
-      "dependencies": []
+      "type": "motoko",
+      "main": "src/user/main.mo"
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": "mops sources"
     }
   },
   "networks": {

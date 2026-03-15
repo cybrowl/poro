@@ -26,3 +26,5 @@ package-lock.json
 npm-debug.log*
 
 target/
+
+.mops
