@@ -1,12 +1,9 @@
 <script lang="ts">
   // @ts-nocheck
-  import { Carta, MarkdownEditor } from "$lib/carta/index";
+  import PoroMarkdownEditor from "$lib/PoroMarkdownEditor.svelte";
   import Icon from "$components/basic_elems/Icon.svelte";
   import Button from "$components/basic_elems/Button.svelte";
   import TopToolbar from "$components/home/TopToolbar.svelte";
-  import "$lib/carta/default.css";
-  import DOMPurify from "isomorphic-dompurify";
-  import { onMount, mount } from "svelte";
   import { page } from "$app/stores";
 
   export let isLoading = false;
@@ -38,84 +35,21 @@
       $page.url.searchParams.get("isSignedIn") === "true";
   }
 
-  const carta = new Carta({
-    theme: { light: "solarized-light", dark: "monokai" },
-    sanitizer: DOMPurify.sanitize,
-    shikiOptions: {
-      langs: ["js", "ts", "bash", "json"],
-    },
-  });
   let value = `Ask me anything!`;
-  let rightContainer;
-  let loginRow;
-  let toolbarRow;
-  onMount(() => {
-    rightContainer.addEventListener("click", (e) => {
-      if (e.target.closest(".carta-toolbar")) return;
-      const input = rightContainer.querySelector(".carta-input");
-      if (input) {
-        input.focus();
-        const range = document.createRange();
-        range.selectNodeContents(input);
-        range.collapse(false);
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-      }
-    });
-    const wrapper = rightContainer.querySelector(".carta-wrapper");
-    const container = rightContainer.querySelector(".carta-container");
-    if (wrapper && container) {
-      loginRow = document.createElement("div");
-      loginRow.classList.add("first-row");
-      loginRow.innerHTML = "";
-      mount(Button, {
-        target: loginRow,
-        props: {
-          label: "Login / Signup",
-          variant: "dark",
-        },
-      });
+  let rightContainer: HTMLDivElement;
+  let poroEditor: any;
 
-      toolbarRow = document.createElement("div");
-      toolbarRow.classList.add("first-row");
-      toolbarRow.innerHTML = "";
-      mount(TopToolbar, {
-        target: toolbarRow,
-        props: {},
-      });
+  $: topOffset = effectiveIsSignedIn ? "200px" : "140px";
 
-      const secondRow = document.createElement("div");
-      secondRow.classList.add("second-row");
-      mount(Icon, {
-        target: secondRow,
-        props: {
-          name: "submit",
-          size: "3.6rem",
-          viewSize: { width: 59, height: 56 },
-        },
-      });
-      wrapper.insertBefore(secondRow, container);
-      wrapper.insertBefore(toolbarRow, secondRow);
-      wrapper.insertBefore(loginRow, secondRow);
-      updatePadding();
-    }
-  });
-  function updatePadding() {
-    const secondRow = rightContainer?.querySelector(".second-row");
-    if (secondRow) {
-      const secondHeight = secondRow.offsetHeight;
-      rightContainer
-        ?.querySelectorAll(".carta-input, .carta-renderer")
-        ?.forEach((el) => {
-          el.style.paddingTop = `${secondHeight}px`;
-        });
-    }
-  }
-  $: if (loginRow && toolbarRow) {
-    loginRow.style.display = effectiveIsSignedIn ? "none" : "flex";
-    toolbarRow.style.display = effectiveIsSignedIn ? "flex" : "none";
-    updatePadding();
+  function focusEditor(e: MouseEvent) {
+    const target = e.target as HTMLElement | null;
+    if (!target || !rightContainer) return;
+    if (target.closest("button, a, input, select, .top-row, .action-row"))
+      return;
+
+    setTimeout(() => {
+      if (poroEditor && poroEditor.focus) poroEditor.focus();
+    }, 10);
   }
 </script>
 
@@ -135,71 +69,68 @@
       {/if}
     </div>
   </div>
+  <!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
   <div
-    class="col-start-7 col-end-13 w-full h-screen"
+    class="col-start-7 bg-dark-slate col-end-13 flex flex-col h-screen"
     bind:this={rightContainer}
+    on:click={focusEditor}
   >
-    <div class="h-full relative">
-      <MarkdownEditor
-        bind:value
-        {carta}
-        mode="tabs"
-        placeholder="Enter command here"
-      />
-      {#if effectiveIsLoading}
-        <div
-          class="absolute inset-0 bg-black/50 flex items-center justify-center text-white"
-        >
-          <p>Loading editor...</p>
+    <div class="relative shrink-0 z-30">
+      {#if !effectiveIsSignedIn}
+        <div class="top-row">
+          <Button label="Login / Signup" variant="dark" />
+        </div>
+      {:else}
+        <div class="top-row">
+          <TopToolbar />
         </div>
       {/if}
+      <div class="action-row">
+        <Icon
+          name="submit"
+          size="3.6rem"
+          viewSize={{ width: 59, height: 56 }}
+        />
+      </div>
+    </div>
+
+    <div
+      class="flex-1 overflow-y-auto editor-host"
+      style={`--editor-top-padding: ${topOffset};`}
+    >
+      <PoroMarkdownEditor bind:value bind:this={poroEditor} />
     </div>
   </div>
 </div>
 
 <style lang="postcss">
-  :global(.carta-font-code) {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 1rem;
-    line-height: 2rem;
-  }
-  :global(.carta-editor) {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  :global(.carta-toolbar) {
-    flex-shrink: 0;
-  }
-  :global(.carta-wrapper) {
-    margin-top: 2rem;
-    flex-grow: 1;
-    overflow: auto;
-  }
-  :global(.carta-container) {
-    height: 100%;
-  }
-  :global(.carta-input, .carta-renderer) {
-    margin-bottom: 1rem;
+  .editor-host :global(.ProseMirror),
+  .editor-host :global(textarea) {
     margin-top: 1rem;
-    padding-bottom: 200px;
+    margin-bottom: 1rem;
+    padding-top: var(--editor-top-padding);
+    padding-bottom: 220px;
     box-sizing: border-box;
   }
-  :global(.first-row),
-  :global(.second-row) {
+  .top-row,
+  .action-row {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 30;
     display: flex;
     justify-content: flex-end;
     padding: 0.5rem 1rem 2rem;
+    pointer-events: none;
   }
-  :global(.second-row) {
-    position: sticky;
+  .top-row > :global(*),
+  .action-row > :global(*) {
+    pointer-events: auto;
+  }
+  .top-row {
     top: 0;
-    z-index: 10;
   }
-  :global(.custom-button) {
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
+  .action-row {
+    top: 60px;
   }
 </style>

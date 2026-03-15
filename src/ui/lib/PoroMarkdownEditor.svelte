@@ -51,7 +51,7 @@
 {:else}
   <textarea
     bind:value
-    class="w-full h-[500px] bg-[#111113] text-[#e5e5e5] font-mono p-8 text-lg resize-none focus:outline-none"
+    class="w-full h-125 bg-dark-slate text-[#e5e5e5] font-mono p-8 text-lg resize-none focus:outline-none"
   ></textarea>
 {/if}
 
