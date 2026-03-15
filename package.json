@@ -33,7 +33,13 @@
   "dependencies": {
     "@icp-sdk/auth": "^5.0.0",
     "@icp-sdk/core": "^5.0.0",
-    "carta-md": "^4.11.1",
-    "isomorphic-dompurify": "^3.3.0"
+    "diff": "^8.0.3",
+    "isomorphic-dompurify": "^3.3.0",
+    "rehype-stringify": "^10.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "shiki": "^4.0.2",
+    "unified": "^11.0.5"
   }
 }

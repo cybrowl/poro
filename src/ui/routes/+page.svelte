@@ -38,9 +38,6 @@
       return;
     }
 
-    // Official Carta way + fallback (works when empty)
-    carta.focus();
-
     setTimeout(() => {
       const textarea = rightContainer.querySelector(
         ".carta-input textarea"
