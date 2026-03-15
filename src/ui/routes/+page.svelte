@@ -46,19 +46,27 @@
   }
 </script>
 
-<div class="bg-deep-charcoal grid grid-cols-12 min-h-screen">
-  <div class="col-start-1 col-end-7 w-full p-4">
-    <div class="h-full rounded-lg p-10 text-white">
+<div class="bg-deep-charcoal grid grid-cols-12 min-h-screen overflow-hidden">
+  <!-- LEFT PANEL – scrolls independently -->
+  <div class="col-start-1 col-end-7 w-full p-4 overflow-y-auto">
+    <div
+      class="h-full min-h-[600px] rounded-lg p-10 text-white bg-dark-slate/50"
+    >
       <h2 class="mb-4 text-xl font-bold">Conversation</h2>
-      <p>Placeholder for AI and user messages.</p>
+      <p>
+        Placeholder for AI and user messages. This panel now scrolls on its own
+        when content is long.
+      </p>
     </div>
   </div>
 
+  <!-- RIGHT PANEL – fixed toolbar + submit icon, only editor text scrolls -->
   <div
-    class="col-start-7 col-end-13 w-full h-screen"
+    class="col-start-7 col-end-13 flex flex-col h-screen"
     bind:this={rightContainer}
   >
-    <div class="h-full relative flex flex-col">
+    <!-- Fixed header (toolbar + submit icon) -->
+    <div class="relative flex-shrink-0 z-30">
       {#if !isSignedIn}
         <div class="top-row">
           <Button label="Login / Signup" variant="dark" />
@@ -76,19 +84,14 @@
           viewSize={{ width: 59, height: 56 }}
         />
       </div>
+    </div>
 
-      <!-- Full-height editor container -->
-      <div
-        class="editor-host flex-1 flex flex-col"
-        style={`--editor-top-padding: ${topOffset};`}
-      >
-        <MarkdownEditor
-          bind:value
-          {carta}
-          mode="tabs"
-          placeholder="Type here!"
-        />
-      </div>
+    <!-- Scrollable text content only -->
+    <div
+      class="flex-1 overflow-y-auto editor-host"
+      style={`--editor-top-padding: ${topOffset};`}
+    >
+      <MarkdownEditor bind:value {carta} mode="tabs" placeholder="Type here!" />
     </div>
   </div>
 </div>
@@ -115,11 +118,9 @@
     flex: 1 1 auto !important;
     min-height: 0;
     overflow-y: auto;
-    overflow-x: hidden;
   }
 
   :global(.carta-container) {
-    flex: 1 1 auto;
     min-height: 100%;
   }
 
@@ -128,7 +129,7 @@
     margin-top: 1rem;
     margin-bottom: 1rem;
     padding-top: var(--editor-top-padding);
-    padding-bottom: 200px;
+    padding-bottom: 220px;
     box-sizing: border-box;
   }
 
@@ -137,7 +138,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    z-index: 20;
+    z-index: 30;
     display: flex;
     justify-content: flex-end;
     padding: 0.5rem 1rem 2rem;
