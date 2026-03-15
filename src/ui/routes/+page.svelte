@@ -58,7 +58,7 @@
 <div class="bg-deep-charcoal grid grid-cols-12 min-h-screen overflow-hidden">
   <!-- LEFT PANEL (independent scroll) -->
   <div class="col-start-1 col-end-7 w-full p-4 overflow-y-auto">
-    <div class="h-full min-h-150 rounded-lg p-10 text-white bg-dark-slate/50">
+    <div class="h-full min-h-150 rounded-lg p-10 text-white">
       <h2 class="mb-4 text-xl font-bold">Conversation</h2>
       <p>
         Placeholder for AI and user messages. This panel scrolls independently.
