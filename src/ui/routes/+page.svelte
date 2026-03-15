@@ -20,13 +20,12 @@
     },
   });
 
-  $: topOffset = isSignedIn ? "120px" : "60px";
+  $: topOffset = isSignedIn ? "200px" : "140px";
 
   function focusEditor(e: MouseEvent) {
     const target = e.target as HTMLElement | null;
     if (!target || !rightContainer) return;
 
-    // Don't steal focus if clicking toolbar, buttons, etc.
     if (
       target.closest(
         "button, a, input, select, textarea, .top-row, .action-row, .carta-toolbar"
@@ -35,7 +34,6 @@
       return;
     }
 
-    // Simple & reliable — just like your original
     const editor = rightContainer.querySelector(
       ".carta-input textarea"
     ) as HTMLTextAreaElement | null;
@@ -60,7 +58,7 @@
     class="col-start-7 col-end-13 w-full h-screen"
     bind:this={rightContainer}
   >
-    <div class="h-full relative">
+    <div class="h-full relative flex flex-col">
       {#if !isSignedIn}
         <div class="top-row">
           <Button label="Login / Signup" variant="dark" />
@@ -79,36 +77,52 @@
         />
       </div>
 
-      <MarkdownEditor bind:value {carta} mode="tabs" placeholder="Type here!" />
+      <!-- Full-height editor container -->
+      <div
+        class="editor-host flex-1 flex flex-col"
+        style={`--editor-top-padding: ${topOffset};`}
+      >
+        <MarkdownEditor
+          bind:value
+          {carta}
+          mode="tabs"
+          placeholder="Type here!"
+        />
+      </div>
     </div>
   </div>
 </div>
 
 <style lang="postcss">
-  /* Your original styles — unchanged */
   :global(.carta-font-code) {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 1.1rem;
     line-height: 1.1rem;
   }
+
   :global(.carta-editor) {
-    height: 100%;
+    height: 100% !important;
     min-height: 0;
     display: flex;
     flex-direction: column;
   }
+
   :global(.carta-toolbar) {
     flex-shrink: 0;
   }
+
   :global(.carta-wrapper) {
-    flex: 1 1 auto;
+    flex: 1 1 auto !important;
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
   }
+
   :global(.carta-container) {
+    flex: 1 1 auto;
     min-height: 100%;
   }
+
   .editor-host :global(.carta-input),
   .editor-host :global(.carta-renderer) {
     margin-top: 1rem;
@@ -117,6 +131,7 @@
     padding-bottom: 200px;
     box-sizing: border-box;
   }
+
   .top-row,
   .action-row {
     position: absolute;
@@ -128,10 +143,12 @@
     padding: 0.5rem 1rem 2rem;
     pointer-events: none;
   }
+
   .top-row > :global(*),
   .action-row > :global(*) {
     pointer-events: auto;
   }
+
   .top-row {
     top: 0;
   }
