@@ -22,10 +22,14 @@
 
   $: topOffset = isSignedIn ? "200px" : "140px";
 
+  // ──────────────────────────────────────────────────────────────
+  // Click ANYWHERE on the right panel → focus editor (even when empty)
+  // ──────────────────────────────────────────────────────────────
   function focusEditor(e: MouseEvent) {
     const target = e.target as HTMLElement | null;
     if (!target || !rightContainer) return;
 
+    // Skip toolbar, buttons, action row
     if (
       target.closest(
         "button, a, input, select, textarea, .top-row, .action-row, .carta-toolbar"
@@ -34,39 +38,43 @@
       return;
     }
 
-    const editor = rightContainer.querySelector(
-      ".carta-input textarea"
-    ) as HTMLTextAreaElement | null;
+    // Official Carta way + fallback (works when empty)
+    carta.focus();
 
-    if (editor) {
-      editor.focus();
-      const len = editor.value.length;
-      editor.setSelectionRange(len, len);
-    }
+    setTimeout(() => {
+      const textarea = rightContainer.querySelector(
+        ".carta-input textarea"
+      ) as HTMLTextAreaElement | null;
+
+      if (textarea) {
+        textarea.focus();
+        const len = textarea.value.length;
+        textarea.setSelectionRange(len, len);
+      }
+    }, 10);
   }
 </script>
 
 <div class="bg-deep-charcoal grid grid-cols-12 min-h-screen overflow-hidden">
-  <!-- LEFT PANEL – scrolls independently -->
+  <!-- LEFT PANEL (independent scroll) -->
   <div class="col-start-1 col-end-7 w-full p-4 overflow-y-auto">
-    <div
-      class="h-full min-h-[600px] rounded-lg p-10 text-white bg-dark-slate/50"
-    >
+    <div class="h-full min-h-150 rounded-lg p-10 text-white bg-dark-slate/50">
       <h2 class="mb-4 text-xl font-bold">Conversation</h2>
       <p>
-        Placeholder for AI and user messages. This panel now scrolls on its own
-        when content is long.
+        Placeholder for AI and user messages. This panel scrolls independently.
       </p>
     </div>
   </div>
 
-  <!-- RIGHT PANEL – fixed toolbar + submit icon, only editor text scrolls -->
+  <!-- RIGHT PANEL (fixed toolbar + scrollable editor only) -->
+  <!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
   <div
     class="col-start-7 col-end-13 flex flex-col h-screen"
     bind:this={rightContainer}
+    on:click={focusEditor}
   >
     <!-- Fixed header (toolbar + submit icon) -->
-    <div class="relative flex-shrink-0 z-30">
+    <div class="relative shrink-0 z-30">
       {#if !isSignedIn}
         <div class="top-row">
           <Button label="Login / Signup" variant="dark" />
@@ -86,7 +94,7 @@
       </div>
     </div>
 
-    <!-- Scrollable text content only -->
+    <!-- Scrollable editor area only -->
     <div
       class="flex-1 overflow-y-auto editor-host"
       style={`--editor-top-padding: ${topOffset};`}
