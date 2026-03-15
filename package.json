@@ -34,6 +34,9 @@
   "dependencies": {
     "@icp-sdk/auth": "^5.0.0",
     "@icp-sdk/core": "^5.0.0",
+    "@tiptap/core": "^3.20.1",
+    "@tiptap/markdown": "^3.20.1",
+    "@tiptap/starter-kit": "^3.20.1",
     "diff": "^8.0.3",
     "isomorphic-dompurify": "^3.3.0",
     "rehype-stringify": "^10.0.1",
