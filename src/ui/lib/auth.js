@@ -1,5 +1,5 @@
-import { AuthClient } from "@dfinity/auth-client";
-import { HttpAgent } from "@dfinity/agent";
+import { AuthClient } from "@icp-sdk/auth/client";
+import { HttpAgent } from "@icp-sdk/core/agent";
 import { writable } from "svelte/store";
 
 export const authStore = writable({
@@ -51,10 +51,6 @@ function handleSuccess(client) {
   console.log("Handling success...");
   const identity = client.getIdentity();
   const agent = new HttpAgent({ identity });
-
-  if (import.meta.env.VITE_DEPLOY_ENV === "local") {
-    agent.fetchRootKey().catch(console.error);
-  }
 
   authStore.set({
     isAuthenticated: true,

@@ -15,8 +15,8 @@ Poro is the best interface and most affordable platform for accessing all advanc
 ## Installation
 ### Prerequisites
 - ICP SDK (dfx) installed: Follow the [ICP Developer Guide](https://internetcomputer.org/docs/current/developer-docs/getting-started/install/).
-- Rust or Motoko for canister development.
-- Node.js for any frontend (optional).
+- Rust for canister development (ic-cdk).
+- Node.js for frontend.
 
 ### As a User
 - Sign up via the app or wallet.

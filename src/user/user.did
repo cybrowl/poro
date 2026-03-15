@@ -1,0 +1,5 @@
+service : {
+  setGreeting : (text) -> ();
+  greet : (text) -> (text) query;
+  getCaller : () -> (principal) query;
+}

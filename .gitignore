@@ -12,9 +12,6 @@
 # svelte
 .svelte-kit
 
-# mops
-.mops
-
 # package management locks
 package-lock.json
 
@@ -27,3 +24,5 @@ package-lock.json
 
 # debug logs
 npm-debug.log*
+
+target/
