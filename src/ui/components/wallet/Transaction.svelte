@@ -1,5 +1,5 @@
 <!-- Transaction.svelte -->
-<script>
+<script lang="ts">
   let {
     status = "Deposited",
     description = "",

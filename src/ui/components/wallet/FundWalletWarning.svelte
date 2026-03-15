@@ -1,16 +1,20 @@
 <!-- FundWalletWarning.svelte -->
-<script>
+<script lang="ts">
   import Icon from "../basic_elems/Icon.svelte";
   import Button from "../basic_elems/Button.svelte";
 
-  export let onOkClick = (event) => {};
-  export let onFundWalletClick = (event) => {};
+  interface Props {
+    onOkClick?: (event?: any) => void;
+    onFundWalletClick?: (event?: any) => void;
+  }
 
-  function handleOkClick(event) {
+  let { onOkClick = () => {}, onFundWalletClick = () => {} }: Props = $props();
+
+  function handleOkClick(event: any) {
     onOkClick(event);
   }
 
-  function handleFundWalletClick(event) {
+  function handleFundWalletClick(event: any) {
     onFundWalletClick(event);
   }
 </script>
@@ -28,27 +32,27 @@
       variant="dark"
       width="w-16"
       height="h-14"
-      on:click={handleOkClick}
+      onclick={handleOkClick}
     />
     <Button
       label="Fund wallet"
       variant="gold"
       width="w-32"
       height="h-14"
-      on:click={handleFundWalletClick}
+      onclick={handleFundWalletClick}
     />
   </div>
 {/snippet}
 
 <div
-  class="bg-background-primary font-sans flex flex-col items-center justify-center w-[672px] h-[420px] p-6 text-center rounded-xl border border-white/25 relative"
+  class="bg-background-primary font-sans flex flex-col items-center justify-center w-2xl h-105 p-6 text-center rounded-xl border border-white/25 relative"
 >
   <div class="absolute top-0 left-0 m-6">
     <Icon
       name="poro_brand_white"
       class="cursor-default"
       size="2.5rem"
-      scale="1"
+      scale={1}
       viewSize={{ width: 32, height: 32 }}
     />
   </div>
@@ -57,7 +61,7 @@
     name="piggy_bank"
     class="cursor-default mb-11"
     size="7rem"
-    scale="1"
+    scale={1}
     viewSize={{ width: 112, height: 112 }}
   />
   {@render WarningMessage()}

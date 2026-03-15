@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import CashOutAmount from "$components/wallet/CashOutAmount.svelte";
   import AddressToInput from "$components/wallet/AddressToInput.svelte";
   import CashBalanceContainer from "$components/wallet/CashBalanceContainer.svelte";

@@ -9,9 +9,9 @@ export const authStore = writable({
   principal: null,
 });
 
-let authClient;
+let authClient: any;
 
-export async function initAuth() {
+export async function initAuth(): Promise<void> {
   authClient = await AuthClient.create({
     idleOptions: { disableIdle: false, idleTimeout: 30 * 60 * 1000 }, // Auto-logout after 30 min inactivity
   });
@@ -29,11 +29,12 @@ export async function login() {
     maxTimeToLive: BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000), // 7 days for prod UX
     windowOpenerFeatures:
       "toolbar=0,location=0,menubar=0,width=500,height=500,left=100,top=100", // Popup for seamless flow
+    derivationOrigin: undefined as string | undefined,
     onSuccess: () => {
       console.log("Login success! Updating store...");
       handleSuccess(authClient);
     },
-    onError: (err) => {
+    onError: (err: any) => {
       console.error("Login failed:", err);
       alert("Auth error: " + err.message);
     },
@@ -44,10 +45,10 @@ export async function login() {
     options.derivationOrigin = window.location.origin;
   }
 
-  await authClient.login(options);
+  await authClient!.login(options as any);
 }
 
-function handleSuccess(client) {
+function handleSuccess(client: any) {
   console.log("Handling success...");
   const identity = client.getIdentity();
   const agent = new HttpAgent({ identity });
@@ -64,7 +65,7 @@ function handleSuccess(client) {
   );
 }
 
-export async function logout() {
+export async function logout(): Promise<void> {
   await authClient?.logout();
   authStore.set({
     isAuthenticated: false,

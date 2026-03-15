@@ -1,4 +1,6 @@
-export default async function handler(req, res) {
+import type { Request, Response } from "express"; // works for Vercel/Node-style handlers
+
+export default async function handler(req: Request, res: Response) {
   // Validate method
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -6,7 +8,7 @@ export default async function handler(req, res) {
 
   // Validate input
   const { prompt } = req.body || {};
-  if (!prompt) {
+  if (!prompt || typeof prompt !== "string") {
     return res.status(400).json({ error: "Prompt required" });
   }
 
@@ -29,7 +31,7 @@ export default async function handler(req, res) {
     temperature: 0.5,
     top_p: 0.95,
     stream: false,
-  };
+  } as const;
 
   try {
     const response = await fetch(endpoint, {
@@ -47,6 +49,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ content });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return res.status(500).json({ error: message });
   }
 }

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import TopToolbar from "$components/home/TopToolbar.svelte";
 </script>
 

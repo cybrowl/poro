@@ -1,10 +1,19 @@
 <!-- TopToolbar.svelte -->
-<script>
+<script lang="ts">
   import Icon from "../basic_elems/Icon.svelte";
+
+  interface IconConfig {
+    selectedName: string;
+    unselectedName: string;
+    size: string;
+    viewSize: { width: number; height: number };
+    clickable?: boolean;
+    class?: string;
+  }
 
   let selectedIcon = $state("gpt");
 
-  const icons = [
+  const icons: IconConfig[] = [
     {
       selectedName: "gpt_gold",
       unselectedName: "gpt_white",

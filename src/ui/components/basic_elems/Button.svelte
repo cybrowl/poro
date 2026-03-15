@@ -1,5 +1,16 @@
 <!-- Button.svelte -->
-<script>
+<script lang="ts">
+  interface Props {
+    label?: string;
+    variant?: "dark" | "gold";
+    width?: string;
+    height?: string;
+    onclick?: (event: MouseEvent) => void;
+    disabled?: boolean;
+    class?: string;
+    children?: import("svelte").Snippet;
+  }
+
   let {
     label = "Button",
     variant = "dark",
@@ -9,7 +20,7 @@
     disabled = false,
     class: customClass = "",
     children = undefined,
-  } = $props();
+  }: Props = $props();
 
   const variants = {
     dark: "bg-graphite text-white hover:bg-graphite/90",

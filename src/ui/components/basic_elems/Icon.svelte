@@ -1,5 +1,5 @@
 <!-- Icon.svelte -->
-<script>
+<script lang="ts">
   import * as icons from "./icons";
   let {
     name,

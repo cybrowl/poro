@@ -1,5 +1,5 @@
 <!-- CashOutAmount.svelte -->
-<script>
+<script lang="ts">
   export let coinType = "ckUSDC";
   export let amount = 0;
 

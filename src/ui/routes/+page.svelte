@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { Carta, MarkdownEditor } from "$lib/carta/index";
   import dracula from "shiki/dist/themes/dracula.mjs";
   import "$lib/carta/default.css";

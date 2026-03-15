@@ -197,6 +197,8 @@ export interface Plugin {
   onLoad?: (data: { carta: Carta }) => void;
 }
 
+declare const __ENABLE_CARTA_SSR_HIGHLIGHTER__: boolean | undefined;
+
 const USE_HIGHLIGHTER =
   BROWSER ||
   // Replaced at build time to tree-shake shiki on the server, if specified

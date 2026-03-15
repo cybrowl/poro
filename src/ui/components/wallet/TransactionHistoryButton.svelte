@@ -1,5 +1,5 @@
 <!-- TransactionHistoryButton.svelte -->
-<script>
+<script lang="ts">
   import Icon from "../basic_elems/Icon.svelte";
 
   let { title = "Transaction History" } = $props();
