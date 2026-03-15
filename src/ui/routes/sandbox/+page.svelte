@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   // @ts-nocheck
   import { page } from "$app/stores"; // For URL params
   import { replaceState } from "$app/navigation"; // For updating URL without navigation

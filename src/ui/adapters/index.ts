@@ -73,7 +73,7 @@ export function adaptResponse(model, rawJson) {
   let message = rawJson.choices[0].message;
   let content = message.content || "";
   let tools = [];
-  let extras = {};
+  let extras: { isAgentic?: boolean; hasMath?: boolean } = {};
 
   // Handle OpenAI-specific tool calls if present (standard for GPT models)
   if (message.tool_calls && Array.isArray(message.tool_calls)) {

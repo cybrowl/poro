@@ -1,5 +1,5 @@
 <!-- Button.svelte -->
-<script>
+<script lang="ts">
   let {
     label = "Button",
     variant = "dark",

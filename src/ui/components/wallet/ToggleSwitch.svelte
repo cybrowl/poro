@@ -1,5 +1,5 @@
 <!-- ToggleSwitch.svelte -->
-<script>
+<script lang="ts">
   let { mode = "deposit" } = $props();
 
   function handleToggle(newMode) {

@@ -1,5 +1,5 @@
 <!-- CoinAddressContainer.svelte -->
-<script>
+<script lang="ts">
   import Icon from "../basic_elems/Icon.svelte";
   import Button from "../basic_elems/Button.svelte";
 

@@ -1,5 +1,5 @@
 <!-- Banner.svelte -->
-<script>
+<script lang="ts">
   let { message = "ICP will be automatically exchanged for ckUSDC." } =
     $props();
 </script>
