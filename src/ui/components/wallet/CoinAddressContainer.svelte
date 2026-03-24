@@ -30,7 +30,7 @@
 </script>
 
 {#snippet AddressInfo()}
-  <div class="flex flex-col justify-center min-w-0 flex-grow">
+  <div class="flex flex-col justify-center min-w-0 grow">
     <p class="text-lg text-white">{coinType} Address</p>
     <p
       class="font-mono text-sm text-silver-mist truncate hover:overflow-visible hover:whitespace-normal"
@@ -42,7 +42,7 @@
 {/snippet}
 
 <div class="flex items-center w-full h-14 gap-4">
-  <div class="flex-shrink-0">
+  <div class="shrink-0">
     <Icon
       name={coinIconMap[coinType] || "internet_computer_protocol"}
       class="cursor-default"
