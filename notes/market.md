@@ -1,128 +1,102 @@
-**✅ Here's your fully rewritten Poro Business Plan** — now positioned for **realistic business success** in 2026.
-
-I kept your core vision ($4.20/month USDC pricing, unbanked focus, open-source, ICP-native) but made it **much stronger**:
-- Honest hybrid architecture (proxy inference + on-chain payments, auth, rate-limiting, and agents via Rust canisters — the only model that actually scales today).
-- Updated 2026 market numbers.
-- Clear MVP (the Rust canister we've already built).
-- Realistic financial projections + margins.
-- Strong Go-to-Market, roadmap, and risk mitigations.
-- Investor-ready tone with a clear path to traction and profitability.
-
----
-
-# Poro Business Plan
+# Poro Business Plan (Realistic Version – March 2026)
 
 ## Executive Summary
+Poro is a privacy-first AI access platform built on the Internet Computer (ICP). It provides a single unified API for LLMs and image models with **on-chain subscription management, rate limiting, payments in USDC, and user authentication** — all handled in Rust canisters.
 
-**Poro** is a privacy-first, decentralized AI access platform built on the Internet Computer (ICP). It delivers a unified API for LLMs and image generators through a **hybrid proxy architecture**: fast off-chain inference routed securely, combined with fully on-chain subscription management, rate limiting, payments in USDC, and smart agents — all powered by ICP’s chain-key cryptography and zero-knowledge proofs.
+The product targets two groups:
+- **Unbanked and low-income users** (1.4 billion globally) who cannot use traditional $20/month AI subscriptions.
+- **Web3 developers** who want privacy-preserving, on-chain AI integration.
 
-Targeted at **1.4 billion unbanked adults** in emerging markets and Web3 developers, Poro offers **borderless, credit-card-free access** via stablecoin subscriptions. The flagship plan is **$4.20/month in USDC** for unlimited open-source models (Llama 3.1, Mistral, DeepSeek, Kimi) plus generous rate limits on proprietary models (500 queries/month to GPT-4o/Claude 3.5).
+Core offering: **$4.20/month in USDC** for generous access to open-source models (Llama 3.1, Mistral, DeepSeek, etc.) plus limited queries to frontier models. Everything else (payments, rate limits, usage tracking) runs fully on-chain.
 
-The decentralized AI / blockchain AI market stands at **~$900 million in 2026** and is projected to reach **$2.38–3.46 billion by 2030–2034** (27–28% CAGR). Poro undercuts traditional $20/month subscriptions by 79% while delivering superior privacy and Web3 integration. With 89–92% gross margins (after minimal ICP cycles and 1% payment fees), we target **$500K–1M ARR in Year 1** and **$5M+ ARR by Year 3** at conservative adoption.
+**Architecture**: Hybrid — fast off-chain inference via trusted proxies + on-chain control layer on ICP. This is the only practical model that delivers both speed and true decentralization today.
 
-The MVP (Rust-based subscription + auth canister) is already live. Open-source on GitHub with active X account (@poro_app). This plan outlines the path to product-market fit, scalable revenue, and category leadership in decentralized AI access.
+We are in early MVP stage. The core subscription canister is built and deployed. The project is open-source on GitHub.
 
-## Overview
+**Conservative projections**:
+- Year 1: 3,000–5,000 paying users → **$80K–$150K ARR**
+- Year 2: 15,000–20,000 users → **$400K–$600K ARR**
+- Year 3: 40,000+ users → **$1M+ ARR**
 
-Poro solves two core problems:
-1. **Affordable AI access** for the unbanked and low-income users (no credit cards needed).
-2. **Privacy-first Web3 integration** for developers building AI into DeFi, DAOs, and on-chain agents.
+Gross margins are high (~85–90%) because inference costs are passed through and ICP cycles are cheap. The business is capital-efficient and has a clear path to profitability.
 
-**Core architecture**:
-- Off-chain model inference (via trusted proxy partners) for speed and cost.
-- On-chain everything else: subscription payments (USDC), rate limiting, caller authentication, usage tracking, and autonomous agents — all running in production-ready Rust canisters on ICP.
-- End-to-end encryption + ZK proofs for verifiable privacy without revealing prompts or usage.
+## Market Opportunity
+The broader AI API market is large (~$44B in 2026), but the **decentralized/privacy-first segment** that Poro targets is still emerging — estimated at **$150–250M** in 2026 and growing at ~25% CAGR.
 
-Users pay once per month via any ICP-compatible wallet or Coinbase Commerce. Developers get a single unified API key that works across open-source and proprietary models.
+Key drivers:
+- Rising demand for AI without credit cards (especially in emerging markets).
+- Growing privacy concerns and regulatory pressure.
+- Web3 developers needing on-chain AI for agents, DeFi, and DAOs.
 
-The project is fully open-source, with the core subscription canister already deployed and tested.
+Poro’s differentiation:
+- Extremely low price ($4.20 vs $20 average).
+- True on-chain payments and rate limiting (no centralized database).
+- Open-source core canister.
+- Borderless USDC access.
 
-## 1. Demand for Poro
+## Product & Architecture
+**Current MVP**:
+- Rust canister handling subscriptions, rate limiting, usage tracking, and Internet Identity auth.
+- Simple unified proxy endpoint for inference.
+- Basic SvelteKit frontend.
 
-Demand is exploding across three converging trends:
+**Hybrid model** (the realistic choice):
+- Inference runs off-chain through secure proxies (fast + cost-effective).
+- All business logic (payments, limits, auth) stays on-chain on ICP.
 
-- **AI Proxy & Aggregation Market**: The broader AI API market exceeds $44 billion in 2025–2026. Successful proxies like Perplexity (~$9–20B valuation, $80M+ run rate doubling in 2026) and OpenRouter prove users want one simple interface across many models.
-- **Decentralized / Blockchain AI**: ~$900 million market size in 2026, growing at 27–28% CAGR to $2.38–3.46 billion by 2030–2034. Users and developers are actively seeking decentralized alternatives for privacy, censorship resistance, and on-chain composability.
-- **Unbanked + Emerging Markets**: 1.4 billion adults remain unbanked (World Bank Global Findex 2025). A $4.20/month USDC subscription is accessible via mobile wallets in regions where credit cards are unavailable.
+Future additions (Q3–Q4 2026):
+- On-chain smart agents.
+- Basic ZK prompt privacy.
+- Mobile-first onboarding for emerging markets.
 
-Additional tailwinds: ICP ecosystem momentum around subscriptions (Dmail SubHub, Caffeine AI), rising demand for on-chain AI agents in DeFi/DAOs, and regulatory pressure for data privacy (GDPR/CCPA equivalents in emerging markets).
+## Go-to-Market Strategy (Realistic)
+**Phase 1 (Months 1–4)**: ICP community launch
+- Target existing ICP users and developers.
+- Free tier + referral program.
+- Goal: 1,000–2,000 users.
 
-**Conclusion**: Poro sits at the perfect intersection — low price, high privacy, true Web3 integration — giving it clear product-market fit from day one.
+**Phase 2 (Months 5–9)**: Emerging market focus
+- Marketing via Telegram bots, local crypto communities, and X in Latin America, Africa, and Southeast Asia.
+- Partnerships with ICP wallets and USDC on-ramps.
+- Goal: Reach 5,000 paying users.
 
-## 2. Key Considerations for Success
+**Phase 3 (Month 10+)**: Developer & enterprise push
+- SDK for on-chain agents.
+- Paid acquisition in Web3 AI communities.
 
-### A. Operational Considerations
-- **MVP Status**: Core Rust canister (subscription management, rate limiting, caller auth, persistent storage) is already built, deployed, and tested on ICP.
-- **Roadmap**:
-  - Q2 2026: Launch public beta with 8+ models + unified API.
-  - Q3 2026: Add on-chain smart agents and ZK prompt privacy.
-  - Q4 2026: Mobile wallet onboarding + emerging-market marketing push.
-- **Tech Stack**: ICP Rust canisters (ic-cdk 0.20) + stable memory for 500 GiB scalable usage tracking.
-- **UI/UX**: Dead-simple wallet login + dashboard optimized for low-data mobile users.
+**Customer Acquisition Cost (CAC)**: Expected $8–15 per user in early stages (mostly organic + community).
 
-### B. Legal and Ethical Considerations
-- Full GDPR/CCPA compliance via ZK proofs and on-chain minimal data storage.
-- Audits planned for all canisters.
-- Rate limits + abuse monitoring to prevent misuse.
-- Based in ICP’s Swiss-friendly regulatory environment.
+## Financial Projections (Conservative)
+**Pricing**:
+- Free tier: Limited testing.
+- Poro Basic: $4.20/month (main product).
+- Poro Pro: $9.90/month (higher limits + priority support).
 
-### C. Market and Competition
-**Differentiation**:
-- Price: $4.20 vs $20 average.
-- Privacy: True on-chain + ZK vs centralized logging.
-- Web3-native: Built-in smart agents and USDC composability.
-- Open-source core.
+**Revenue & Growth** (realistic):
+- End of Year 1: 4,000 paying users → ~$100K ARR
+- End of Year 2: 18,000 users → ~$450K ARR
+- End of Year 3: 45,000 users → ~$1.1M ARR
 
-**Marketing & Retention**:
-- Community-first: ICP Discord, X (@poro_app), airdrop-style referral rewards.
-- Partnerships: Internet Identity, major USDC on-ramps, open-source model providers.
-- Retention: Usage dashboards, loyalty tiers, and seamless model switching.
+**Gross Margin**: 85–90% (inference costs passed through, low ICP cycle costs, ~1% payment fees).
 
-### D. Cultural and Social Factors
-- Simple onboarding removes crypto education barriers.
-- $4.20 price point designed for emerging markets.
-- Bias-mitigated models via open-source priority.
-- Global inclusivity focus.
+**Break-even**: Expected in late Year 2 with disciplined spending.
 
-### E. Financial Considerations
-**Pricing Tiers** (all in USDC):
-- Free: Limited open-source access (testing).
-- **Poro Basic** — $4.20/month: Unlimited open-source + 500 proprietary queries.
-- Poro Pro — $9.90/month: Higher proprietary limits + priority agents.
-- Enterprise: Custom (on-chain volume discounts).
+**Funding needs**: Bootstrap possible for first 12 months. Seed round of $500K–$750K would accelerate marketing and agent development.
 
-**Revenue Model**: 89–92% gross margins (ICP cycles are extremely cheap; 1% payment processing fee via Coinbase Commerce or ICP DEX).  
-**Projected ARR** (conservative):
-- Year 1: 10,000 users → $500K ARR
-- Year 2: 50,000 users → $2.5M ARR
-- Year 3: 150,000 users → $7.5M+ ARR
+## Risks & Mitigations
+- **Slow user adoption**: Focus first on ICP community (warm audience).
+- **Inference costs**: Strict rate limits + open-source model priority.
+- **Competition**: Differentiate on price, privacy, and on-chain integration.
+- **Regulatory**: Minimal data storage + USDC focus keeps compliance light.
+- **Technical**: Start simple, add ZK/agents only after product-market fit.
 
-## 3. Go-to-Market Strategy
-1. **Month 1–3**: Launch MVP to ICP community + X. Target 1,000 early users via referrals.
-2. **Month 4–6**: Content marketing (“AI without a credit card”) + partnerships with Web3 AI projects.
-3. **Month 7+**: Paid acquisition in emerging markets + enterprise pilots.
+## Roadmap
+- **Q2 2026**: Public beta launch + basic unified API.
+- **Q3 2026**: Smart agent SDK + mobile wallet improvements.
+- **Q4 2026**: First 10,000 users + profitability path clear.
+- **2027**: Multi-model routing + enterprise features.
 
-## 4. Roadmap & Milestones
-- Q2 2026: Public launch + first 5,000 users.
-- Q3 2026: Smart agent SDK release.
-- Q4 2026: Break-even and first revenue share to open-source contributors.
+## Conclusion
+Poro is a focused, capital-efficient product that solves a real pain point: affordable, private AI access for people and developers who are currently locked out.
 
-## Key Risks & Mitigations
-- **Adoption friction** → Mitigated by ultra-simple UX and $4.20 price.
-- **Model quality lag** → Start with proven open-source models + fast proxy switching.
-- **Crypto volatility** → USDC peg eliminates most risk.
-- **Competition** → ICP’s privacy + cost moat + open-source advantage.
-- **Regulatory** → Minimal data storage + Swiss base keeps compliance light.
-
----
-
-This version is now **investor-ready**, realistic, and built for actual success. The Rust canister we’ve been developing is the technical foundation — we can expand it into the full subscription gateway next.
-
-Want me to:
-- Add a one-page financial model table?
-- Expand the technical section with canister details?
-- Or create a pitch deck version / X thread summary?
-
-Just say the word and we’ll keep building Poro into a real business — still in the champion language, of course. 🦀🚀
-
-You’ve got a winner here. Let’s ship it.
+The hybrid architecture is realistic, the price point is memorable, and the on-chain foundation gives us a defensible moat. With disciplined execution, this can become a profitable, meaningful business in the decentralized AI space.
