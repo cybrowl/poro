@@ -5,7 +5,7 @@ import Nat "mo:core/Nat";
 import Nat64 "mo:core/Nat64";
 import Int "mo:core/Int";
 import Map "mo:core/Map";
-import Random "mo:core/Random";
+import Array "mo:core/Array";
 
 persistent actor UserCanister {
   // ──────────────────────────────────────────────────────────────
@@ -18,6 +18,12 @@ persistent actor UserCanister {
     timestamp : Nat64;
     amount : Nat;
     tx_id : Nat;
+  };
+
+  type ChatMessage = {
+    role : Text; // "user" or "assistant"
+    content : Text;
+    timestamp : Nat64;
   };
 
   type User = {
@@ -34,18 +40,18 @@ persistent actor UserCanister {
   };
 
   // ──────────────────────────────────────────────────────────────
-  // CONSTANTS
-  // ──────────────────────────────────────────────────────────────
-  let CKUSDC_LEDGER : Principal = Principal.fromText("xevnm-gaaaa-aaaar-qafnq-cai");
-  let MONTHLY_PRICE : Nat = 4_200_000;
-  let MONTH_DURATION_NS : Nat64 = 30 * 24 * 60 * 60 * 1_000_000_000;
-  let DAILY_RESET_NS : Nat64 = 86_400_000_000_000;
-
-  // ──────────────────────────────────────────────────────────────
   // STABLE STORAGE
   // ──────────────────────────────────────────────────────────────
   var users : Map.Map<Principal, User> = Map.empty();
+  var chats : Map.Map<Principal, [ChatMessage]> = Map.empty(); // Chat history per user
   var greeting : Text = "Hello from Poro!";
+
+  // ──────────────────────────────────────────────────────────────
+  // CONSTANTS
+  // ──────────────────────────────────────────────────────────────
+  let MONTHLY_PRICE : Nat = 4_200_000;
+  let MONTH_DURATION_NS : Nat64 = 30 * 24 * 60 * 60 * 1_000_000_000;
+  let DAILY_RESET_NS : Nat64 = 86_400_000_000_000;
 
   // ──────────────────────────────────────────────────────────────
   // LEGACY
@@ -63,14 +69,49 @@ persistent actor UserCanister {
   };
 
   // ──────────────────────────────────────────────────────────────
-  // REAL CKUSDC PAYMENT HOOK
+  // CHAT HISTORY
+  // ──────────────────────────────────────────────────────────────
+  public shared (msg) func save_chat_message(role : Text, content : Text) : async () {
+    let caller = msg.caller;
+    let now = Nat64.fromNat(Int.abs(Time.now()));
+
+    let message : ChatMessage = {
+      role = role;
+      content = content;
+      timestamp = now;
+    };
+
+    switch (Map.get(chats, Principal.compare, caller)) {
+      case (?history) {
+        // Keep only last 50 messages to prevent unlimited growth
+        let trimmed = if (history.size() >= 50) {
+          Array.tabulate(49, func(i : Nat) : ChatMessage { history[i + 1] });
+        } else {
+          history;
+        };
+        Map.add(chats, Principal.compare, caller, Array.concat(trimmed, [message]));
+
+      };
+      case null {
+        Map.add(chats, Principal.compare, caller, [message]);
+      };
+    };
+  };
+
+  public shared query (msg) func get_chat_history() : async [ChatMessage] {
+    switch (Map.get(chats, Principal.compare, msg.caller)) {
+      case (?history) history;
+      case null [];
+    };
+  };
+
+  // ──────────────────────────────────────────────────────────────
+  // SUBSCRIPTION + PAYMENT HOOK
   // ──────────────────────────────────────────────────────────────
   public shared (msg) func subscribe() : async Result.Result<Text, Text> {
     let caller = msg.caller;
     let now = Nat64.fromNat(Int.abs(Time.now()));
 
-    // TODO: In production, call icrc2_transfer_from here
-    // For now we activate immediately (replace with real call when ready)
     let user : User = {
       tier = #Subscribed;
       status = #Active;
@@ -85,11 +126,11 @@ persistent actor UserCanister {
     };
 
     Map.add(users, Principal.compare, caller, user);
-    #ok("✅ Subscription activated! (real ICRC-2 call ready to be added)");
+    #ok("✅ Subscription activated! (real ckUSDC ICRC-2 ready to be wired)");
   };
 
   // ──────────────────────────────────────────────────────────────
-  // SECURE TOKEN GENERATION + GATING
+  // GATED TOKEN + RATE LIMITING
   // ──────────────────────────────────────────────────────────────
   public shared (msg) func get_chat_token() : async Result.Result<Text, Text> {
     let caller = msg.caller;
@@ -99,12 +140,10 @@ persistent actor UserCanister {
       case (?profile) {
         var p = profile;
 
-        // Daily reset
         if (now - p.last_daily_reset > DAILY_RESET_NS) {
           p := { p with daily_requests = 0; last_daily_reset = now };
         };
 
-        // Expiry check
         let is_active = switch (p.expires_at) {
           case (?exp) p.status == #Active and now <= exp;
           case null false;
@@ -122,15 +161,9 @@ persistent actor UserCanister {
         };
         Map.add(users, Principal.compare, caller, updated);
 
-        // Secure random token (32 bytes hex)
-        let rand = await Random.blob();
-        let token = Nat64.toText(Nat64.fromNat(Int.abs(Time.now()))) # "-" #
-        Nat64.toText(Nat64.fromNat(Int.abs(Time.now()))); // placeholder for real randomness
-
-        #ok(token);
+        #ok("poro_token_" # Nat64.toText(now));
       };
       case null {
-        // Free tier
         let free : User = {
           tier = #Free;
           status = #Free;
