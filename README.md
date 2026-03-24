@@ -1,29 +1,86 @@
 # Poro
-Poro is the best interface and most affordable platform for accessing all advanced AI models at just $4.20/month, built on the Internet Computer Protocol (ICP) to democratize AI while prioritizing user privacy and financial inclusion. By leveraging end-to-end encryption and on-chain execution. Targeted at developers and the 1.3 billion unbanked adults worldwide, it offers borderless payments via USDC stablecoin, bypassing traditional banking barriers.
 
-## Key Highlights
-- **Affordable Subscription**: $4.20/month in USDC for unlimited open-source models (e.g., Llama 3.1, Mistral) and rate-limited proprietary ones (e.g., GPT-4o, Claude).
-- **Privacy-First**: Secure, user-controlled data processing with no centralized logging.
-- **Web3 Native**: On-chain smart agents for autonomous AI tasks in decentralized apps.
+**Privacy-first, borderless AI access on the Internet Computer.**
 
-## Features
-- **Unified API**: Single endpoint for diverse AI models, simplifying queries and integrations.
-- **Privacy Tools**: End-to-end encryption and zero-knowledge proofs ensure data sovereignty.
-- **Payment Integration**: USDC via direct wallet deposits; easy onboarding for unbanked users.
-- **Rate-Limited Access**: Balanced usage with unlimited open-source and capped proprietary queries to manage costs.
+Pay once with USDC — get fast, private access to open-source LLMs and image models without credit cards or centralized tracking.
 
-## Installation
-### Prerequisites
-- ICP SDK (dfx) installed: Follow the [ICP Developer Guide](https://internetcomputer.org/docs/current/developer-docs/getting-started/install/).
-- Rust for canister development (ic-cdk).
-- Node.js for frontend.
+### Why Poro?
+- **$4.20/month** — affordable for everyone, especially the unbanked.
+- **True privacy** — on-chain subscriptions, rate limiting, and authentication. Prompts never touch a centralized database.
+- **Hybrid speed** — fast off-chain inference + fully on-chain control layer (payments, usage, agents).
+- **Built on ICP** — Internet Identity login, USDC payments, and persistent storage that scales to 500 GiB in a single canister.
+- **Open source** — core canister and frontend are public.
 
-### As a User
-- Sign up via the app or wallet.
-- Pay $4.20 in USDC to activate subscription.
+### Current Status (March 2026)
+- **User Canister** — live in Motoko (`persistent actor` + `mo:core/Map`) with full subscription management, daily rate limiting, and usage tracking.
+- **Frontend** — SvelteKit + TypeScript with Carta-powered Markdown editor (click anywhere to focus).
+- **AI Proxy** — working unified endpoint (Hyperbolic + future multi-model routing).
+- **Wallet UI** — visual guide for ckUSDC flows and components ready.
 
-## Contact
+### Features
+- Internet Identity login
+- $4.20/month USDC subscription (ckUSDC)
+- Free tier + paid tier with automatic daily reset
+- On-chain rate limiting
+- Unified API for multiple LLMs
+- Privacy-focused chat interface
+- Open-source core canister
+
+### Quick Start
+
+```bash
+# Clone the repo
+git clone https://github.com/cybrowl/poro.git
+cd poro
+
+# Install dependencies
+npm install
+mops install   # for Motoko core
+
+# Start local replica (PocketIC)
+dfx start --clean --background
+
+# Deploy canisters
+dfx deploy
+
+# Start frontend
+npm run dev
+```
+
+Open `http://localhost:5173` to try the editor.
+
+### Project Structure
+```
+src/
+├── user/          # Motoko canister (subscriptions + rate limiting)
+├── ui/            # SvelteKit + TypeScript frontend
+└── ai_vercel/     # Proxy endpoint for inference
+```
+
+### Roadmap
+**Q2 2026**
+- Public beta with unified API
+- Real ckUSDC ICRC-2 payment integration
+- Basic on-chain agent support
+
+**Q3 2026**
+- ZK prompt privacy layer
+- Mobile-first wallet onboarding
+- Multi-model routing + fallback
+
+**Q4 2026**
+- Smart agent SDK for developers
+- Emerging market push
+
+### Contributing
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) (coming soon).
+
+The core canister is the heart of the project — improvements there have the biggest impact.
+
+### Community
 - X: [@poro_app](https://x.com/poro_app)
-- GitHub: [Issues](https://github.com/yourusername/poro/issues)
+- GitHub: [cybrowl/poro](https://github.com/cybrowl/poro)
 
-Poro: Empowering the next billion with private, accessible AI. 🚀
+---
+
+**Built with ❤️ on the Internet Computer**
