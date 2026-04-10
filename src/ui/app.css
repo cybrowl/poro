@@ -1,37 +1,35 @@
+@import "@fontsource/noto-sans/400.css";
+@import "@fontsource/noto-sans/700.css";
 @import "tailwindcss";
 
 @theme {
-  --color-obsidian: #090c11;
-  --color-deep-charcoal: #0b1017;
-  --color-dark-slate: #0f151d;
-  --color-carbon-black: #131a23;
-  --color-graphite: #1b2430;
-  --color-midnight-slate: #2a3647;
-  --color-steel: #60708a;
-  --color-silver-mist: #8f9db2;
-  --color-fog: #aeb9c9;
-  --color-soft-ivory: #edf3ff;
-  --color-marigold: #4ea1ff;
-  --color-misty-green: #6dd5a3;
-  --color-signal-blue: #4ea1ff;
-  --color-signal-blue-deep: #1c6cdd;
-  --color-warning-amber: #f3c16b;
+  --color-obsidian: #0d0e11;
+  --color-deep-charcoal: #101216;
+  --color-dark-slate: #14171b;
+  --color-carbon-black: #181b20;
+  --color-graphite: #1c2025;
+  --color-midnight-slate: #242931;
+  --color-steel: #676c74;
+  --color-silver-mist: #9298a2;
+  --color-fog: #bec2ca;
+  --color-soft-ivory: #f1efea;
+  --color-marigold: #d5a12a;
+  --color-misty-green: #7fb98a;
+  --color-signal-blue: #d5a12a;
+  --color-signal-blue-deep: #886818;
+  --color-warning-amber: #ebbc4e;
 }
 
 html,
 body {
   min-height: 100%;
-  background:
-    radial-gradient(circle at top center, rgb(78 161 255 / 0.08), transparent 24%),
-    radial-gradient(circle at 16% 0%, rgb(109 213 163 / 0.05), transparent 18%),
-    linear-gradient(180deg, #090c11 0%, #0b1017 18%, #0e141c 100%);
+  background: #111114;
   color: var(--color-soft-ivory);
 }
 
 body {
   margin: 0;
-  font-family:
-    "SF Pro Display", "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+  font-family: "Noto Sans", "SF Pro Display", "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -42,7 +40,7 @@ body {
 }
 
 ::selection {
-  background: rgb(78 161 255 / 0.28);
+  background: rgb(217 163 32 / 0.24);
 }
 
 ::-webkit-scrollbar {
@@ -67,15 +65,7 @@ body {
 }
 
 body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgb(255 255 255 / 0.012) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 0.012) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.2), transparent 70%);
+  content: none;
 }
 
 button,
@@ -88,4 +78,77 @@ textarea {
 textarea,
 input {
   caret-color: var(--color-signal-blue);
+}
+
+:root {
+  --type-heading-1-size: 24px;
+  --type-heading-2-size: 20px;
+  --type-heading-3-size: 16px;
+  --type-heading-4-size: 14px;
+  --type-body-1-size: 24px;
+  --type-body-2-size: 20px;
+  --type-body-3-size: 16px;
+  --type-body-4-size: 14px;
+  --type-body-5-size: 12px;
+}
+
+.type-label {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.type-heading-1 {
+  font-size: var(--type-heading-1-size);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.type-heading-2 {
+  font-size: var(--type-heading-2-size);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.type-heading-3 {
+  font-size: var(--type-heading-3-size);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.type-heading-4 {
+  font-size: var(--type-heading-4-size);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.type-body-1 {
+  font-size: var(--type-body-1-size);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.type-body-2 {
+  font-size: var(--type-body-2-size);
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.type-body-3 {
+  font-size: var(--type-body-3-size);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.type-body-4 {
+  font-size: var(--type-body-4-size);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.type-body-5 {
+  font-size: var(--type-body-5-size);
+  font-weight: 400;
+  line-height: 1.45;
 }

@@ -1159,7 +1159,7 @@
   />
 </svelte:head>
 
-<div class="min-h-screen bg-[#111418] text-soft-ivory">
+<div class="min-h-screen bg-obsidian text-soft-ivory">
   <div class="mx-auto flex min-h-screen max-w-[1600px] flex-col lg:flex-row">
     <Sidebar
       workspaces={workspaceList}

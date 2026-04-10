@@ -51,18 +51,18 @@
 
   function messageStyle(message: TranscriptMessage) {
     if (message.role === "assistant") {
-      return "bg-transparent text-fog/88";
+      return "bg-transparent text-fog/92";
     }
 
     if (message.role === "user") {
-      return "rounded-xl border border-white/8 bg-white/[0.045] px-4 py-3 text-fog/84";
+      return "rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3 text-fog/84";
     }
 
     if (message.role === "tool") {
-      return "rounded-xl border border-misty-green/14 bg-misty-green/[0.055] px-4 py-3 text-fog/80";
+      return "rounded-2xl border border-signal-blue/14 bg-signal-blue/[0.04] px-4 py-3 text-fog/82";
     }
 
-    return "rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3 text-fog/68";
+    return "rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3 text-fog/68";
   }
 
   function roleLabel(message: TranscriptMessage) {
@@ -73,15 +73,15 @@
   }
 
   function activityTone(item: ActivityItem) {
-    if (item.status === "complete") return "border-misty-green/16 bg-misty-green/[0.06]";
-    if (item.status === "queued") return "border-amber-300/16 bg-amber-300/[0.055]";
-    return "border-signal-blue/16 bg-signal-blue/[0.055]";
+    if (item.status === "queued") return "border-signal-blue/14 bg-signal-blue/[0.045]";
+    if (item.status === "complete") return "border-white/8 bg-white/[0.03]";
+    return "border-white/6 bg-white/[0.02]";
   }
 
   function sourceTone(source: "agent" | "browser") {
     return source === "browser"
       ? "bg-signal-blue/[0.08] text-signal-blue"
-      : "bg-white/[0.045] text-fog/58";
+      : "bg-white/[0.04] text-fog/54";
   }
 
   function interleaveActivity(
@@ -113,28 +113,28 @@
   let visibleActivity = $derived(interleaveActivity(session.activity, browserActivity));
 </script>
 
-<section class="flex min-h-0 flex-1 flex-col bg-[#111418]">
-  <div class="border-b border-white/8 px-6 py-3">
+<section class="flex min-h-0 flex-1 flex-col bg-obsidian">
+  <div class="border-b border-white/6 px-6 py-3">
     <div class="mx-auto flex w-full max-w-[760px] items-center justify-between gap-4">
       <div class="min-w-0">
-        <div class="truncate text-[0.88rem] font-medium text-soft-ivory">
+        <div class="truncate type-heading-4 text-soft-ivory">
           {session.id} <span class="text-fog/36">{session.branch}</span>
         </div>
-        <div class="mt-1 truncate text-[0.78rem] text-fog/42">{session.title}</div>
+        <div class="mt-1 type-body-4 truncate text-fog/42">{session.title}</div>
       </div>
 
       <div class="flex shrink-0 items-center gap-2">
-        <span class="rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[0.68rem] text-fog/56">
+        <span class="rounded-md border border-white/6 bg-white/[0.025] px-2.5 py-1 text-[11px] text-fog/52">
           {selectedProviderLabel}
         </span>
-        <span class="rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[0.68rem] text-fog/56">
+        <span class="rounded-md border border-white/6 bg-white/[0.025] px-2.5 py-1 text-[11px] text-fog/52">
           {selectedModel}
         </span>
-        <span class="rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[0.68rem] text-fog/56">
+        <span class="rounded-md border border-white/6 bg-white/[0.025] px-2.5 py-1 text-[11px] text-fog/52">
           {selectedPermission}
         </span>
-        <Button label="Browser" variant="ghost" height="h-9" onclick={onOpenBrowserInspector} />
-        <Button label="Settings" variant="outline" height="h-9" onclick={onRefreshRuntime} />
+        <Button label="Browser" variant="ghost" height="h-8" onclick={onOpenBrowserInspector} />
+        <Button label="Settings" variant="ghost" height="h-8" onclick={onRefreshRuntime} />
       </div>
     </div>
   </div>
@@ -143,21 +143,21 @@
     <div class="mx-auto flex w-full max-w-[760px] flex-col gap-5 px-6 py-8">
       {#if visibleActivity.length}
         <section>
-          <div class="mb-3 text-[0.72rem] uppercase tracking-[0.16em] text-fog/34">Agent activity</div>
+          <div class="mb-3 type-label text-fog/34">Agent activity</div>
           <div class="space-y-2">
             {#each visibleActivity as item}
-              <article class={`rounded-lg border px-3 py-3 ${activityTone(item)}`}>
+              <article class={`rounded-xl border px-3 py-3 ${activityTone(item)}`}>
                 <div class="flex items-start justify-between gap-3">
                   <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
-                      <div class="text-[0.78rem] font-medium text-soft-ivory">{item.label}</div>
-                      <span class={`rounded-md px-2 py-0.5 text-[0.66rem] ${sourceTone(item.source)}`}>
+                      <div class="type-heading-4 text-soft-ivory">{item.label}</div>
+                      <span class={`rounded-md px-2 py-0.5 text-[11px] ${sourceTone(item.source)}`}>
                         {item.source}
                       </span>
                     </div>
-                    <div class="mt-1 text-[0.86rem] leading-6 text-fog/72">{item.summary}</div>
+                    <div class="mt-1 type-body-4 text-fog/72">{item.summary}</div>
                   </div>
-                  <div class="shrink-0 text-[0.68rem] text-fog/34">{item.timestamp}</div>
+                  <div class="shrink-0 type-body-5 text-fog/34">{item.timestamp}</div>
                 </div>
               </article>
             {/each}
@@ -168,39 +168,39 @@
       <div class="space-y-5">
         {#each session.transcript as message}
           <article class={messageStyle(message)}>
-            <div class="mb-2 text-[0.7rem] uppercase tracking-[0.14em] text-fog/34">
+            <div class="mb-2 type-label text-fog/34">
               {roleLabel(message)}
             </div>
             {#if message.role !== "assistant"}
-              <div class="text-[0.9rem] font-medium text-soft-ivory">{message.title}</div>
+              <div class="type-heading-4 text-soft-ivory">{message.title}</div>
             {/if}
-            <div class={`text-[0.96rem] leading-8 ${message.role === "assistant" ? "text-fog/88" : "mt-2"}`}>
+            <div class={`type-body-3 ${message.role === "assistant" ? "text-fog/88" : "mt-2 text-fog/82"}`}>
               {message.body}
             </div>
-            <div class="mt-3 text-[0.72rem] text-fog/36">{message.meta}</div>
+            <div class="mt-3 type-body-5 text-fog/36">{message.meta}</div>
           </article>
         {/each}
       </div>
     </div>
   </div>
 
-  <div class="border-t border-white/8 bg-[#12171d]">
+  <div class="border-t border-white/6 bg-deep-charcoal">
     <div class="mx-auto flex w-full max-w-[760px] flex-col gap-4 px-6 py-5">
-      <div class="rounded-xl border border-white/8 bg-[#171c22] p-2">
+      <div class="rounded-2xl border border-white/6 bg-dark-slate p-2">
         <textarea
-          class="min-h-28 w-full resize-none bg-transparent px-3 py-3 font-['SF_Mono','JetBrains_Mono','IBM_Plex_Mono',Menlo,monospace] text-[0.92rem] leading-7 text-fog/86 outline-none"
+          class="type-body-3 min-h-28 w-full resize-none bg-transparent px-3 py-3 text-fog/88 outline-none placeholder:text-fog/34"
           value={composerText}
           placeholder="Ask Poro to edit code, inspect the repo, or use the browser when needed."
           oninput={(event) => onComposerInput((event.currentTarget as HTMLTextAreaElement).value)}
         ></textarea>
 
-        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-white/8 px-3 pt-3">
-          <div class="text-[0.8rem] text-fog/46">{runtimeStatusLine}</div>
+        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-white/6 px-3 pt-3">
+          <div class="type-body-5 text-fog/46">{runtimeStatusLine}</div>
           <div class="flex flex-wrap gap-2">
             <Button
               label="Model"
               variant="outline"
-              height="h-9"
+              height="h-8"
               onclick={() =>
                 onSelectModel(
                   modelOptions[(modelOptions.indexOf(selectedModel) + 1) % modelOptions.length] ??
@@ -210,7 +210,7 @@
             <Button
               label="Permission"
               variant="outline"
-              height="h-9"
+              height="h-8"
               onclick={() =>
                 onSelectPermission(
                   permissionModes[
@@ -222,13 +222,13 @@
               label={runtimeBusy ? "Working..." : runtimeActive ? "Send" : "Launch + Send"}
               variant="gold"
               disabled={runtimeBusy || !composerText.trim()}
-              height="h-9"
+              height="h-8"
               onclick={onSubmitPrompt}
             />
             <Button
               label={runtimeActive ? "Stop" : "Refresh"}
               variant="ghost"
-              height="h-9"
+              height="h-8"
               onclick={runtimeActive ? onStopRuntime : onRefreshRuntime}
             />
           </div>
