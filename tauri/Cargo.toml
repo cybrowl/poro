@@ -5,6 +5,10 @@ description = "Desktop shell for the Poro AI coding workspace"
 authors = ["Poro"]
 edition = "2021"
 
+[workspace]
+members = ["crates/agent-browser"]
+resolver = "2"
+
 [lib]
 name = "poro_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]

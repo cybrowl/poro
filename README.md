@@ -27,6 +27,7 @@ Poro is the app shell. Harness is the coding runtime.
 - `poro` owns the desktop experience, settings, workspace management, session surfaces, and runtime event presentation
 - `harness` owns the controller, tool execution, verification, mission state, and provider integrations
 - the Tauri layer talks to `harness-server` and syncs session snapshots into the UI
+- `tauri/crates/agent-browser` is a vendored browser automation skeleton we can iterate on locally inside this repo
 
 Current integration assumes this sibling layout:
 
@@ -117,6 +118,7 @@ Notes:
 ```text
 src/ui/                     Svelte desktop UI
 tauri/                      Rust desktop bridge and native app shell
+tauri/crates/agent-browser  Vendored browser automation skeleton
 scripts/guard-private-assets.sh
 notes/                      Product and planning docs
 ```
