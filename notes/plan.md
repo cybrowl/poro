@@ -91,6 +91,22 @@ Exit criteria:
 3. Compress transcript noise and elevate the most important runtime actions.
 4. Strengthen the review surface for changed files and verification outcomes.
 5. Clean up remaining `claw` naming in the UI bridge and product copy.
+6. Tighten the desktop visual language so it feels closer to a serious editor than a stack of dashboards.
+
+### Current UI Audit
+
+The latest visual pass surfaced a few concrete problems we should keep using as a design checklist:
+
+- left rail hero copy is too large and wraps badly
+- main canvas duplicates too much session context and feels cramped
+- live action feed is too narrow, so labels and titles break awkwardly
+- pills and buttons are still too loud and bulky
+- browser inspector competes with the main work surface instead of supporting it
+- too many boxes and borders make the interface feel busy instead of sleek
+
+### Screenshot Analysis Note
+
+If DOM snapshots are not enough for judging the rendered UI, we can use screenshot analysis as a helper lane. A candidate to evaluate later is [Falcon-Perception](https://github.com/tiiuae/Falcon-Perception), mainly for OCR / screenshot understanding, not as a replacement for the browser sidecar or prompt-driven browser actions.
 
 ## 6. Things We Should Not Do Right Now
 

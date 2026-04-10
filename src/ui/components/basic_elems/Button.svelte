@@ -23,8 +23,8 @@
   }: Props = $props();
 
   const variants = {
-    dark: "border border-white/8 bg-graphite/90 text-soft-ivory hover:border-white/12 hover:bg-midnight-slate/70",
-    gold: "border border-signal-blue/40 bg-signal-blue text-[#061321] shadow-[0_0_0_1px_rgba(78,161,255,0.15)] hover:bg-signal-blue/92",
+    dark: "border border-white/8 bg-graphite/80 text-soft-ivory hover:border-white/12 hover:bg-midnight-slate/65",
+    gold: "border border-signal-blue/28 bg-signal-blue/90 text-[#061321] shadow-[0_0_0_1px_rgba(78,161,255,0.12)] hover:bg-signal-blue/84",
     ghost:
       "border border-transparent bg-white/4 text-fog hover:bg-white/8 hover:text-soft-ivory",
     outline:
@@ -32,7 +32,7 @@
   };
 
   let buttonClasses = $derived(
-    `inline-flex items-center justify-center rounded-xl px-4 py-2 text-[0.78rem] font-medium uppercase tracking-[0.16em] transition-colors duration-150 focus:outline-none ${variants[variant] || variants.dark} ${width} ${height} ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${customClass}`
+    `inline-flex items-center justify-center rounded-md px-3.5 py-2 text-[0.8rem] font-medium tracking-[0.01em] transition-colors duration-150 focus:outline-none ${variants[variant] || variants.dark} ${width} ${height} ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${customClass}`
   );
 </script>
 

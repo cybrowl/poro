@@ -1181,7 +1181,7 @@
         onOpenSettings={() => (showSettings = true)}
       />
 
-      <section class="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <section class="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
         <TranscriptPanel
           session={selectedSession}
           browserActivity={browserActivity}
@@ -1216,7 +1216,6 @@
           statusLine={browserStatusLine}
           latestSnapshot={browserLatestSnapshot}
           latestPayload={browserLatestPayload}
-          activity={browserActivity}
           onBrowserUrlInput={setBrowserUrl}
           onToggleHeadless={toggleBrowserHeadless}
           onLaunchBrowser={launchBrowserOnly}

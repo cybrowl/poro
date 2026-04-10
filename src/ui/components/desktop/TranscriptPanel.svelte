@@ -124,10 +124,10 @@
 </script>
 
 <section
-  class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[18px] border border-white/8 bg-[#0d1117] shadow-[0_18px_60px_rgba(0,0,0,0.34)]"
+  class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[16px] border border-white/8 bg-[#0d1117] shadow-[0_18px_60px_rgba(0,0,0,0.34)]"
 >
-  <div class="border-b border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] px-4 py-4 sm:px-5">
-    <div class="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+  <div class="border-b border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] px-4 py-3 sm:px-5">
+    <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
       <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-2">
           <span class="rounded-md border border-signal-blue/22 bg-signal-blue/10 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-signal-blue">
@@ -136,31 +136,29 @@
           <span class="rounded-md border border-white/8 bg-white/4 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.2em] text-fog/52">
             {runtimeActive ? "runtime live" : "runtime idle"}
           </span>
+          <span class="rounded-md border border-white/8 bg-white/4 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.2em] text-fog/52">
+            {selectedProviderLabel}
+          </span>
         </div>
 
-        <h3 class="mt-3 text-[1.15rem] font-medium tracking-[-0.03em] text-soft-ivory sm:text-[1.32rem]">
-          {session.title}
-        </h3>
-        <div class="mt-2 flex flex-wrap gap-3 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-fog/42">
+        <div class="mt-3 flex flex-wrap gap-3 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-fog/42">
           <span>{session.status}</span>
           <span>{session.tokenUsage}</span>
           <span>{session.cost}</span>
-        </div>
-        <div class="mt-3 max-w-4xl text-sm leading-6 text-fog/70">
-          {session.goal}
+          <span class="truncate">{session.cwd}</span>
         </div>
       </div>
 
-      <div class="grid gap-4 xl:min-w-[420px] xl:grid-cols-2">
+      <div class="grid gap-3 xl:min-w-[440px] xl:grid-cols-2">
         <div>
-          <div class="mb-2 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-fog/42">
+          <div class="mb-2 font-mono text-[0.6rem] uppercase tracking-[0.24em] text-fog/38">
             Model
           </div>
           <div class="flex flex-wrap gap-2">
             {#each modelOptions as model}
               <button
                 type="button"
-                class={`rounded-md border px-3 py-2 font-mono text-[0.68rem] uppercase tracking-[0.18em] transition ${
+                class={`rounded-md border px-2.5 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.16em] transition ${
                   selectedModel === model
                     ? "border-signal-blue/35 bg-signal-blue/10 text-signal-blue"
                     : "border-white/10 bg-white/[0.035] text-fog/58 hover:border-white/16 hover:bg-white/[0.055]"
@@ -174,14 +172,14 @@
         </div>
 
         <div>
-          <div class="mb-2 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-fog/42">
+          <div class="mb-2 font-mono text-[0.6rem] uppercase tracking-[0.24em] text-fog/38">
             Permission
           </div>
           <div class="flex flex-wrap gap-2">
             {#each permissionModes as mode}
               <button
                 type="button"
-                class={`rounded-md border px-3 py-2 font-mono text-[0.68rem] uppercase tracking-[0.18em] transition ${
+                class={`rounded-md border px-2.5 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.16em] transition ${
                   selectedPermission === mode
                     ? mode === "danger-full-access"
                       ? "border-red-400/30 bg-red-400/10 text-red-200"
@@ -201,14 +199,14 @@
     </div>
   </div>
 
-  <div class="grid min-h-0 flex-1 gap-0 lg:grid-cols-[320px_minmax(0,1fr)]">
+  <div class="grid min-h-0 flex-1 gap-0 xl:grid-cols-[380px_minmax(0,1fr)]">
     <aside class="min-h-0 border-b border-white/8 bg-[#0a0d12] lg:border-b-0 lg:border-r">
       <div class="flex items-center justify-between border-b border-white/8 px-4 py-3 sm:px-5">
         <div>
           <div class="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-fog/40">
             Agent Feed
           </div>
-          <div class="mt-1 text-sm text-fog/64">Live actions, browser steps, and runtime updates.</div>
+          <div class="mt-1 text-sm text-fog/60">Live actions, browser steps, and verification updates.</div>
         </div>
         <div class="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fog/34">
           {visibleActivity.length}
@@ -219,12 +217,12 @@
         {#if visibleActivity.length}
           <div class="space-y-2">
             {#each visibleActivity as item}
-              <article class={`rounded-[12px] border px-3 py-3 ${activityStyle(item)}`}>
+              <article class={`rounded-[10px] border px-3 py-3 ${activityStyle(item)}`}>
                 <div class="flex items-start justify-between gap-3">
                   <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
                       <span class={`h-2 w-2 rounded-full ${activityDot(item.status)}`}></span>
-                      <div class="font-mono text-[0.64rem] uppercase tracking-[0.2em] text-fog/48">
+                      <div class="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fog/48">
                         {item.label}
                       </div>
                       <span class={`rounded-md border px-2 py-0.5 font-mono text-[0.56rem] uppercase tracking-[0.18em] ${sourceTone(item.source)}`}>
@@ -255,11 +253,11 @@
         </div>
       </div>
 
-      <div class="space-y-3 px-4 py-4 sm:px-5">
+      <div class="space-y-2 px-4 py-4 sm:px-5">
         {#each session.transcript as message}
-          <article class={`rounded-[12px] border p-4 ${messageStyle(message)}`}>
+          <article class={`rounded-[10px] border p-4 ${messageStyle(message)}`}>
             <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div class="min-w-0 md:max-w-[150px]">
+              <div class="min-w-0 md:max-w-[128px]">
                 <div class="font-mono text-[0.62rem] uppercase tracking-[0.26em] text-fog/42">
                   {roleLabel(message)}
                 </div>
@@ -301,7 +299,7 @@
       <label class="block">
         <span class="sr-only">Session prompt</span>
         <textarea
-          class="min-h-32 w-full resize-y rounded-[12px] border border-white/8 bg-[#0f141b] p-4 font-['SF_Mono','JetBrains_Mono','IBM_Plex_Mono',Menlo,monospace] text-[0.9rem] leading-7 text-fog/84 outline-none transition focus:border-signal-blue/35 focus:bg-[#111722] sm:p-5"
+          class="min-h-28 w-full resize-y rounded-[10px] border border-white/8 bg-[#0f141b] p-4 font-['SF_Mono','JetBrains_Mono','IBM_Plex_Mono',Menlo,monospace] text-[0.9rem] leading-7 text-fog/84 outline-none transition focus:border-signal-blue/35 focus:bg-[#111722] sm:p-5"
           value={composerText}
           placeholder="Describe the task you want Poro to run in this workspace."
           oninput={(event) => onComposerInput((event.currentTarget as HTMLTextAreaElement).value)}
@@ -317,19 +315,19 @@
           label={runtimeBusy ? "Working..." : runtimeActive ? "Send Prompt" : "Launch + Send"}
           variant="gold"
           disabled={runtimeBusy || !composerText.trim()}
-          height="h-11"
+          height="h-10"
           onclick={onSubmitPrompt}
         />
         <Button
           label={runtimeActive ? "Stop Runtime" : "Refresh Sessions"}
           variant="ghost"
-          height="h-11"
+          height="h-10"
           onclick={runtimeActive ? onStopRuntime : onRefreshRuntime}
         />
         <Button
           label="Inspect Runtime"
           variant="outline"
-          height="h-11"
+          height="h-10"
           onclick={onRefreshRuntime}
         />
       </div>

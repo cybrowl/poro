@@ -30,7 +30,7 @@
 </script>
 
 <aside
-  class="flex min-h-0 w-full shrink-0 flex-col rounded-[18px] border border-white/8 bg-[#0d1117] p-3 shadow-[0_24px_80px_rgba(0,0,0,0.42)] sm:p-4 lg:w-[318px]"
+  class="flex min-h-0 w-full shrink-0 flex-col rounded-[16px] border border-white/8 bg-[#0d1117] p-3 shadow-[0_24px_80px_rgba(0,0,0,0.42)] sm:p-4 lg:w-[292px]"
 >
   <div class="rounded-[14px] border border-white/8 bg-[#0a0d12] p-4">
     <div class="flex items-center justify-between gap-3">
@@ -45,12 +45,12 @@
       </span>
     </div>
 
-    <h1 class="mt-5 max-w-[16ch] text-[1.7rem] font-medium leading-[1.04] tracking-[-0.04em] text-soft-ivory sm:text-[1.95rem]">
-      Local coding sessions with an editor-like action feed.
+    <h1 class="mt-5 max-w-[14ch] text-[1.26rem] font-medium leading-[1.08] tracking-[-0.035em] text-soft-ivory sm:text-[1.42rem]">
+      Local-first agent workspace.
     </h1>
 
-    <p class="mt-3 max-w-[29ch] text-sm leading-6 text-fog/70">
-      Harness-backed sessions, calmer chrome, and just enough runtime detail to trust the agent without turning the app into a terminal.
+    <p class="mt-3 max-w-[28ch] text-sm leading-6 text-fog/66">
+      Coding sessions, browser actions, and review state in one calm editor shell.
     </p>
 
     <div class="mt-5 grid grid-cols-2 gap-2">
@@ -88,7 +88,7 @@
     {#each workspaces as workspace}
       <button
         type="button"
-        class={`w-full rounded-[12px] border p-4 text-left transition ${
+        class={`w-full rounded-[10px] border p-3 text-left transition ${
           workspace.id === selectedWorkspaceId
             ? "border-signal-blue/35 bg-signal-blue/10 shadow-[inset_0_0_0_1px_rgba(78,161,255,0.12)]"
             : "border-white/7 bg-white/[0.025] hover:border-white/12 hover:bg-white/[0.045]"
@@ -97,7 +97,7 @@
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <div class="truncate text-[0.96rem] font-medium text-soft-ivory">
+            <div class="truncate text-[0.92rem] font-medium text-soft-ivory">
               {workspace.name}
             </div>
             <div class="mt-1 font-mono text-[0.68rem] uppercase tracking-[0.2em] text-fog/45">
@@ -108,8 +108,8 @@
             {workspace.status}
           </span>
         </div>
-        <p class="mt-3 text-sm leading-6 text-fog/68">{workspace.summary}</p>
-        <div class="mt-3 truncate font-mono text-[0.7rem] text-fog/40">{workspace.path}</div>
+        <p class="mt-2 text-[0.84rem] leading-6 text-fog/64">{workspace.summary}</p>
+        <div class="mt-2 truncate font-mono text-[0.68rem] text-fog/38">{workspace.path}</div>
       </button>
     {/each}
   </div>
@@ -127,7 +127,7 @@
     {#each selectedWorkspace.sessions as session}
       <button
         type="button"
-        class={`w-full rounded-[12px] border px-4 py-3 text-left transition ${
+        class={`w-full rounded-[10px] border px-3 py-3 text-left transition ${
           session.id === selectedSessionId
             ? "border-white/14 bg-white/[0.065]"
             : "border-white/7 bg-white/[0.02] hover:border-white/12 hover:bg-white/[0.04]"
@@ -159,7 +159,7 @@
     {/each}
   </div>
 
-  <div class="mt-4 rounded-[12px] border border-white/8 bg-[#0a0d12] p-4">
+  <div class="mt-4 rounded-[10px] border border-white/8 bg-[#0a0d12] p-4">
     <div class="text-[0.66rem] uppercase tracking-[0.34em] text-fog/48">
       Runtime Stack
     </div>
@@ -174,9 +174,5 @@
         gemma4
       </span>
     </div>
-    <p class="mt-3 text-sm leading-6 text-fog/66">
-      The sidebar now behaves more like an editor rail: quick switching,
-      compact context, and persistent workspace state.
-    </p>
   </div>
 </aside>

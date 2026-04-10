@@ -20,9 +20,9 @@
 </script>
 
 <section
-  class="rounded-[18px] border border-white/8 bg-[#0d1117] px-4 py-4 shadow-[0_18px_60px_rgba(0,0,0,0.3)] sm:px-5 sm:py-4"
+  class="rounded-[16px] border border-white/8 bg-[#0d1117] px-4 py-3 shadow-[0_18px_60px_rgba(0,0,0,0.3)] sm:px-5"
 >
-  <div class="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+  <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
     <div class="min-w-0">
       <div class="flex flex-wrap items-center gap-2">
         <span class="rounded-md border border-signal-blue/24 bg-signal-blue/10 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-signal-blue">
@@ -36,8 +36,8 @@
         </span>
       </div>
 
-      <div class="mt-4 flex flex-wrap items-center gap-3">
-        <h2 class="min-w-0 text-[1.55rem] font-medium leading-none tracking-[-0.04em] text-soft-ivory sm:text-[1.85rem]">
+      <div class="mt-3 flex flex-wrap items-center gap-3">
+        <h2 class="min-w-0 text-[1.28rem] font-medium leading-none tracking-[-0.035em] text-soft-ivory sm:text-[1.45rem]">
           {session.title}
         </h2>
         <span
@@ -53,7 +53,7 @@
         </span>
       </div>
 
-      <p class="mt-3 max-w-4xl text-sm leading-7 text-fog/72">{session.goal}</p>
+      <p class="mt-2 max-w-3xl text-sm leading-6 text-fog/68">{session.goal}</p>
     </div>
 
     <div class="flex min-w-0 flex-col gap-3 xl:items-end">
