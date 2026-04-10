@@ -2,7 +2,9 @@ use std::collections::{hash_map::DefaultHasher, HashMap, HashSet};
 use std::env;
 use std::fs;
 use std::hash::{Hash, Hasher};
+use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
+use std::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
@@ -18,6 +20,7 @@ use tauri::{AppHandle, Emitter, Manager, State};
 use uuid::Uuid;
 
 const CLAW_RUNTIME_EVENT: &str = "claw-runtime";
+const BROWSER_RUNTIME_EVENT: &str = "browser-runtime";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -212,6 +215,85 @@ struct RuntimeManager {
     runtimes: Arc<Mutex<HashMap<String, RuntimeHandle>>>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct BrowserLaunchRequest {
+    browser_path: Option<String>,
+    session: Option<String>,
+    headless: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BrowserRuntimeLaunch {
+    runtime_id: String,
+    session: String,
+    browser_path: String,
+    headless: bool,
+    message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct BrowserCommandRequest {
+    runtime_id: String,
+    command: Vec<String>,
+    session: Option<String>,
+    request_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct BrowserCommandResult {
+    id: Option<String>,
+    session: String,
+    success: bool,
+    action: Option<String>,
+    data: Option<serde_json::Value>,
+    error: Option<String>,
+    warning: Option<String>,
+    error_type: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
+enum BrowserRuntimeEventPayload {
+    Started {
+        launch: BrowserRuntimeLaunch,
+    },
+    Output {
+        runtime_id: String,
+        line: String,
+        stream: String,
+    },
+    Response {
+        runtime_id: String,
+        response: BrowserCommandResult,
+    },
+    Stopped {
+        runtime_id: String,
+        code: Option<i32>,
+        message: String,
+    },
+    Error {
+        runtime_id: String,
+        message: String,
+    },
+}
+
+struct BrowserRuntimeProcess {
+    child: Child,
+    stdin: ChildStdin,
+    stdout: BufReader<ChildStdout>,
+    session: String,
+    browser_path: PathBuf,
+}
+
+#[derive(Clone, Default)]
+struct BrowserRuntimeManager {
+    runtimes: Arc<Mutex<HashMap<String, Arc<Mutex<BrowserRuntimeProcess>>>>>,
+}
+
 #[derive(Debug, Deserialize)]
 struct OllamaVersionResponse {
     version: String,
@@ -377,6 +459,10 @@ fn emit_runtime_event(app: &AppHandle, payload: RuntimeEventPayload) {
     let _ = app.emit(CLAW_RUNTIME_EVENT, payload);
 }
 
+fn emit_browser_runtime_event(app: &AppHandle, payload: BrowserRuntimeEventPayload) {
+    let _ = app.emit(BROWSER_RUNTIME_EVENT, payload);
+}
+
 fn format_relative_timestamp(epoch_secs: u64) -> String {
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -409,6 +495,131 @@ fn default_backend_path_value() -> String {
         .unwrap_or_else(|| PathBuf::from("harness-server"))
         .display()
         .to_string()
+}
+
+fn default_browser_session_value() -> String {
+    format!("poro-{}", Uuid::new_v4().simple())
+}
+
+#[cfg(windows)]
+fn agent_browser_binary_name() -> &'static str {
+    "agent-browser.exe"
+}
+
+#[cfg(not(windows))]
+fn agent_browser_binary_name() -> &'static str {
+    "agent-browser"
+}
+
+fn agent_browser_target_profiles() -> [&'static str; 2] {
+    if cfg!(debug_assertions) {
+        ["debug", "release"]
+    } else {
+        ["release", "debug"]
+    }
+}
+
+fn tauri_manifest_dir() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+}
+
+fn tauri_manifest_path() -> PathBuf {
+    tauri_manifest_dir().join("Cargo.toml")
+}
+
+fn resolve_common_agent_browser_paths() -> Vec<PathBuf> {
+    let root = tauri_manifest_dir();
+    agent_browser_target_profiles()
+        .into_iter()
+        .map(|profile| {
+            root.join("target")
+                .join(profile)
+                .join(agent_browser_binary_name())
+        })
+        .collect()
+}
+
+fn resolve_agent_browser_path(requested_path: Option<&str>) -> Option<PathBuf> {
+    if let Some(value) = requested_path {
+        let trimmed = value.trim();
+        if !trimmed.is_empty() {
+            let explicit = PathBuf::from(trimmed);
+            if explicit.components().count() > 1 || explicit.is_absolute() {
+                return Some(explicit);
+            }
+
+            return resolve_executable_on_path(trimmed).or(Some(explicit));
+        }
+    }
+
+    if let Ok(value) = env::var("PORO_AGENT_BROWSER_BIN") {
+        let trimmed = value.trim();
+        if !trimmed.is_empty() {
+            return Some(PathBuf::from(trimmed));
+        }
+    }
+
+    resolve_common_agent_browser_paths()
+        .into_iter()
+        .find(|candidate| candidate.exists())
+        .or_else(|| resolve_executable_on_path("agent-browser"))
+}
+
+fn build_vendored_agent_browser() -> Result<PathBuf, String> {
+    let manifest_path = tauri_manifest_path();
+    let mut command = Command::new("cargo");
+    command
+        .arg("build")
+        .arg("--manifest-path")
+        .arg(&manifest_path)
+        .arg("-p")
+        .arg("agent-browser")
+        .current_dir(tauri_manifest_dir());
+
+    if !cfg!(debug_assertions) {
+        command.arg("--release");
+    }
+
+    let status = command
+        .status()
+        .map_err(|error| format!("Failed to build vendored agent-browser: {error}"))?;
+    if !status.success() {
+        return Err(
+            "Cargo could not build the vendored `agent-browser` binary for the desktop runtime."
+                .to_string(),
+        );
+    }
+
+    resolve_common_agent_browser_paths()
+        .into_iter()
+        .find(|candidate| candidate.exists() && is_executable(candidate))
+        .ok_or_else(|| {
+            "The vendored `agent-browser` binary finished building, but Poro could not find the executable."
+                .to_string()
+        })
+}
+
+fn ensure_agent_browser_path(requested_path: Option<&str>) -> Result<PathBuf, String> {
+    if let Some(candidate) = resolve_agent_browser_path(requested_path) {
+        if candidate.exists() && is_executable(&candidate) {
+            return Ok(candidate);
+        }
+
+        if requested_path
+            .map(|value| !value.trim().is_empty())
+            .unwrap_or(false)
+            || env::var("PORO_AGENT_BROWSER_BIN")
+                .map(|value| !value.trim().is_empty())
+                .unwrap_or(false)
+        {
+            return Err(format!(
+                "Poro found an `agent-browser` path at `{}`, but it is missing or not executable.",
+                candidate.display()
+            ));
+        }
+    }
+
+    build_vendored_agent_browser()
 }
 
 fn resolve_backend_path(requested_path: &str) -> Option<PathBuf> {
@@ -792,22 +1003,18 @@ fn transcript_from_record(record: &SessionRecord) -> Vec<ClawTranscriptMessage> 
                 })
             }
             EventPayload::VerificationFinished {
-                command,
-                success,
-                ..
-            } => {
-                transcript.push(ClawTranscriptMessage {
-                    id,
-                    role: "system".to_string(),
-                    title: if *success {
-                        "Verification passed".to_string()
-                    } else {
-                        "Verification failed".to_string()
-                    },
-                    body: command.clone(),
-                    meta: "Verification".to_string(),
-                })
-            }
+                command, success, ..
+            } => transcript.push(ClawTranscriptMessage {
+                id,
+                role: "system".to_string(),
+                title: if *success {
+                    "Verification passed".to_string()
+                } else {
+                    "Verification failed".to_string()
+                },
+                body: command.clone(),
+                meta: "Verification".to_string(),
+            }),
             EventPayload::CritiqueStarted { .. } => {}
             EventPayload::CritiqueFinished { .. } => {}
             EventPayload::ProgressUpdated { .. } => {}
@@ -921,9 +1128,7 @@ fn activity_from_record(record: &SessionRecord) -> Vec<ClawActivityItem> {
                 timestamp,
             }),
             EventPayload::VerificationFinished {
-                command,
-                success,
-                ..
+                command, success, ..
             } => Some(ClawActivityItem {
                 id,
                 label: if *success {
@@ -1134,9 +1339,7 @@ fn map_event_to_output_line(event: &HarnessRuntimeEvent) -> Option<(String, Stri
             "stdout".to_string(),
         )),
         EventPayload::VerificationFinished {
-            command,
-            success,
-            ..
+            command, success, ..
         } => Some((
             if *success {
                 format!("Verification passed: {command}")
@@ -1200,6 +1403,62 @@ fn emit_batch_events(app: &AppHandle, runtime_id: &str, events: &[HarnessRuntime
             );
         }
     }
+}
+
+fn spawn_browser_stderr_thread(app: AppHandle, runtime_id: String, stderr: ChildStderr) {
+    thread::spawn(move || {
+        let reader = BufReader::new(stderr);
+        for line in reader.lines().map_while(Result::ok) {
+            if line.trim().is_empty() {
+                continue;
+            }
+
+            emit_browser_runtime_event(
+                &app,
+                BrowserRuntimeEventPayload::Output {
+                    runtime_id: runtime_id.clone(),
+                    line,
+                    stream: "stderr".to_string(),
+                },
+            );
+        }
+    });
+}
+
+fn send_browser_stdio_request(
+    runtime: &mut BrowserRuntimeProcess,
+    command: Vec<String>,
+    session: Option<String>,
+    request_id: Option<String>,
+) -> Result<BrowserCommandResult, String> {
+    let request = serde_json::json!({
+        "id": request_id.unwrap_or_else(|| Uuid::new_v4().to_string()),
+        "command": command,
+        "session": session,
+    });
+    let payload = serde_json::to_string(&request).map_err(|error| error.to_string())?;
+    writeln!(runtime.stdin, "{payload}").map_err(|error| error.to_string())?;
+    runtime.stdin.flush().map_err(|error| error.to_string())?;
+
+    let mut line = String::new();
+    let bytes_read = runtime
+        .stdout
+        .read_line(&mut line)
+        .map_err(|error| error.to_string())?;
+    if bytes_read == 0 {
+        let status = runtime
+            .child
+            .try_wait()
+            .map_err(|error| error.to_string())?
+            .and_then(|status| status.code());
+        return Err(match status {
+            Some(code) => format!("agent-browser exited before responding (code {code})."),
+            None => "agent-browser closed its stdio stream before responding.".to_string(),
+        });
+    }
+
+    serde_json::from_str::<BrowserCommandResult>(line.trim())
+        .map_err(|error| format!("Invalid JSON response from agent-browser: {error}"))
 }
 
 #[tauri::command]
@@ -1600,10 +1859,177 @@ fn stop_claw_runtime(
     Ok(())
 }
 
+#[tauri::command]
+fn start_browser_runtime(
+    app: AppHandle,
+    manager: State<'_, BrowserRuntimeManager>,
+    request: BrowserLaunchRequest,
+) -> Result<BrowserRuntimeLaunch, String> {
+    let browser_path = ensure_agent_browser_path(request.browser_path.as_deref())?;
+    let session = request
+        .session
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(default_browser_session_value);
+    let headless = request.headless.unwrap_or(true);
+    let runtime_id = Uuid::new_v4().to_string();
+
+    let mut command = Command::new(&browser_path);
+    command.arg("--session").arg(&session);
+    if headless {
+        command.arg("--headless");
+    }
+    command
+        .arg("stdio")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+
+    let mut child = command
+        .spawn()
+        .map_err(|error| format!("Could not start agent-browser: {error}"))?;
+    let stdin = child
+        .stdin
+        .take()
+        .ok_or_else(|| "Poro could not capture agent-browser stdin.".to_string())?;
+    let stdout = child
+        .stdout
+        .take()
+        .ok_or_else(|| "Poro could not capture agent-browser stdout.".to_string())?;
+    if let Some(stderr) = child.stderr.take() {
+        spawn_browser_stderr_thread(app.clone(), runtime_id.clone(), stderr);
+    }
+
+    let process = BrowserRuntimeProcess {
+        child,
+        stdin,
+        stdout: BufReader::new(stdout),
+        session: session.clone(),
+        browser_path: browser_path.clone(),
+    };
+    manager
+        .runtimes
+        .lock()
+        .map_err(|error| error.to_string())?
+        .insert(runtime_id.clone(), Arc::new(Mutex::new(process)));
+
+    let launch = BrowserRuntimeLaunch {
+        runtime_id: runtime_id.clone(),
+        session,
+        browser_path: browser_path.display().to_string(),
+        headless,
+        message: "Browser runtime is ready in stdio mode.".to_string(),
+    };
+
+    emit_browser_runtime_event(
+        &app,
+        BrowserRuntimeEventPayload::Started {
+            launch: launch.clone(),
+        },
+    );
+
+    Ok(launch)
+}
+
+#[tauri::command]
+fn send_browser_command(
+    app: AppHandle,
+    manager: State<'_, BrowserRuntimeManager>,
+    request: BrowserCommandRequest,
+) -> Result<BrowserCommandResult, String> {
+    if request.command.is_empty() {
+        return Err("Browser command requests need a non-empty command array.".to_string());
+    }
+
+    let runtime = {
+        let runtimes = manager.runtimes.lock().map_err(|error| error.to_string())?;
+        runtimes
+            .get(&request.runtime_id)
+            .cloned()
+            .ok_or_else(|| format!("Browser runtime `{}` is not active.", request.runtime_id))?
+    };
+
+    let runtime_id = request.runtime_id.clone();
+    let response = {
+        let mut runtime = runtime.lock().map_err(|error| error.to_string())?;
+        send_browser_stdio_request(
+            &mut runtime,
+            request.command,
+            request.session.clone(),
+            request.request_id,
+        )
+    };
+
+    let response = match response {
+        Ok(response) => response,
+        Err(error) => {
+            emit_browser_runtime_event(
+                &app,
+                BrowserRuntimeEventPayload::Error {
+                    runtime_id,
+                    message: error.clone(),
+                },
+            );
+            return Err(error);
+        }
+    };
+
+    emit_browser_runtime_event(
+        &app,
+        BrowserRuntimeEventPayload::Response {
+            runtime_id: request.runtime_id,
+            response: response.clone(),
+        },
+    );
+
+    Ok(response)
+}
+
+#[tauri::command]
+fn stop_browser_runtime(
+    app: AppHandle,
+    manager: State<'_, BrowserRuntimeManager>,
+    runtime_id: String,
+) -> Result<(), String> {
+    let runtime = {
+        let mut runtimes = manager.runtimes.lock().map_err(|error| error.to_string())?;
+        runtimes
+            .remove(&runtime_id)
+            .ok_or_else(|| format!("Browser runtime `{runtime_id}` is not active."))?
+    };
+
+    let (session, browser_path, code) = {
+        let mut runtime = runtime.lock().map_err(|error| error.to_string())?;
+        let session = runtime.session.clone();
+        let browser_path = runtime.browser_path.display().to_string();
+
+        let _ = send_browser_stdio_request(&mut runtime, vec!["close".to_string()], None, None);
+        let _ = runtime.child.kill();
+        let code = runtime
+            .child
+            .wait()
+            .map_err(|error| error.to_string())?
+            .code();
+        (session, browser_path, code)
+    };
+
+    emit_browser_runtime_event(
+        &app,
+        BrowserRuntimeEventPayload::Stopped {
+            runtime_id,
+            code,
+            message: format!("Browser runtime for `{session}` stopped ({browser_path})."),
+        },
+    );
+
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .manage(RuntimeManager::default())
+        .manage(BrowserRuntimeManager::default())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             load_desktop_settings,
@@ -1613,7 +2039,10 @@ pub fn run() {
             load_claw_session,
             start_claw_runtime,
             send_claw_input,
-            stop_claw_runtime
+            stop_claw_runtime,
+            start_browser_runtime,
+            send_browser_command,
+            stop_browser_runtime
         ])
         .run(tauri::generate_context!())
         .expect("error while running Poro desktop");
