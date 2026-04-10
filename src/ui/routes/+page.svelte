@@ -1,10 +1,19 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import BrowserPanel from "$components/desktop/BrowserPanel.svelte";
   import SessionHeader from "$components/desktop/SessionHeader.svelte";
   import SettingsSheet from "$components/desktop/SettingsSheet.svelte";
   import Sidebar from "$components/desktop/Sidebar.svelte";
   import TranscriptPanel from "$components/desktop/TranscriptPanel.svelte";
   import WorkspacePickerModal from "$components/desktop/WorkspacePickerModal.svelte";
+  import {
+    listenToBrowserRuntimeEvents,
+    sendBrowserCommand,
+    startBrowserRuntime,
+    stopBrowserRuntime,
+    type BrowserRuntimeEvent,
+    type BrowserRuntimeLaunch,
+  } from "$lib/browserRuntime";
   import {
     checkClawBackend,
     listenToClawRuntimeEvents,
@@ -68,6 +77,15 @@
   let activeRuntimeByWorkspace = $state<Record<string, RuntimeLaunch>>({});
   let runtimeWorkspaceById = $state<Record<string, string>>({});
   let turnInFlightByWorkspace = $state<Record<string, boolean>>({});
+  let browserUrlByWorkspace = $state<Record<string, string>>({});
+  let browserFeedByWorkspace = $state<Record<string, ActivityItem[]>>({});
+  let activeBrowserByWorkspace = $state<Record<string, BrowserRuntimeLaunch>>({});
+  let browserWorkspaceById = $state<Record<string, string>>({});
+  let browserBusyByWorkspace = $state<Record<string, boolean>>({});
+  let browserHeadlessByWorkspace = $state<Record<string, boolean>>({});
+  let browserLatestSnapshotByWorkspace = $state<Record<string, string>>({});
+  let browserLatestPayloadByWorkspace = $state<Record<string, string>>({});
+  let browserErrorByWorkspace = $state<Record<string, string | null>>({});
 
   let selectedWorkspace = $derived(
     workspaceList.find((workspace) => workspace.id === selectedWorkspaceId) ?? workspaceList[0]
@@ -84,6 +102,19 @@
   );
   let selectedRuntime = $derived(activeRuntimeByWorkspace[selectedWorkspace.path] ?? null);
   let runtimeBusy = $derived(turnInFlightByWorkspace[selectedWorkspace.path] ?? false);
+  let selectedBrowserRuntime = $derived(activeBrowserByWorkspace[selectedWorkspace.path] ?? null);
+  let browserBusy = $derived(browserBusyByWorkspace[selectedWorkspace.path] ?? false);
+  let browserUrl = $derived(
+    browserUrlByWorkspace[selectedWorkspace.path] ?? "https://example.com"
+  );
+  let browserHeadless = $derived(browserHeadlessByWorkspace[selectedWorkspace.path] ?? false);
+  let browserActivity = $derived(browserFeedByWorkspace[selectedWorkspace.path] ?? []);
+  let browserLatestSnapshot = $derived(
+    browserLatestSnapshotByWorkspace[selectedWorkspace.path] ?? ""
+  );
+  let browserLatestPayload = $derived(
+    browserLatestPayloadByWorkspace[selectedWorkspace.path] ?? ""
+  );
   let runtimeStatusLine = $derived(
     runtimeError ??
       (runtimeBusy
@@ -98,9 +129,21 @@
         : backendHealth?.message ??
           "Launch a Harness runtime to begin working in this workspace.")
   );
+  let browserStatusLine = $derived(
+    browserErrorByWorkspace[selectedWorkspace.path] ??
+      (browserBusy
+        ? "Brave is handling the current browser command now. The panel will update as soon as the browser sidecar responds."
+        : null) ??
+      (selectedBrowserRuntime
+        ? selectedBrowserRuntime.headless
+          ? `Connected to the browser sidecar in headless mode for ${selectedWorkspace.name}.`
+          : `Connected to a visible Brave session for ${selectedWorkspace.name}.`
+        : "Launch Brave to inspect a page, capture snapshots, and validate the browser sidecar path inside Poro.")
+  );
 
   onMount(() => {
     let stopListening = () => {};
+    let stopBrowserListening = () => {};
 
     void (async () => {
       desktopReady = isDesktopEnvironment();
@@ -113,6 +156,9 @@
         stopListening = await listenToClawRuntimeEvents((event) => {
           void handleRuntimeEvent(event);
         });
+        stopBrowserListening = await listenToBrowserRuntimeEvents((event) => {
+          void handleBrowserRuntimeEvent(event);
+        });
       }
 
       await refreshSelectedWorkspace();
@@ -120,6 +166,7 @@
 
     return () => {
       stopListening();
+      stopBrowserListening();
     };
   });
 
@@ -484,6 +531,27 @@
     };
   }
 
+  function pushBrowserFeed(
+    workspacePath: string,
+    label: string,
+    summary: string,
+    status: ActivityItem["status"] = "active",
+    timestamp = "Now"
+  ) {
+    const nextItem: ActivityItem = {
+      id: `${workspacePath}-browser-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+      label,
+      status,
+      summary,
+      timestamp,
+    };
+
+    browserFeedByWorkspace = {
+      ...browserFeedByWorkspace,
+      [workspacePath]: [nextItem, ...(browserFeedByWorkspace[workspacePath] ?? [])].slice(0, 8),
+    };
+  }
+
   async function selectWorkspace(id: string) {
     const workspace = workspaceList.find((item) => item.id === id);
     if (!workspace) return;
@@ -638,6 +706,183 @@
 
   function truncatePrompt(value: string) {
     return value.length > 200 ? `${value.slice(0, 200)}…` : value;
+  }
+
+  function formatBrowserPayload(value: unknown) {
+    return JSON.stringify(value, null, 2);
+  }
+
+  function setBrowserUrl(value: string) {
+    browserUrlByWorkspace = {
+      ...browserUrlByWorkspace,
+      [selectedWorkspace.path]: value,
+    };
+  }
+
+  function toggleBrowserHeadless() {
+    browserHeadlessByWorkspace = {
+      ...browserHeadlessByWorkspace,
+      [selectedWorkspace.path]: !browserHeadless,
+    };
+  }
+
+  async function ensureBrowserRuntime() {
+    if (!desktopReady) {
+      throw new Error("Browser runtime launch is available only inside the desktop build.");
+    }
+
+    const existing = activeBrowserByWorkspace[selectedWorkspace.path];
+    if (existing) {
+      return existing;
+    }
+
+    const launch = await startBrowserRuntime({
+      session: `poro-${selectedWorkspace.id}`,
+      headless: browserHeadless,
+    });
+
+    activeBrowserByWorkspace = {
+      ...activeBrowserByWorkspace,
+      [selectedWorkspace.path]: launch,
+    };
+    browserWorkspaceById = {
+      ...browserWorkspaceById,
+      [launch.runtimeId]: selectedWorkspace.path,
+    };
+    browserErrorByWorkspace = {
+      ...browserErrorByWorkspace,
+      [selectedWorkspace.path]: null,
+    };
+    pushBrowserFeed(selectedWorkspace.path, "Browser launched", launch.message, "complete");
+
+    return launch;
+  }
+
+  async function launchBrowserOnly() {
+    browserBusyByWorkspace = {
+      ...browserBusyByWorkspace,
+      [selectedWorkspace.path]: true,
+    };
+    browserErrorByWorkspace = {
+      ...browserErrorByWorkspace,
+      [selectedWorkspace.path]: null,
+    };
+
+    try {
+      await ensureBrowserRuntime();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      browserErrorByWorkspace = {
+        ...browserErrorByWorkspace,
+        [selectedWorkspace.path]: message,
+      };
+    } finally {
+      browserBusyByWorkspace = {
+        ...browserBusyByWorkspace,
+        [selectedWorkspace.path]: false,
+      };
+    }
+  }
+
+  async function runBrowserCommand(command: string[]) {
+    const runtime = await ensureBrowserRuntime();
+    const response = await sendBrowserCommand({
+      runtimeId: runtime.runtimeId,
+      command,
+    });
+
+    if (!response.success) {
+      throw new Error(response.error ?? "Browser command failed.");
+    }
+
+    return response;
+  }
+
+  async function openAndSnapshotBrowser() {
+    const url = browserUrl.trim();
+    if (!url) {
+      return;
+    }
+
+    browserBusyByWorkspace = {
+      ...browserBusyByWorkspace,
+      [selectedWorkspace.path]: true,
+    };
+    browserErrorByWorkspace = {
+      ...browserErrorByWorkspace,
+      [selectedWorkspace.path]: null,
+    };
+
+    try {
+      await runBrowserCommand(["open", url]);
+      await runBrowserCommand(["snapshot", "-i"]);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      browserErrorByWorkspace = {
+        ...browserErrorByWorkspace,
+        [selectedWorkspace.path]: message,
+      };
+    } finally {
+      browserBusyByWorkspace = {
+        ...browserBusyByWorkspace,
+        [selectedWorkspace.path]: false,
+      };
+    }
+  }
+
+  async function snapshotBrowser() {
+    browserBusyByWorkspace = {
+      ...browserBusyByWorkspace,
+      [selectedWorkspace.path]: true,
+    };
+    browserErrorByWorkspace = {
+      ...browserErrorByWorkspace,
+      [selectedWorkspace.path]: null,
+    };
+
+    try {
+      await runBrowserCommand(["snapshot", "-i"]);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      browserErrorByWorkspace = {
+        ...browserErrorByWorkspace,
+        [selectedWorkspace.path]: message,
+      };
+    } finally {
+      browserBusyByWorkspace = {
+        ...browserBusyByWorkspace,
+        [selectedWorkspace.path]: false,
+      };
+    }
+  }
+
+  async function stopSelectedBrowser() {
+    if (!selectedBrowserRuntime) {
+      return;
+    }
+
+    browserBusyByWorkspace = {
+      ...browserBusyByWorkspace,
+      [selectedWorkspace.path]: true,
+    };
+    browserErrorByWorkspace = {
+      ...browserErrorByWorkspace,
+      [selectedWorkspace.path]: null,
+    };
+
+    try {
+      await stopBrowserRuntime(selectedBrowserRuntime.runtimeId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      browserErrorByWorkspace = {
+        ...browserErrorByWorkspace,
+        [selectedWorkspace.path]: message,
+      };
+      browserBusyByWorkspace = {
+        ...browserBusyByWorkspace,
+        [selectedWorkspace.path]: false,
+      };
+    }
   }
 
   async function handleRuntimeEvent(event: RuntimeEvent) {
@@ -800,6 +1045,110 @@
       }
     }
   }
+
+  async function handleBrowserRuntimeEvent(event: BrowserRuntimeEvent) {
+    if (event.type === "started") {
+      return;
+    }
+
+    if (event.type === "output") {
+      const workspacePath = browserWorkspaceById[event.runtimeId];
+      if (workspacePath) {
+        pushBrowserFeed(
+          workspacePath,
+          event.stream === "stderr" ? "Browser stderr" : "Browser output",
+          event.line,
+          event.stream === "stderr" ? "queued" : "active"
+        );
+      }
+      return;
+    }
+
+    if (event.type === "response") {
+      const workspacePath = browserWorkspaceById[event.runtimeId];
+      if (!workspacePath) {
+        return;
+      }
+
+      browserLatestPayloadByWorkspace = {
+        ...browserLatestPayloadByWorkspace,
+        [workspacePath]: formatBrowserPayload(event.response),
+      };
+
+      if (
+        event.response.action === "snapshot" &&
+        typeof event.response.data?.snapshot === "string"
+      ) {
+        browserLatestSnapshotByWorkspace = {
+          ...browserLatestSnapshotByWorkspace,
+          [workspacePath]: event.response.data.snapshot,
+        };
+      }
+
+      pushBrowserFeed(
+        workspacePath,
+        event.response.success
+          ? event.response.action === "snapshot"
+            ? "Snapshot captured"
+            : `Browser ${event.response.action ?? "response"}`
+          : "Browser command failed",
+        event.response.success
+          ? event.response.action === "snapshot"
+            ? "Captured the current page accessibility snapshot."
+            : `Completed ${event.response.action ?? "the browser command"} successfully.`
+          : event.response.error ?? "Browser command failed.",
+        event.response.success ? "complete" : "queued"
+      );
+
+      browserBusyByWorkspace = {
+        ...browserBusyByWorkspace,
+        [workspacePath]: false,
+      };
+
+      if (event.response.success) {
+        browserErrorByWorkspace = {
+          ...browserErrorByWorkspace,
+          [workspacePath]: null,
+        };
+      }
+      return;
+    }
+
+    if (event.type === "stopped") {
+      const workspacePath = browserWorkspaceById[event.runtimeId];
+      if (workspacePath) {
+        pushBrowserFeed(workspacePath, "Browser stopped", event.message, "complete");
+        browserBusyByWorkspace = {
+          ...browserBusyByWorkspace,
+          [workspacePath]: false,
+        };
+
+        const nextActive = { ...activeBrowserByWorkspace };
+        delete nextActive[workspacePath];
+        activeBrowserByWorkspace = nextActive;
+
+        const nextWorkspaceById = { ...browserWorkspaceById };
+        delete nextWorkspaceById[event.runtimeId];
+        browserWorkspaceById = nextWorkspaceById;
+      }
+      return;
+    }
+
+    if (event.type === "error") {
+      const workspacePath = browserWorkspaceById[event.runtimeId];
+      if (workspacePath) {
+        browserErrorByWorkspace = {
+          ...browserErrorByWorkspace,
+          [workspacePath]: event.message,
+        };
+        browserBusyByWorkspace = {
+          ...browserBusyByWorkspace,
+          [workspacePath]: false,
+        };
+        pushBrowserFeed(workspacePath, "Browser error", event.message, "queued");
+      }
+    }
+  }
 </script>
 
 <svelte:head>
@@ -832,7 +1181,7 @@
         onOpenSettings={() => (showSettings = true)}
       />
 
-      <section class="flex min-h-0 flex-1">
+      <section class="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(0,1fr)_380px]">
         <TranscriptPanel
           session={selectedSession}
           selectedProviderLabel={activeProviderLabel}
@@ -850,6 +1199,29 @@
           onSubmitPrompt={submitPrompt}
           onStopRuntime={stopSelectedRuntime}
           onRefreshRuntime={refreshSelectedWorkspace}
+        />
+        <BrowserPanel
+          {browserUrl}
+          runtimeActive={!!selectedBrowserRuntime}
+          runtimeBusy={browserBusy}
+          headless={browserHeadless}
+          runtimeInfo={selectedBrowserRuntime
+            ? {
+                session: selectedBrowserRuntime.session,
+                browserPath: selectedBrowserRuntime.browserPath,
+                headless: selectedBrowserRuntime.headless,
+              }
+            : null}
+          statusLine={browserStatusLine}
+          latestSnapshot={browserLatestSnapshot}
+          latestPayload={browserLatestPayload}
+          activity={browserActivity}
+          onBrowserUrlInput={setBrowserUrl}
+          onToggleHeadless={toggleBrowserHeadless}
+          onLaunchBrowser={launchBrowserOnly}
+          onOpenAndSnapshot={openAndSnapshotBrowser}
+          onSnapshotBrowser={snapshotBrowser}
+          onStopBrowser={stopSelectedBrowser}
         />
       </section>
     </main>
