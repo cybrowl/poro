@@ -555,20 +555,20 @@ pub fn find_chrome() -> Option<PathBuf> {
     if cache_dir.exists() {
         let _ = writeln!(
             std::io::stderr(),
-            "Warning: Chrome cache directory exists ({}) but no Chrome binary found inside. \
-             Falling back to system Chrome. Run `agent-browser install` to re-download.",
+            "Warning: Chrome cache directory exists ({}) but no browser binary found inside. \
+             Falling back to the preferred system Chromium browser. Run `agent-browser install` to re-download.",
             cache_dir.display()
         );
     }
 
-    // 2. Check system-installed Chrome
+    // 2. Check system-installed Chromium-family browsers, preferring Brave.
     #[cfg(target_os = "macos")]
     {
         let candidates = [
+            "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
             "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
             "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
             "/Applications/Chromium.app/Contents/MacOS/Chromium",
-            "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
         ];
         for c in &candidates {
             let p = PathBuf::from(c);
@@ -581,12 +581,12 @@ pub fn find_chrome() -> Option<PathBuf> {
     #[cfg(target_os = "linux")]
     {
         let candidates = [
+            "brave-browser",
+            "brave-browser-stable",
             "google-chrome",
             "google-chrome-stable",
             "chromium-browser",
             "chromium",
-            "brave-browser",
-            "brave-browser-stable",
         ];
         for name in &candidates {
             if let Ok(output) = Command::new("which").arg(name).output() {
@@ -603,18 +603,20 @@ pub fn find_chrome() -> Option<PathBuf> {
     #[cfg(target_os = "windows")]
     {
         let candidates = [
+            r"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe",
+            r"C:\Program Files (x86)\BraveSoftware\Brave-Browser\Application\brave.exe",
             r"C:\Program Files\Google\Chrome\Application\chrome.exe",
             r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
         ];
         if let Ok(local) = std::env::var("LOCALAPPDATA") {
-            let chrome = PathBuf::from(&local).join(r"Google\Chrome\Application\chrome.exe");
-            if chrome.exists() {
-                return Some(chrome);
-            }
             let brave =
                 PathBuf::from(&local).join(r"BraveSoftware\Brave-Browser\Application\brave.exe");
             if brave.exists() {
                 return Some(brave);
+            }
+            let chrome = PathBuf::from(&local).join(r"Google\Chrome\Application\chrome.exe");
+            if chrome.exists() {
+                return Some(chrome);
             }
         }
         for c in &candidates {
@@ -698,10 +700,10 @@ pub fn get_chrome_user_data_dirs() -> Vec<PathBuf> {
         if let Some(home) = dirs::home_dir() {
             let base = home.join("Library/Application Support");
             for name in [
+                "BraveSoftware/Brave-Browser",
                 "Google/Chrome",
                 "Google/Chrome Canary",
                 "Chromium",
-                "BraveSoftware/Brave-Browser",
             ] {
                 dirs.push(base.join(name));
             }
@@ -713,10 +715,10 @@ pub fn get_chrome_user_data_dirs() -> Vec<PathBuf> {
         if let Some(home) = dirs::home_dir() {
             let config = home.join(".config");
             for name in [
+                "BraveSoftware/Brave-Browser",
                 "google-chrome",
                 "google-chrome-unstable",
                 "chromium",
-                "BraveSoftware/Brave-Browser",
             ] {
                 dirs.push(config.join(name));
             }
@@ -728,10 +730,10 @@ pub fn get_chrome_user_data_dirs() -> Vec<PathBuf> {
         if let Ok(local) = std::env::var("LOCALAPPDATA") {
             let base = PathBuf::from(local);
             for name in [
+                r"BraveSoftware\Brave-Browser\User Data",
                 r"Google\Chrome\User Data",
                 r"Google\Chrome SxS\User Data",
                 r"Chromium\User Data",
-                r"BraveSoftware\Brave-Browser\User Data",
             ] {
                 dirs.push(base.join(name));
             }
