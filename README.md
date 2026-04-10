@@ -1,66 +1,157 @@
 # Poro
 
-**A local-first desktop AI coding workspace.**
+**A local-first desktop coding workspace for Harness-backed AI sessions.**
 
-Poro is being rebuilt as an open-source desktop interface for agentic coding. The product focus is no longer crypto payments, chat subscriptions, or hosted inference. The new direction is a calm, beautiful UI for working with local or bring-your-own-provider backends such as `claw-code`.
+Poro is a SvelteKit + Tauri desktop app for running coding sessions against a local or bring-your-own-provider Harness runtime. The current product is focused on a calm desktop UI, visible runtime state, and a clean bridge between the app and the private sibling `harness` repo.
 
-### Current Focus
-- Desktop-first Svelte + Tauri shell
-- Local-first `claw-code` runtime integration
-- Ollama + Gemma 4 as the default no-API-key path
-- Reusable visual primitives from the original Poro design language
+## Current State
 
-### Repo Status
-This repository has been cleaned up to remove the old ICP/chat/payment implementation so it can serve as the base for the new desktop app.
+Poro is no longer the old ICP/chat/payment product. The repo now reflects the desktop coding app direction:
 
-### Quick Start
+- Tauri desktop shell with a Svelte 5 frontend
+- local-first default flow with Ollama + Gemma 4
+- optional hosted providers through the sibling Harness runtime
+- session transcript, runtime activity, settings, workspace picker, and diff-oriented workspace surfaces
+- privacy guardrails to avoid accidentally committing local Harness artifacts
+
+Today, the real product loop is:
+
+- Poro desktop UI
+- sibling `harness-server` runtime
+- local Ollama by default, or optional hosted providers such as xAI / Grok and Anthropic
+
+## Architecture
+
+Poro is the app shell. Harness is the coding runtime.
+
+- `poro` owns the desktop experience, settings, workspace management, session surfaces, and runtime event presentation
+- `harness` owns the controller, tool execution, verification, mission state, and provider integrations
+- the Tauri layer talks to `harness-server` and syncs session snapshots into the UI
+
+Current integration assumes this sibling layout:
+
+```text
+/Users/.../Repos/
+  poro/
+  harness/
+```
+
+## Quick Start
+
+Install dependencies:
 
 ```bash
 npm install
+```
+
+If you want the UI shell only:
+
+```bash
 npm run dev
 ```
 
-Open `http://localhost:5173` to view the current UI shell.
+That starts the Svelte frontend on `http://localhost:5173`.
 
-### Local-First Desktop Flow
+If you want the real desktop app:
 
-Poro is being shaped around this default stack:
+```bash
+npm run tauri
+```
 
-- Poro UI
-- `claw` runtime
-- Ollama local server
-- `gemma4` model in Ollama
+That command also builds the sibling `harness-server` first from `../harness`.
 
-To use the desktop app without a hosted API key:
+## Local Desktop Setup
+
+The default local stack is:
+
+- Poro
+- `harness-server`
+- Ollama on `http://127.0.0.1:11434`
+- `gemma4:e2b`
+
+To use the default local path:
 
 ```bash
 ollama pull gemma4:e2b
+npm run tauri
 ```
 
-Make sure your `claw` binary is installed or built locally, then run:
+Inside the app, keep:
+
+- provider: `Ollama Local`
+- model: `gemma4:e2b`
+- permission: `workspace-write`
+
+By default, Poro expects the backend path to resolve to `harness-server`.
+
+## Hosted Providers
+
+Poro can also launch sessions through the sibling Harness runtime using hosted providers.
+
+Current UI/provider wiring supports:
+
+- `Ollama Local`
+- `xAI / Grok`
+- `Anthropic`
+
+Provider credentials are handled by Harness, not by the Svelte UI itself.
+
+## Useful Commands
 
 ```bash
-npm run tauri:dev
+npm run dev
+npm run check
+npm run tauri
+npm run tauri:build
+npm run guard:private
 ```
 
-Inside Poro, leave the provider on `Ollama Local`, keep the model on `gemma4:e2b`, and point the backend path at `claw` or your local `claw` binary path.
+Notes:
 
-### Project Structure
+- `npm run check` runs the Svelte/type-check pass
+- `npm run tauri` and `npm run tauri:build` build the sibling Harness server first
+- `npm run guard:private` checks staged changes for private local artifacts and obvious secret material
+
+## Repo Layout
+
+```text
+src/ui/                     Svelte desktop UI
+tauri/                      Rust desktop bridge and native app shell
+scripts/guard-private-assets.sh
+notes/                      Product and planning docs
 ```
-notes/             # Product, business, integration, and MVP planning docs
-src/ui/            # SvelteKit frontend foundation for the desktop app
-```
 
-### Notes
-- `notes/spec.md`: product definition
-- `notes/market.md`: business and monetization direction
-- `notes/integration.md`: `claw-code` and desktop integration approach
-- `notes/plan.md`: MVP build order and next steps
+Key files:
 
-### Community
+- [`src/ui/routes/+page.svelte`](src/ui/routes/+page.svelte) — main desktop workspace
+- [`src/ui/lib/desktop.ts`](src/ui/lib/desktop.ts) — desktop defaults and settings helpers
+- [`src/ui/lib/clawRuntime.ts`](src/ui/lib/clawRuntime.ts) — frontend bridge for runtime calls and events
+- [`tauri/src/lib.rs`](tauri/src/lib.rs) — native runtime integration
+
+## Privacy and Security
+
+This repo intentionally keeps the real Harness implementation in a separate sibling repo.
+
+Poro currently includes:
+
+- ignore rules for local Harness artifacts
+- a staged-change guard to catch obvious private files and API-key-shaped strings
+- a cleaner public Git history that removes accidentally included private project material
+
+Important practical note:
+
+- keeping the private runtime in a sibling repo is good hygiene
+- shipping a local app is still not the same as server-side secrecy
+- the long-term path for stronger IP protection is a stricter sidecar boundary or a hosted private backend
+
+## Notes
+
+- [`notes/spec.md`](notes/spec.md)
+- [`notes/market.md`](notes/market.md)
+- [`notes/integration.md`](notes/integration.md)
+- [`notes/plan.md`](notes/plan.md)
+
+## Community
+
 - X: [@poro_app](https://x.com/poro_app)
 - GitHub: [cybrowl/poro](https://github.com/cybrowl/poro)
-
----
-
-**Built as a local-first UI for AI coding workflows**
