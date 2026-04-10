@@ -1,102 +1,226 @@
-# Poro Business Plan (Realistic Version – March 2026)
+# Poro Business and Monetization Notes
 
-## Executive Summary
-Poro is a privacy-first AI access platform built on the Internet Computer (ICP). It provides a single unified API for LLMs and image models with **on-chain subscription management, rate limiting, payments in USDC, and user authentication** — all handled in Rust canisters.
+**Version**: April 2026  
+**Product**: Poro Desktop
 
-The product targets two groups:
-- **Unbanked and low-income users** (1.4 billion globally) who cannot use traditional $20/month AI subscriptions.
-- **Web3 developers** who want privacy-preserving, on-chain AI integration.
+## 1. Executive Summary
 
-Core offering: **$4.20/month in USDC** for generous access to open-source models (Llama 3.1, Mistral, DeepSeek, etc.) plus limited queries to frontier models. Everything else (payments, rate limits, usage tracking) runs fully on-chain.
+Poro is an open-source desktop AI coding workspace built around a local-first UI and a bring-your-own-provider model.
 
-**Architecture**: Hybrid — fast off-chain inference via trusted proxies + on-chain control layer on ICP. This is the only practical model that delivers both speed and true decentralization today.
+The product focus is not model hosting. The product focus is the **experience of working with an AI coding agent**:
 
-We are in early MVP stage. The core subscription canister is built and deployed. The project is open-source on GitHub.
+- clearer visibility
+- better session flow
+- stronger diff awareness
+- calmer interface design
+- lower cost of entry than premium seat-priced tools
 
-**Conservative projections**:
-- Year 1: 3,000–5,000 paying users → **$80K–$150K ARR**
-- Year 2: 15,000–20,000 users → **$400K–$600K ARR**
-- Year 3: 40,000+ users → **$1M+ ARR**
+Poro uses `claw-code` as the runtime layer for tool use and agent execution. Poro's value is the desktop experience built around that capability.
 
-Gross margins are high (~85–90%) because inference costs are passed through and ICP cycles are cheap. The business is capital-efficient and has a clear path to profitability.
+## 2. Positioning
 
-## Market Opportunity
-The broader AI API market is large (~$44B in 2026), but the **decentralized/privacy-first segment** that Poro targets is still emerging — estimated at **$150–250M** in 2026 and growing at ~25% CAGR.
+Poro should be positioned as:
 
-Key drivers:
-- Rising demand for AI without credit cards (especially in emerging markets).
-- Growing privacy concerns and regulatory pressure.
-- Web3 developers needing on-chain AI for agents, DeFi, and DAOs.
+- a local-first AI coding workspace
+- an open-source desktop alternative to terminal-heavy agent tools
+- a more affordable path for users who already have API keys or local models
 
-Poro’s differentiation:
-- Extremely low price ($4.20 vs $20 average).
-- True on-chain payments and rate limiting (no centralized database).
-- Open-source core canister.
-- Borderless USDC access.
+Poro should **not** be positioned as:
 
-## Product & Architecture
-**Current MVP**:
-- Rust canister handling subscriptions, rate limiting, usage tracking, and Internet Identity auth.
-- Simple unified proxy endpoint for inference.
-- Basic SvelteKit frontend.
+- a model company
+- a crypto product
+- a generic chat interface
+- a direct "cheap clone" of a premium competitor
 
-**Hybrid model** (the realistic choice):
-- Inference runs off-chain through secure proxies (fast + cost-effective).
-- All business logic (payments, limits, auth) stays on-chain on ICP.
+## 3. Why This Can Work
 
-Future additions (Q3–Q4 2026):
-- On-chain smart agents.
-- Basic ZK prompt privacy.
-- Mobile-first onboarding for emerging markets.
+The opportunity is not "we built the smartest agent."
 
-## Go-to-Market Strategy (Realistic)
-**Phase 1 (Months 1–4)**: ICP community launch
-- Target existing ICP users and developers.
-- Free tier + referral program.
-- Goal: 1,000–2,000 users.
+The opportunity is:
 
-**Phase 2 (Months 5–9)**: Emerging market focus
-- Marketing via Telegram bots, local crypto communities, and X in Latin America, Africa, and Southeast Asia.
-- Partnerships with ICP wallets and USDC on-ramps.
-- Goal: Reach 5,000 paying users.
+- many users want the workflow, not the bundled subscription
+- many users already have provider access or want to use cheaper models
+- many users do not want to live in a terminal
+- trust matters more when a coding tool can read and change local files
 
-**Phase 3 (Month 10+)**: Developer & enterprise push
-- SDK for on-chain agents.
-- Paid acquisition in Web3 AI communities.
+An open-source, design-forward desktop app can win on:
 
-**Customer Acquisition Cost (CAC)**: Expected $8–15 per user in early stages (mostly organic + community).
+- trust
+- taste
+- transparency
+- flexibility
+- affordability
 
-## Financial Projections (Conservative)
-**Pricing**:
-- Free tier: Limited testing.
-- Poro Basic: $4.20/month (main product).
-- Poro Pro: $9.90/month (higher limits + priority support).
+## 4. Core Business Model
 
-**Revenue & Growth** (realistic):
-- End of Year 1: 4,000 paying users → ~$100K ARR
-- End of Year 2: 18,000 users → ~$450K ARR
-- End of Year 3: 45,000 users → ~$1.1M ARR
+### Phase 1
 
-**Gross Margin**: 85–90% (inference costs passed through, low ICP cycle costs, ~1% payment fees).
+Open-source core app plus official paid distribution.
 
-**Break-even**: Expected in late Year 2 with disciplined spending.
+Model:
 
-**Funding needs**: Bootstrap possible for first 12 months. Seed round of $500K–$750K would accelerate marketing and agent development.
+- source code remains public
+- self-build remains free
+- official signed and notarized desktop builds are paid
 
-## Risks & Mitigations
-- **Slow user adoption**: Focus first on ICP community (warm audience).
-- **Inference costs**: Strict rate limits + open-source model priority.
-- **Competition**: Differentiate on price, privacy, and on-chain integration.
-- **Regulatory**: Minimal data storage + USDC focus keeps compliance light.
-- **Technical**: Start simple, add ZK/agents only after product-market fit.
+Users are paying for:
 
-## Roadmap
-- **Q2 2026**: Public beta launch + basic unified API.
-- **Q3 2026**: Smart agent SDK + mobile wallet improvements.
-- **Q4 2026**: First 10,000 users + profitability path clear.
-- **2027**: Multi-model routing + enterprise features.
+- convenience
+- trust
+- polish
+- release quality
+- onboarding
+- support
 
-## Conclusion
-Poro is a focused, capital-efficient product that solves a real pain point: affordable, private AI access for people and developers who are currently locked out.
+### Phase 2
 
-The hybrid architecture is realistic, the price point is memorable, and the on-chain foundation gives us a defensible moat. With disciplined execution, this can become a profitable, meaningful business in the decentralized AI space.
+Optional paid cloud conveniences.
+
+Examples:
+
+- sync across devices
+- encrypted backup of sessions
+- workspace settings sync
+- searchable cloud history
+- shared team workspaces
+
+This is a stronger recurring revenue model than charging for local-only features.
+
+## 5. Recommended Pricing
+
+### Initial launch
+
+Recommended path:
+
+- free alpha and private beta builds for early users
+- paid stable release once the product is clearly useful
+
+Suggested pricing for the official app:
+
+- **$29-$49 one-time**
+
+Potential update policy:
+
+- includes the current version and 12 months of updates
+- later major versions can be paid upgrades
+
+### Later paid plans
+
+Only add subscriptions when there is real hosted value.
+
+Examples:
+
+- **Poro Sync**: cloud backup and sync
+- **Poro Team**: shared workspaces and collaboration
+
+## 6. Distribution Strategy
+
+### Primary
+
+Direct download from the Poro website.
+
+Requirements:
+
+- signed macOS app
+- notarized distribution
+- polished install flow
+- clear release notes
+
+### Secondary
+
+- GitHub releases for community visibility
+- Setapp after the app is polished enough
+
+### Not first
+
+Mac App Store should not be the default launch plan. Terminal access, local tool execution, and file-heavy workflows make App Sandbox constraints a poor fit for the first release.
+
+## 7. Revenue Logic
+
+Poro should monetize where users naturally expect to pay:
+
+- official binaries
+- convenience
+- reliability
+- sync and storage
+- support
+
+Poro should avoid building the business around:
+
+- locking basic local UI features
+- gating cosmetic-only features behind accounts
+- forcing subscriptions before hosted value exists
+
+## 8. Launch Strategy
+
+### Phase 1: Build in public
+
+- document the product direction clearly
+- share design progress
+- show the app working on real repos
+- collect feedback from developers who already use AI tools heavily
+
+### Phase 2: Closed beta
+
+- onboard a small set of daily users
+- validate the core workflow
+- improve stability and review UX
+
+### Phase 3: Public launch
+
+- release public source
+- sell official binaries
+- publish product walkthroughs and comparisons
+
+## 9. Risks
+
+### 9.1 Over-dependence on the runtime
+
+If the UI is too tightly coupled to `claw-code` internals, Poro may be harder to evolve.
+
+Mitigation:
+
+- keep an adapter boundary
+- make the runtime integration replaceable over time
+
+### 9.2 Weak monetization if everything is purely local
+
+If there are no paid convenience layers, revenue may depend only on goodwill.
+
+Mitigation:
+
+- sell official builds first
+- design optional hosted sync later
+
+### 9.3 Trust concerns
+
+Users may hesitate to install a local tool that can run commands and edit files.
+
+Mitigation:
+
+- keep source public
+- make permission state obvious
+- keep the UI transparent about actions and diffs
+
+### 9.4 Support burden
+
+Local developer tools can generate support complexity because user environments differ.
+
+Mitigation:
+
+- build a strong setup flow
+- add health checks
+- keep provider configuration clear and visible
+
+## 10. Business Goal For The First Release
+
+The first release does not need to maximize revenue.
+
+It needs to prove that:
+
+- developers want this UI
+- they can do real work through it
+- they trust it enough to use it repeatedly
+- enough of them prefer the official app over self-building
+
+If those are true, the monetization surface gets much stronger later.

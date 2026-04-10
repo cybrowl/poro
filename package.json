@@ -5,45 +5,31 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build:css": "tailwindcss -i src/ui/app.css -o src/ui/assets/output.css --minify",
     "build": "vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "type-check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check": "npm run type-check"
+    "check": "npm run type-check",
+    "harness:build": "cargo build -p harness-server --manifest-path ../harness/Cargo.toml",
+    "tauri": "npm run harness:build && tauri dev -c ./tauri/tauri.conf.json",
+    "tauri:dev": "npm run harness:build && tauri dev -c ./tauri/tauri.conf.json",
+    "tauri:build": "npm run harness:build && tauri build -c ./tauri/tauri.conf.json"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "@sveltejs/adapter-auto": "^6.0.1",
-    "@sveltejs/adapter-static": "^3.0.8",
-    "@sveltejs/kit": "^2.16.0",
-    "@sveltejs/vite-plugin-svelte": "^6.1.0",
-    "@tailwindcss/vite": "^4.1.11",
-    "@types/express": "^5.0.6",
+    "@sveltejs/adapter-static": "^3.0.10",
+    "@sveltejs/kit": "^2.57.0",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "@tailwindcss/vite": "^4.2.2",
+    "@tauri-apps/cli": "^2.0.0",
     "@types/node": "^25.5.0",
-    "autoprefixer": "^10.4.21",
-    "eslint-plugin-svelte": "^3.11.0",
-    "postcss": "^8.5.6",
-    "svelte": "^5.37.2",
+    "svelte": "^5.55.2",
     "svelte-check": "^4.4.5",
-    "svelte-preprocess": "^6.0.3",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
-    "vite": "^7.0.6"
+    "vite": "^8.0.8"
   },
   "dependencies": {
-    "@icp-sdk/auth": "^5.0.0",
-    "@icp-sdk/core": "^5.0.0",
-    "@tiptap/core": "^3.20.1",
-    "@tiptap/markdown": "^3.20.1",
-    "@tiptap/starter-kit": "^3.20.1",
-    "diff": "^8.0.3",
-    "isomorphic-dompurify": "^3.3.0",
-    "rehype-stringify": "^10.0.1",
-    "remark-gfm": "^4.0.1",
-    "remark-parse": "^11.0.0",
-    "remark-rehype": "^11.1.2",
-    "shiki": "^4.0.2",
-    "unified": "^11.0.5"
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-dialog": "^2.7.0"
   }
 }

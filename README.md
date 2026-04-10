@@ -1,81 +1,61 @@
 # Poro
 
-**Privacy-first, borderless AI access on the Internet Computer.**
+**A local-first desktop AI coding workspace.**
 
-Pay once with USDC — get fast, private access to open-source LLMs and image models without credit cards or centralized tracking.
+Poro is being rebuilt as an open-source desktop interface for agentic coding. The product focus is no longer crypto payments, chat subscriptions, or hosted inference. The new direction is a calm, beautiful UI for working with local or bring-your-own-provider backends such as `claw-code`.
 
-### Why Poro?
-- **$4.20/month** — affordable for everyone, especially the unbanked.
-- **True privacy** — on-chain subscriptions, rate limiting, and authentication. Prompts never touch a centralized database.
-- **Hybrid speed** — fast off-chain inference + fully on-chain control layer (payments, usage, agents).
-- **Built on ICP** — Internet Identity login, USDC payments, and persistent storage that scales to 500 GiB in a single canister.
-- **Open source** — core canister and frontend are public.
+### Current Focus
+- Desktop-first Svelte + Tauri shell
+- Local-first `claw-code` runtime integration
+- Ollama + Gemma 4 as the default no-API-key path
+- Reusable visual primitives from the original Poro design language
 
-### Current Status (March 2026)
-- **User Canister** — live in Motoko (`persistent actor` + `mo:core/Map`) with full subscription management, daily rate limiting, and usage tracking.
-- **Frontend** — SvelteKit + TypeScript with Carta-powered Markdown editor (click anywhere to focus).
-- **AI Proxy** — working unified endpoint (Hyperbolic + future multi-model routing).
-- **Wallet UI** — visual guide for ckUSDC flows and components ready.
-
-### Features
-- Internet Identity login
-- $4.20/month USDC subscription (ckUSDC)
-- Free tier + paid tier with automatic daily reset
-- On-chain rate limiting
-- Unified API for multiple LLMs
-- Privacy-focused chat interface
-- Open-source core canister
+### Repo Status
+This repository has been cleaned up to remove the old ICP/chat/payment implementation so it can serve as the base for the new desktop app.
 
 ### Quick Start
 
 ```bash
-# Clone the repo
-git clone https://github.com/cybrowl/poro.git
-cd poro
-
-# Install dependencies
 npm install
-mops install   # for Motoko core
-
-# Start local replica (PocketIC)
-dfx start --clean --background
-
-# Deploy canisters
-dfx deploy
-
-# Start frontend
 npm run dev
 ```
 
-Open `http://localhost:5173` to try the editor.
+Open `http://localhost:5173` to view the current UI shell.
+
+### Local-First Desktop Flow
+
+Poro is being shaped around this default stack:
+
+- Poro UI
+- `claw` runtime
+- Ollama local server
+- `gemma4` model in Ollama
+
+To use the desktop app without a hosted API key:
+
+```bash
+ollama pull gemma4:e2b
+```
+
+Make sure your `claw` binary is installed or built locally, then run:
+
+```bash
+npm run tauri:dev
+```
+
+Inside Poro, leave the provider on `Ollama Local`, keep the model on `gemma4:e2b`, and point the backend path at `claw` or your local `claw` binary path.
 
 ### Project Structure
 ```
-src/
-├── user/          # Motoko canister (subscriptions + rate limiting)
-├── ui/            # SvelteKit + TypeScript frontend
-└── ai_vercel/     # Proxy endpoint for inference
+notes/             # Product, business, integration, and MVP planning docs
+src/ui/            # SvelteKit frontend foundation for the desktop app
 ```
 
-### Roadmap
-**Q2 2026**
-- Public beta with unified API
-- Real ckUSDC ICRC-2 payment integration
-- Basic on-chain agent support
-
-**Q3 2026**
-- ZK prompt privacy layer
-- Mobile-first wallet onboarding
-- Multi-model routing + fallback
-
-**Q4 2026**
-- Smart agent SDK for developers
-- Emerging market push
-
-### Contributing
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) (coming soon).
-
-The core canister is the heart of the project — improvements there have the biggest impact.
+### Notes
+- `notes/spec.md`: product definition
+- `notes/market.md`: business and monetization direction
+- `notes/integration.md`: `claw-code` and desktop integration approach
+- `notes/plan.md`: MVP build order and next steps
 
 ### Community
 - X: [@poro_app](https://x.com/poro_app)
@@ -83,4 +63,4 @@ The core canister is the heart of the project — improvements there have the bi
 
 ---
 
-**Built with ❤️ on the Internet Computer**
+**Built as a local-first UI for AI coding workflows**

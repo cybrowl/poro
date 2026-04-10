@@ -1,12 +1,91 @@
 @import "tailwindcss";
 
 @theme {
-  --color-deep-charcoal: #0c0c0d;
-  --color-dark-slate: #111113;
-  --color-graphite: #313135;
-  --color-carbon-black: #161618;
-  --color-midnight-slate: #44444b;
-  --color-marigold: #daa520;
-  --color-silver-mist: #aaaaaf;
-  --color-misty-green: #86f977;
+  --color-obsidian: #090c11;
+  --color-deep-charcoal: #0b1017;
+  --color-dark-slate: #0f151d;
+  --color-carbon-black: #131a23;
+  --color-graphite: #1b2430;
+  --color-midnight-slate: #2a3647;
+  --color-steel: #60708a;
+  --color-silver-mist: #8f9db2;
+  --color-fog: #aeb9c9;
+  --color-soft-ivory: #edf3ff;
+  --color-marigold: #4ea1ff;
+  --color-misty-green: #6dd5a3;
+  --color-signal-blue: #4ea1ff;
+  --color-signal-blue-deep: #1c6cdd;
+  --color-warning-amber: #f3c16b;
+}
+
+html,
+body {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top center, rgb(78 161 255 / 0.12), transparent 28%),
+    radial-gradient(circle at 20% 0%, rgb(109 213 163 / 0.08), transparent 22%),
+    linear-gradient(180deg, #090c11 0%, #0b1017 18%, #0e141c 100%);
+  color: var(--color-soft-ivory);
+}
+
+body {
+  margin: 0;
+  font-family:
+    "SF Pro Display", "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgb(78 161 255 / 0.28);
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgb(174 185 201 / 0.16);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(174 185 201 / 0.24);
+  background-clip: padding-box;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.018) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.32), transparent 72%);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+textarea,
+input {
+  caret-color: var(--color-signal-blue);
 }
