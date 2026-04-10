@@ -4,149 +4,149 @@
 
 ## 1. Core Integration Decision
 
-Poro should use `claw-code` as the execution engine.
+Poro should use the sibling `harness` repo as the execution engine.
 
 Poro should **not** rebuild:
 
+- mission control
 - provider routing
 - tool execution
 - permission handling
+- verification logic
 - session storage
-- prompt execution semantics
 
 The desktop app should focus on orchestration, presentation, and UX.
 
-## 2. Why `claw-code`
+## 2. Current Integration Shape
 
-`claw-code` already provides:
+The current local development shape is:
 
-- prompt mode
-- interactive sessions
-- session resume
-- permission modes
-- provider routing
-- OpenAI-compatible endpoints
-- local model support
+```text
+poro/
+harness/
+```
 
-This makes it a strong backend layer for a UI-first product.
+Poro currently:
 
-## 3. Integration Strategy
+- builds `harness-server` from `../harness`
+- launches it from the Tauri layer
+- uses Harness session storage and runtime events
+- syncs session snapshots into the UI after each turn
+
+This is the right shape for now because it keeps the real controller in Harness while letting the app move quickly.
+
+## 3. Responsibilities
 
 ### 3.1 Poro responsibilities
 
 Poro should handle:
 
 - workspace selection
-- binary discovery and setup UX
-- environment configuration guidance
-- session launch and supervision
-- live presentation of transcript and events
-- diff and review experience
-- recent workspaces and local app preferences
+- local app settings
+- first-run setup guidance
+- backend health check UX
+- launch/stop session commands
+- session list and resume flow
+- transcript presentation
+- runtime activity presentation
+- review and diff presentation
 
-### 3.2 `claw-code` responsibilities
+### 3.2 Harness responsibilities
 
-`claw-code` should handle:
+Harness should handle:
 
-- actual agent loop execution
-- model/provider calls
+- controller loop
+- mission state
+- provider calls
 - tool selection and execution
-- local session persistence
 - permission enforcement
+- verification
+- session persistence
 
-## 4. Recommended Runtime Boundary
+## 4. Recommended Boundary
 
-The Tauri backend should expose a thin set of commands to the frontend:
+The desired long-term contract is:
 
-- select workspace
-- check backend health
-- launch session
-- resume session
-- stop session
-- stream session output
-- fetch recent local session metadata
+- Poro talks to `harness-server`
+- `harness-server` exposes structured session and runtime events
+- the frontend never needs to understand private runtime internals
 
-This keeps the Svelte frontend clean and avoids pushing process management into browser code.
+Current implementation still links some sibling Harness crates directly in the Tauri layer. That is acceptable for local iteration, but the architectural direction should move toward a cleaner server/sidecar boundary over time.
 
-## 5. First Integration Targets
+## 5. Runtime Modes
 
-### 5.1 Health check
+### 5.1 Local-first mode
 
-Poro should support a first-run diagnostic flow that mirrors the existing `claw` doctor mindset.
+Default stack:
 
-Goal:
+- `harness-server`
+- Ollama on `127.0.0.1:11434`
+- `gemma4:e2b`
 
-- verify the binary exists
-- verify the runtime can start
-- verify provider credentials are likely configured
+This should remain the easiest no-account path.
 
-### 5.2 Session launch
+### 5.2 Hosted-provider mode
 
-Poro needs to launch a real session with:
+Current supported hosted-provider path:
 
-- selected workspace
-- selected model
-- selected permission mode
-- optional environment configuration
+- xAI / Grok through Harness
+- Anthropic through Harness
 
-### 5.3 Session resume
+Poro should stay provider-agnostic at the UI level. The runtime owns the provider behavior.
 
-Poro should list and reopen recent local sessions per workspace.
+## 6. Health and Setup
 
-### 5.4 Output handling
+The desktop app should keep a strong first-run diagnostic flow that checks:
 
-Prefer structured output when possible. Avoid building the product around fragile parsing of human-formatted terminal text.
+- backend path resolution
+- backend launchability
+- local session-store access
+- Ollama reachability in local mode
+- selected model presence in local mode
 
-## 6. Desktop Stack Direction
+The goal is to make the app feel dependable even when the environment is not yet configured correctly.
 
-Use `job_raptor` as the reference pattern for:
+## 7. Current Integration Risks
 
-- SvelteKit layout
-- Tailwind setup
-- Tauri 2 packaging
-- local plugin and desktop configuration
+### 7.1 Too much runtime knowledge in the app
 
-For MVP, only add desktop dependencies that directly support the core workflow.
-
-## 7. Local Data Model
-
-For MVP, Poro should store only local app metadata such as:
-
-- recent workspaces
-- preferred model
-- preferred permission mode
-- binary path
-- UI preferences
-
-The source of truth for agent session data should remain the backend session system unless there is a strong reason to duplicate it.
-
-## 8. Integration Risks
-
-### 8.1 Runtime coupling
-
-If Poro assumes too much about exact backend internals, updates may become painful.
+If Poro learns too much about Harness internals, future runtime changes become painful.
 
 Mitigation:
 
-- keep an adapter layer
-- centralize backend communication in one module
+- centralize bridge logic
+- keep event translation in one place
+- avoid pushing private runtime semantics into the Svelte layer
 
-### 8.2 Process UX
+### 7.2 Legacy naming drift
 
-Launching a CLI from a desktop app can feel fragile if errors are surfaced poorly.
-
-Mitigation:
-
-- build a strong first-run setup flow
-- show actionable error messages
-- make state visible
-
-### 8.3 Provider configuration confusion
-
-Users may have multiple API keys, local servers, or model providers.
+Some frontend modules still use `claw` naming for compatibility even though the runtime is now Harness-backed.
 
 Mitigation:
 
-- make provider selection explicit
-- keep settings readable
-- expose a clear health check
+- rename gradually
+- keep runtime behavior stable while the naming is cleaned up
+
+### 7.3 Local privacy vs shipped IP
+
+Local development with a sibling private repo is good hygiene, but it is not the same as server-side secrecy.
+
+Mitigation:
+
+- keep the private runtime boundary clear
+- avoid committing local runtime artifacts
+- plan for a stronger sidecar or hosted boundary later
+
+## 8. Recommended Next Integration Work
+
+The next integration work should be UI-facing, not architecture-heavy:
+
+- surface progress/blocker/verification state cleanly
+- show richer runtime actions without log spam
+- improve approval and review UX
+- keep the runtime boundary intact while the app becomes more trustworthy
+
+Only after that should we decide whether to:
+
+- tighten the local sidecar boundary
+- or move the real runtime server-side

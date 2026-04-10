@@ -1,226 +1,169 @@
-# Poro Business and Monetization Notes
+# Poro Market and Business Notes
 
 **Version**: April 2026  
 **Product**: Poro Desktop
 
 ## 1. Executive Summary
 
-Poro is an open-source desktop AI coding workspace built around a local-first UI and a bring-your-own-provider model.
+Poro is a desktop coding workspace for AI-assisted software work.
 
-The product focus is not model hosting. The product focus is the **experience of working with an AI coding agent**:
+The product is not trying to win by owning the largest model or by bundling expensive inference. The opportunity is to win on:
 
-- clearer visibility
-- better session flow
-- stronger diff awareness
-- calmer interface design
-- lower cost of entry than premium seat-priced tools
+- trust
+- clarity
+- workflow quality
+- visual taste
+- provider flexibility
 
-Poro uses `claw-code` as the runtime layer for tool use and agent execution. Poro's value is the desktop experience built around that capability.
+Today the stack is best described as:
+
+- public-facing desktop app
+- private Harness-backed runtime boundary
+- local-first usage by default
+- optional hosted providers for users who want frontier models
 
 ## 2. Positioning
 
 Poro should be positioned as:
 
-- a local-first AI coding workspace
-- an open-source desktop alternative to terminal-heavy agent tools
-- a more affordable path for users who already have API keys or local models
+- a desktop AI coding workspace
+- a calmer alternative to terminal-heavy agent workflows
+- a local-first interface with bring-your-own-provider flexibility
+- a product that makes agent work visible and reviewable
 
-Poro should **not** be positioned as:
+Poro should not be positioned as:
 
-- a model company
-- a crypto product
-- a generic chat interface
-- a direct "cheap clone" of a premium competitor
+- a model lab
+- a generic chatbot
+- a crypto project
+- a cheap clone whose only story is price
 
 ## 3. Why This Can Work
 
-The opportunity is not "we built the smartest agent."
+The opportunity is not “we built the smartest raw model.”
 
 The opportunity is:
 
-- many users want the workflow, not the bundled subscription
-- many users already have provider access or want to use cheaper models
-- many users do not want to live in a terminal
-- trust matters more when a coding tool can read and change local files
+- many users want the workflow more than the bundled subscription
+- many users already have API keys or want local models
+- many users do not trust black-box agent behavior
+- desktop coding tools feel better when state, permissions, and diffs are visible
 
-An open-source, design-forward desktop app can win on:
+Poro can win on:
 
-- trust
-- taste
-- transparency
-- flexibility
-- affordability
+- product taste
+- transparent UX
+- lower cost of entry
+- flexible runtime/provider choice
+- a stronger feeling of control
 
-## 4. Core Business Model
+## 4. Product and IP Shape
+
+Right now the most sensible shape is a **hybrid product**:
+
+- Poro desktop app can remain public-facing
+- the real Harness implementation can stay private
+- the boundary between them becomes part of the product architecture
+
+This matters because the harness/controller logic is becoming real IP. We should not casually assume every important layer needs to ship publicly forever.
+
+## 5. Monetization Direction
+
+Do not overcommit too early. The likely path is:
 
 ### Phase 1
 
-Open-source core app plus official paid distribution.
+Sell the product experience:
 
-Model:
-
-- source code remains public
-- self-build remains free
-- official signed and notarized desktop builds are paid
-
-Users are paying for:
-
+- official signed desktop builds
 - convenience
-- trust
 - polish
-- release quality
 - onboarding
-- support
+- release quality
 
 ### Phase 2
 
-Optional paid cloud conveniences.
+Add optional paid hosted value:
 
-Examples:
+- account-linked sync
+- encrypted session backup
+- team features
+- hosted private runtime for users who want stronger security or easier setup
 
-- sync across devices
-- encrypted backup of sessions
-- workspace settings sync
-- searchable cloud history
-- shared team workspaces
+The key rule is:
 
-This is a stronger recurring revenue model than charging for local-only features.
+- do not force subscriptions before there is real hosted value
 
-## 5. Recommended Pricing
+## 6. Distribution
 
-### Initial launch
+Primary path:
 
-Recommended path:
-
-- free alpha and private beta builds for early users
-- paid stable release once the product is clearly useful
-
-Suggested pricing for the official app:
-
-- **$29-$49 one-time**
-
-Potential update policy:
-
-- includes the current version and 12 months of updates
-- later major versions can be paid upgrades
-
-### Later paid plans
-
-Only add subscriptions when there is real hosted value.
-
-Examples:
-
-- **Poro Sync**: cloud backup and sync
-- **Poro Team**: shared workspaces and collaboration
-
-## 6. Distribution Strategy
-
-### Primary
-
-Direct download from the Poro website.
+- direct download from the Poro website
 
 Requirements:
 
 - signed macOS app
-- notarized distribution
-- polished install flow
-- clear release notes
+- polished first-run setup
+- clear provider/runtime instructions
 
-### Secondary
+Secondary path:
 
-- GitHub releases for community visibility
-- Setapp after the app is polished enough
+- GitHub releases for visibility
 
-### Not first
+Not the first path:
 
-Mac App Store should not be the default launch plan. Terminal access, local tool execution, and file-heavy workflows make App Sandbox constraints a poor fit for the first release.
+- Mac App Store
 
-## 7. Revenue Logic
+The current product shape is too dependent on local workspaces, agent permissions, and runtime flexibility to make App Sandbox a good first target.
 
-Poro should monetize where users naturally expect to pay:
+## 7. Pricing Direction
 
-- official binaries
-- convenience
-- reliability
-- sync and storage
-- support
+Good early options:
 
-Poro should avoid building the business around:
+- free alpha / private beta
+- paid stable desktop release later
 
-- locking basic local UI features
-- gating cosmetic-only features behind accounts
-- forcing subscriptions before hosted value exists
+Reasonable initial range:
 
-## 8. Launch Strategy
+- one-time purchase for official builds
 
-### Phase 1: Build in public
+Only add subscriptions when the hosted side is genuinely useful.
 
-- document the product direction clearly
-- share design progress
-- show the app working on real repos
-- collect feedback from developers who already use AI tools heavily
+## 8. Risks
 
-### Phase 2: Closed beta
-
-- onboard a small set of daily users
-- validate the core workflow
-- improve stability and review UX
-
-### Phase 3: Public launch
-
-- release public source
-- sell official binaries
-- publish product walkthroughs and comparisons
-
-## 9. Risks
-
-### 9.1 Over-dependence on the runtime
-
-If the UI is too tightly coupled to `claw-code` internals, Poro may be harder to evolve.
+### 8.1 Weak differentiation if the app feels like a wrapper
 
 Mitigation:
 
-- keep an adapter boundary
-- make the runtime integration replaceable over time
+- keep pushing visible state, review, progress, and approval UX
 
-### 9.2 Weak monetization if everything is purely local
-
-If there are no paid convenience layers, revenue may depend only on goodwill.
+### 8.2 Over-coupling to a private local runtime
 
 Mitigation:
 
-- sell official builds first
-- design optional hosted sync later
+- keep the boundary clean now so sidecar or hosted deployment remains possible later
 
-### 9.3 Trust concerns
-
-Users may hesitate to install a local tool that can run commands and edit files.
+### 8.3 Shipping too much private logic locally
 
 Mitigation:
 
-- keep source public
-- make permission state obvious
-- keep the UI transparent about actions and diffs
+- keep sensitive runtime logic out of the public repo
+- move toward stronger sidecar or server-side boundaries when the product stabilizes
 
-### 9.4 Support burden
-
-Local developer tools can generate support complexity because user environments differ.
+### 8.4 Monetization confusion
 
 Mitigation:
 
-- build a strong setup flow
-- add health checks
-- keep provider configuration clear and visible
+- do not promise a business model too early
+- prove the product loop first
 
-## 10. Business Goal For The First Release
+## 9. What Success Looks Like
 
-The first release does not need to maximize revenue.
+The first real business proof is not maximum revenue.
 
-It needs to prove that:
+It is:
 
-- developers want this UI
-- they can do real work through it
-- they trust it enough to use it repeatedly
-- enough of them prefer the official app over self-building
-
-If those are true, the monetization surface gets much stronger later.
+- users prefer doing real coding work through Poro
+- they trust it enough to use repeatedly
+- they feel the UI meaningfully improves the agent workflow
+- enough users are willing to pay for convenience, polish, or hosted value later

@@ -2,100 +2,109 @@
 
 **Version**: April 2026  
 **Product**: Poro Desktop  
-**Category**: Desktop AI coding workspace  
-**Core Promise**: A beautiful, open-source desktop workspace for agentic coding that gives users Codex-style power with better visibility, calmer UX, and bring-your-own-provider flexibility.
+**Category**: Desktop coding workspace  
+**Core Promise**: A calm, trustworthy desktop workspace for running real AI coding sessions through Harness with visible state, clear permissions, and bring-your-own-provider flexibility.
 
 ## 1. Product Direction
 
-Poro is no longer a chat subscription product.
+Poro is no longer a crypto product, payment flow, or general chat app.
 
-Poro is now a **desktop UI platform for AI-assisted software work**. The product focus is the interface layer: session visibility, tool execution awareness, diff review, permission clarity, and local-first workflows.
+Poro is now a **desktop UI for serious AI-assisted software work**. The product is the experience of working with an agent:
 
-The agent runtime is not the product moat. The moat is:
+- understanding what it is doing
+- trusting when it is safe to let it continue
+- seeing progress, blockers, and verification clearly
+- keeping the workspace and code changes visible
 
-- Product taste
-- UX clarity
-- Trust and transparency
-- Lower cost of entry
-- Better support for long-running coding sessions
+The current stack is:
 
-## 2. Target Users
+- Poro desktop app
+- sibling `harness` repo as the coding runtime
+- local Ollama by default
+- optional hosted providers through Harness
+
+## 2. Poro and Harness
+
+Poro and Harness are separate on purpose.
+
+- **Poro** is the desktop product: workspace selection, session surfaces, settings, runtime presentation, and UX
+- **Harness** is the controller/runtime: mission state, verification, tool use, recovery, provider routing, and session persistence
+
+The boundary matters for both product quality and privacy. Poro should stay opinionated about the interface, while the real runtime logic can remain private and evolve independently.
+
+## 3. Target Users
 
 ### Primary users
 
 - Indie developers
-- Students learning to code with AI assistance
-- Open-source maintainers
-- Power users who already have API keys or local models
+- Design-minded engineers
+- Power users who already have local models or API keys
+- Developers who want a calmer alternative to terminal-heavy agent tools
 
 ### Secondary users
 
-- Design-minded engineers who care about workflow quality
-- Users priced out of premium AI coding products
-- Developers who want a local-first alternative to terminal-only tools
+- Students learning through AI-assisted coding
+- Open-source maintainers
+- Cost-conscious users who want control over providers
 
-## 3. Product Positioning
-
-Poro should not be described publicly as a "Codex clone."
+## 4. Positioning
 
 Preferred framing:
 
-- A desktop AI coding workspace
-- A local-first UI for agentic development
-- A bring-your-own-backend interface for `claw-code`
-- A calmer, more transparent alternative to chat-heavy coding tools
+- a desktop AI coding workspace
+- a local-first interface for Harness-backed coding sessions
+- a calmer, more transparent alternative to chat-heavy or terminal-only coding tools
 
-## 4. Non-Goals
+Avoid framing Poro as:
 
-The MVP should **not** try to be:
-
-- A hosted inference platform
-- A payment or crypto product
-- A general-purpose chat app
-- A mobile app
-- A team collaboration suite
-- A multi-agent orchestration platform
-- An App Store-first release
+- a model company
+- a generic chat UI
+- a crypto product
+- a cheap clone of another desktop coding app
 
 ## 5. Product Principles
 
-### 5.1 The transcript is not the whole product
+### 5.1 Visible state is a core feature
 
-The conversation view matters, but it is only one part of the experience. Users also need:
+The transcript is not enough. The product should surface:
 
-- Tool activity
-- Permission state
-- Diffs
-- Session status
-- Cost and model visibility
-- Workspace context
+- current runtime activity
+- progress and blockers
+- permission mode
+- verification status
+- changed files and review context
 
 ### 5.2 Local-first by default
 
-Users should be able to install Poro, point it at a repo, configure their provider, and work without creating an account.
+The best first-run experience is:
 
-### 5.3 Human in control
+1. open a repo
+2. use local Ollama + Gemma
+3. start working without an account
 
-Poro should make risky actions visible and understandable. The UI should make it easy to:
+Hosted providers are important, but the local path should remain the easiest default.
 
-- See what the agent is doing
-- Understand current permissions
-- Inspect changes before accepting them
-- Resume or stop sessions cleanly
+### 5.3 Human stays in control
 
-### 5.4 Beauty is part of the product
+The UI should make it easy to understand:
 
-Poro should feel intentional, calm, and premium. The app should not look like a generic terminal wrapper. The design language should emphasize:
+- what is happening now
+- what has already happened
+- what changed
+- whether the agent is waiting, working, blocked, or verifying
 
-- Strong typography
-- Clear visual hierarchy
-- Spacious, readable layouts
-- Elegant motion
-- Confidence without noise
+### 5.4 Beauty is part of trust
 
-### 5.5 Backend swappable, UI opinionated
+Poro should feel calm, deliberate, and premium. The app should not look like a terminal transcript wrapped in chrome.
 
-The runtime layer may evolve, but the UI should stay strongly opinionated. Poro is the interface for serious AI-assisted work, not a thin shell over command output.
+### 5.5 Strong boundary, flexible future
+
+The product should keep a clean interface/runtime boundary so that:
+
+- local development stays fast
+- a sidecar boundary is possible later
+- a hosted backend is possible later
+- the UI does not become tightly coupled to runtime internals
 
 ## 6. Technical Direction
 
@@ -104,171 +113,87 @@ The runtime layer may evolve, but the UI should stay strongly opinionated. Poro 
 - **Framework**: SvelteKit + TypeScript
 - **Styling**: Tailwind CSS
 - **Desktop shell**: Tauri 2
-- **Reference implementation**: reuse the desktop setup patterns from `job_raptor`
 
-### 6.2 Runtime layer
+### 6.2 Runtime integration
 
-- **Primary backend**: `claw-code`
-- **Default local path**: Ollama + Gemma 4
-- Poro should **integrate with** `claw-code`, not reimplement it
-- `claw-code` handles:
-  - provider routing
-  - tool execution
-  - permission modes
-  - session persistence
-  - prompt execution
+- **Current runtime**: sibling `harness` repo
+- **Desktop bridge**: `harness-server` launched through the Tauri layer
+- **Default local path**: Ollama + `gemma4:e2b`
+- **Current hosted options**: xAI / Grok and Anthropic via Harness
 
 ### 6.3 Desktop responsibilities
 
-The Tauri layer should handle:
+Poro should own:
 
-- launching and supervising the local `claw` process
-- file and workspace selection
-- local settings persistence
-- access to OS dialogs and filesystem APIs
-- packaging and native distribution
+- workspace selection
+- runtime launch and stop flows
+- health checks
+- settings and provider/model defaults
+- transcript and activity presentation
+- review and diff presentation
+- recent workspaces and session selection
 
-### 6.4 Local persistence
+### 6.4 Runtime responsibilities
 
-For MVP, persistence is local only:
+Harness should own:
 
-- local app settings
-- recent workspaces
-- recent sessions
-- local UI preferences
+- mission state
+- tool execution
+- permission enforcement
+- verification
+- provider routing
+- session storage and replay
 
-Cloud sync is explicitly out of scope for the initial build.
+## 7. Current Product State
 
-## 7. MVP Scope
+The app already has:
 
-The MVP is a **single-user desktop app** that lets a developer do real work through a local `claw-code` session without living in Terminal.
+- desktop workspace shell
+- provider/model/permission controls
+- workspace picker
+- local settings
+- Harness-backed runtime launch
+- session resume/loading
+- transcript view
+- runtime activity view
+- backend health checks
 
-### 7.1 Core MVP features
+The next product gap is not raw integration anymore. It is **trustworthy session UX**:
 
-- Workspace picker
-- Session list for the current workspace
-- Main session view
-- Model and provider controls
-- Permission mode controls
-- Live transcript view
-- Live tool activity timeline
-- Diff / review panel
-- Resume previous local sessions
-- Settings for backend path and provider configuration
+- clearer progress
+- cleaner action visibility
+- stronger review surfaces
+- better approval and verification presentation
 
-### 7.2 Out of scope for MVP
+## 8. Next Milestone
 
-- Accounts
-- Cloud sync
-- Team workspaces
-- Billing
-- Plugin marketplace
-- Mobile clients
-- Advanced analytics
-- Hosted execution
-- Multiple backends beyond what is needed to support `claw-code`
+The next milestone is a UI quality milestone, not a runtime plumbing milestone.
 
-## 8. Key Screens
+Poro should become noticeably better at:
 
-### 8.1 Workspace picker
+- showing what the agent is doing right now
+- summarizing long runs without drowning the user in logs
+- surfacing progress, blockers, and verification clearly
+- making the desktop session feel like a workspace, not a console transcript
 
-Purpose:
+## 9. Non-Goals
 
-- choose a local repo
-- reopen a recent project
-- show first-run guidance
+Poro should not currently try to be:
 
-### 8.2 Main session view
+- a hosted inference platform
+- a team collaboration suite
+- a mobile app
+- a plugin marketplace
+- a general-purpose chatbot
+- a Mac App Store-first release
 
-Purpose:
+## 10. Success Criteria
 
-- read and send prompts
-- watch tool execution
-- track status and cost
-- understand what the agent is doing right now
-
-Recommended structure:
-
-- transcript area
-- tool/event timeline
-- composer / command input
-- status bar with model, permissions, cwd, session state
-
-### 8.3 Diff and review panel
-
-Purpose:
-
-- inspect changed files
-- review before accepting risky edits
-- keep code awareness visible, not buried
-
-### 8.4 Settings
-
-Purpose:
-
-- configure backend binary path
-- configure provider env vars or instructions
-- set defaults for model and permissions
-- manage local behavior and UX preferences
-
-## 9. Core User Flows
-
-### 9.1 First launch
-
-1. User opens Poro
-2. User picks a workspace
-3. Poro checks backend availability
-4. Poro checks whether Ollama is reachable and whether `gemma4:e2b` is installed
-5. Poro guides the user through local runtime setup if needed
-5. User starts a session
-
-### 9.2 Run a coding task
-
-1. User opens a workspace
-2. User selects model and permission mode
-3. User enters a prompt
-4. Poro launches or resumes a `claw` session
-5. User watches transcript, tools, and status updates
-6. User inspects the produced diff
-7. User decides whether to continue, refine, or stop
-
-### 9.3 Resume previous work
-
-1. User reopens the app
-2. User selects a recent workspace
-3. Poro shows recent sessions
-4. User resumes the last session or starts a new one
-
-## 10. Success Criteria For MVP
-
-The MVP is successful when a user can:
+The current phase is successful when a user can:
 
 - open a repo
-- start a real `claw-code` session from the UI
-- watch live tool activity
-- inspect file changes
-- understand current permission mode
+- start a real Harness-backed session
+- understand current runtime state without guessing
+- review changes with confidence
 - resume the session later
-
-## 11. Quality Bar
-
-Poro should feel:
-
-- trustworthy
-- visually polished
-- faster to understand than a terminal transcript
-- stable enough for daily use on personal projects
-
-The MVP does not need to be feature-complete. It does need to feel coherent.
-
-## 12. After MVP
-
-Potential post-MVP expansions:
-
-- direct signed and notarized distribution
-- official binary releases
-- local analytics and usage summaries
-- optional cloud sync
-- encrypted backup of session history
-- team and shared workspace features
-- premium support or managed convenience features
+- prefer the app experience over running the same workflow directly in terminal
