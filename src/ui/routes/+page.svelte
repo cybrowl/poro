@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import BrowserPanel from "$components/desktop/BrowserPanel.svelte";
-  import SessionHeader from "$components/desktop/SessionHeader.svelte";
   import SettingsSheet from "$components/desktop/SettingsSheet.svelte";
   import Sidebar from "$components/desktop/Sidebar.svelte";
   import TranscriptPanel from "$components/desktop/TranscriptPanel.svelte";
@@ -70,6 +69,7 @@
   let desktopReady = $state(false);
   let showWorkspacePicker = $state(false);
   let showSettings = $state(false);
+  let showBrowserInspector = $state(false);
   let backendHealth = $state<BackendHealth | null>(null);
   let healthCheckPending = $state(false);
   let runtimeError = $state<string | null>(null);
@@ -1159,8 +1159,8 @@
   />
 </svelte:head>
 
-<div class="min-h-screen p-3 text-soft-ivory sm:p-4">
-  <div class="mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-[1660px] flex-col gap-3 lg:min-h-[calc(100vh-2rem)] lg:flex-row">
+<div class="min-h-screen bg-[#111418] text-soft-ivory">
+  <div class="mx-auto flex min-h-screen max-w-[1600px] flex-col lg:flex-row">
     <Sidebar
       workspaces={workspaceList}
       {selectedWorkspaceId}
@@ -1172,16 +1172,8 @@
       onOpenSettings={() => (showSettings = true)}
     />
 
-    <main class="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
-      <SessionHeader
-        workspace={selectedWorkspace}
-        session={selectedSession}
-        {activeProviderLabel}
-        onOpenWorkspacePicker={() => (showWorkspacePicker = true)}
-        onOpenSettings={() => (showSettings = true)}
-      />
-
-      <section class="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
+    <main class="flex min-h-0 min-w-0 flex-1 flex-col">
+      <section class="min-h-0 flex-1">
         <TranscriptPanel
           session={selectedSession}
           browserActivity={browserActivity}
@@ -1200,28 +1192,7 @@
           onSubmitPrompt={submitPrompt}
           onStopRuntime={stopSelectedRuntime}
           onRefreshRuntime={refreshSelectedWorkspace}
-        />
-        <BrowserPanel
-          {browserUrl}
-          runtimeActive={!!selectedBrowserRuntime}
-          runtimeBusy={browserBusy}
-          headless={browserHeadless}
-          runtimeInfo={selectedBrowserRuntime
-            ? {
-                session: selectedBrowserRuntime.session,
-                browserPath: selectedBrowserRuntime.browserPath,
-                headless: selectedBrowserRuntime.headless,
-              }
-            : null}
-          statusLine={browserStatusLine}
-          latestSnapshot={browserLatestSnapshot}
-          latestPayload={browserLatestPayload}
-          onBrowserUrlInput={setBrowserUrl}
-          onToggleHeadless={toggleBrowserHeadless}
-          onLaunchBrowser={launchBrowserOnly}
-          onOpenAndSnapshot={openAndSnapshotBrowser}
-          onSnapshotBrowser={snapshotBrowser}
-          onStopBrowser={stopSelectedBrowser}
+          onOpenBrowserInspector={() => (showBrowserInspector = true)}
         />
       </section>
     </main>
@@ -1255,5 +1226,30 @@
     modelOptions={visibleModelOptions}
     {permissionModes}
     onClose={() => (showSettings = false)}
+  />
+
+  <BrowserPanel
+    open={showBrowserInspector}
+    {browserUrl}
+    runtimeActive={!!selectedBrowserRuntime}
+    runtimeBusy={browserBusy}
+    headless={browserHeadless}
+    runtimeInfo={selectedBrowserRuntime
+      ? {
+          session: selectedBrowserRuntime.session,
+          browserPath: selectedBrowserRuntime.browserPath,
+          headless: selectedBrowserRuntime.headless,
+        }
+      : null}
+    statusLine={browserStatusLine}
+    latestSnapshot={browserLatestSnapshot}
+    latestPayload={browserLatestPayload}
+    onBrowserUrlInput={setBrowserUrl}
+    onToggleHeadless={toggleBrowserHeadless}
+    onLaunchBrowser={launchBrowserOnly}
+    onOpenAndSnapshot={openAndSnapshotBrowser}
+    onSnapshotBrowser={snapshotBrowser}
+    onStopBrowser={stopSelectedBrowser}
+    onClose={() => (showBrowserInspector = false)}
   />
 </div>

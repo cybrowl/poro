@@ -30,149 +30,105 @@
 </script>
 
 <aside
-  class="flex min-h-0 w-full shrink-0 flex-col rounded-[16px] border border-white/8 bg-[#0d1117] p-3 shadow-[0_24px_80px_rgba(0,0,0,0.42)] sm:p-4 lg:w-[292px]"
+  class="flex min-h-0 w-full shrink-0 flex-col border-r border-white/8 bg-[#151a1f] lg:w-[248px]"
 >
-  <div class="rounded-[14px] border border-white/8 bg-[#0a0d12] p-4">
-    <div class="flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="h-2.5 w-2.5 rounded-full bg-signal-blue shadow-[0_0_18px_rgba(78,161,255,0.85)]"></div>
-        <div class="text-[0.72rem] uppercase tracking-[0.34em] text-fog/70">
-          Poro
-        </div>
-      </div>
-      <span class="rounded-md border border-white/8 bg-white/4 px-2.5 py-1 text-[0.62rem] uppercase tracking-[0.24em] text-fog/52">
-        Desktop
-      </span>
+  <div class="flex items-center justify-between px-4 py-3">
+    <div class="flex items-center gap-2">
+      <div class="h-2 w-2 rounded-full bg-signal-blue shadow-[0_0_14px_rgba(78,161,255,0.75)]"></div>
+      <div class="text-[0.76rem] font-medium tracking-[0.18em] text-fog/76">PORO</div>
     </div>
+    <span class="rounded-md border border-white/8 bg-white/[0.03] px-2 py-1 text-[0.62rem] tracking-[0.12em] text-fog/46">
+      desktop
+    </span>
+  </div>
 
-    <h1 class="mt-5 max-w-[14ch] text-[1.26rem] font-medium leading-[1.08] tracking-[-0.035em] text-soft-ivory sm:text-[1.42rem]">
-      Local-first agent workspace.
-    </h1>
-
-    <p class="mt-3 max-w-[28ch] text-sm leading-6 text-fog/66">
-      Coding sessions, browser actions, and review state in one calm editor shell.
-    </p>
-
-    <div class="mt-5 grid grid-cols-2 gap-2">
-      <Button
-        label="Open Workspace"
-        variant="gold"
-        class="w-full"
-        height="h-11"
+  <div class="px-3 pb-2">
+    <div class="space-y-1">
+      <button
+        type="button"
+        class="flex w-full items-center rounded-md px-3 py-2 text-left text-[0.92rem] text-fog/76 transition hover:bg-white/[0.04] hover:text-soft-ivory"
         onclick={onPickWorkspace}
-      />
-      <Button
-        label="Settings"
-        variant="outline"
-        class="w-full"
-        height="h-11"
+      >
+        Open workspace
+      </button>
+      <button
+        type="button"
+        class="flex w-full items-center rounded-md px-3 py-2 text-left text-[0.92rem] text-fog/76 transition hover:bg-white/[0.04] hover:text-soft-ivory"
+        onclick={onOpenWorkspacePicker}
+      >
+        Search
+      </button>
+      <button
+        type="button"
+        class="flex w-full items-center rounded-md px-3 py-2 text-left text-[0.92rem] text-fog/76 transition hover:bg-white/[0.04] hover:text-soft-ivory"
         onclick={onOpenSettings}
-      />
-    </div>
-  </div>
-
-  <div class="mt-4 flex items-center justify-between px-1">
-    <div class="text-[0.66rem] font-medium uppercase tracking-[0.34em] text-fog/48">
-      Workspaces
-    </div>
-    <button
-      type="button"
-      class="text-[0.68rem] font-medium uppercase tracking-[0.22em] text-fog/44 transition hover:text-fog/78"
-      onclick={onOpenWorkspacePicker}
-    >
-      Browse
-    </button>
-  </div>
-
-  <div class="mt-3 grid gap-2 md:grid-cols-2 lg:grid-cols-1">
-    {#each workspaces as workspace}
-      <button
-        type="button"
-        class={`w-full rounded-[10px] border p-3 text-left transition ${
-          workspace.id === selectedWorkspaceId
-            ? "border-signal-blue/35 bg-signal-blue/10 shadow-[inset_0_0_0_1px_rgba(78,161,255,0.12)]"
-            : "border-white/7 bg-white/[0.025] hover:border-white/12 hover:bg-white/[0.045]"
-        }`}
-        onclick={() => onSelectWorkspace(workspace.id)}
       >
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <div class="truncate text-[0.92rem] font-medium text-soft-ivory">
-              {workspace.name}
-            </div>
-            <div class="mt-1 font-mono text-[0.68rem] uppercase tracking-[0.2em] text-fog/45">
-              {workspace.branch}
-            </div>
-          </div>
-          <span class="rounded-md border border-white/8 bg-white/5 px-2.5 py-1 text-[0.58rem] uppercase tracking-[0.22em] text-fog/52">
-            {workspace.status}
-          </span>
-        </div>
-        <p class="mt-2 text-[0.84rem] leading-6 text-fog/64">{workspace.summary}</p>
-        <div class="mt-2 truncate font-mono text-[0.68rem] text-fog/38">{workspace.path}</div>
+        Settings
       </button>
-    {/each}
-  </div>
-
-  <div class="mt-5 flex items-center justify-between px-1">
-    <div class="text-[0.66rem] font-medium uppercase tracking-[0.34em] text-fog/48">
-      Sessions
-    </div>
-    <div class="truncate font-mono text-[0.68rem] uppercase tracking-[0.18em] text-fog/38">
-      {selectedWorkspace.name}
     </div>
   </div>
 
-  <div class="mt-3 flex-1 space-y-2 overflow-y-auto pr-1">
-    {#each selectedWorkspace.sessions as session}
-      <button
-        type="button"
-        class={`w-full rounded-[10px] border px-3 py-3 text-left transition ${
-          session.id === selectedSessionId
-            ? "border-white/14 bg-white/[0.065]"
-            : "border-white/7 bg-white/[0.02] hover:border-white/12 hover:bg-white/[0.04]"
-        }`}
-        onclick={() => onSelectSession(session.id)}
-      >
-        <div class="flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <div class="truncate text-sm font-medium text-soft-ivory">{session.title}</div>
-            <div class="mt-1 flex flex-wrap gap-2 font-mono text-[0.63rem] uppercase tracking-[0.18em] text-fog/42">
-              <span>{session.model}</span>
-              <span>{session.permission}</span>
-            </div>
-          </div>
-          <span
-            class={`rounded-md px-2.5 py-1 text-[0.58rem] uppercase tracking-[0.22em] ${
-              session.status === "Live"
-                ? "bg-misty-green/12 text-misty-green"
-                : session.status === "Paused"
-                  ? "bg-white/6 text-fog/62"
-                  : "bg-signal-blue/12 text-signal-blue"
+  <div class="border-t border-white/8"></div>
+
+  <div class="px-4 pb-2 pt-3 text-[0.7rem] uppercase tracking-[0.18em] text-fog/34">
+    Threads
+  </div>
+
+  <div class="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
+    <div class="space-y-1">
+      {#each workspaces as workspace}
+        <div class="space-y-1">
+          <button
+            type="button"
+            class={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left transition ${
+              workspace.id === selectedWorkspaceId
+                ? "bg-white/[0.08] text-soft-ivory"
+                : "text-fog/68 hover:bg-white/[0.04] hover:text-soft-ivory"
             }`}
+            onclick={() => onSelectWorkspace(workspace.id)}
           >
-            {session.status}
-          </span>
+            <div class="min-w-0">
+              <div class="truncate text-[0.9rem]">{workspace.name}</div>
+              <div class="mt-0.5 truncate text-[0.68rem] uppercase tracking-[0.14em] text-fog/34">
+                {workspace.branch}
+              </div>
+            </div>
+            <div class="shrink-0 pl-3 text-[0.72rem] text-fog/36">{workspace.lastOpened}</div>
+          </button>
+
+          {#if workspace.id === selectedWorkspaceId}
+            <div class="ml-2 space-y-1 border-l border-white/8 pl-2">
+              {#each workspace.sessions as session}
+                <button
+                  type="button"
+                  class={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left transition ${
+                    session.id === selectedSessionId
+                      ? "bg-white/[0.06] text-soft-ivory"
+                      : "text-fog/62 hover:bg-white/[0.035] hover:text-soft-ivory"
+                  }`}
+                  onclick={() => onSelectSession(session.id)}
+                >
+                  <div class="min-w-0">
+                    <div class="truncate text-[0.86rem]">{session.title}</div>
+                    <div class="mt-0.5 truncate text-[0.68rem] text-fog/34">{session.model}</div>
+                  </div>
+                  <div class="shrink-0 pl-3 text-[0.72rem] text-fog/36">{session.updatedAt}</div>
+                </button>
+              {/each}
+            </div>
+          {/if}
         </div>
-        <div class="mt-2 text-[0.72rem] text-fog/48">{session.updatedAt}</div>
-      </button>
-    {/each}
+      {/each}
+    </div>
   </div>
 
-  <div class="mt-4 rounded-[10px] border border-white/8 bg-[#0a0d12] p-4">
-    <div class="text-[0.66rem] uppercase tracking-[0.34em] text-fog/48">
-      Runtime Stack
-    </div>
-    <div class="mt-3 flex flex-wrap gap-2">
-      <span class="rounded-md border border-signal-blue/22 bg-signal-blue/10 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-signal-blue">
-        harness
-      </span>
-      <span class="rounded-md border border-white/8 bg-white/5 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fog/58">
-        ollama
-      </span>
-      <span class="rounded-md border border-white/8 bg-white/5 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fog/58">
-        gemma4
-      </span>
-    </div>
+  <div class="border-t border-white/8 px-3 py-3">
+    <Button
+      label={`Settings • ${selectedWorkspace.name}`}
+      variant="ghost"
+      class="w-full justify-start"
+      height="h-9"
+      onclick={onOpenSettings}
+    />
   </div>
 </aside>
