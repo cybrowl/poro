@@ -1649,6 +1649,12 @@ fn start_claw_runtime(
         );
     }
 
+    let browser_path = ensure_agent_browser_path(None)?;
+    env::set_var("PORO_AGENT_BROWSER_BIN", &browser_path);
+    if env::var_os("AGENT_BROWSER_HEADED").is_none() {
+        env::set_var("AGENT_BROWSER_HEADED", "1");
+    }
+
     let workspace_path = PathBuf::from(normalize_workspace_path(request.workspace_path));
     let session_root = workspace_session_root(&app, &workspace_path)?;
     let provider = provider_config_for_runtime(&request.provider_id, &request.model)?;
