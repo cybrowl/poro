@@ -1184,6 +1184,7 @@
       <section class="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(0,1fr)_380px]">
         <TranscriptPanel
           session={selectedSession}
+          browserActivity={browserActivity}
           selectedProviderLabel={activeProviderLabel}
           {selectedModel}
           {selectedPermission}

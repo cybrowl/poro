@@ -58,19 +58,19 @@
 </script>
 
 <aside
-  class="flex min-h-0 min-w-0 flex-col rounded-[22px] border border-white/8 bg-dark-slate/94 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-md sm:p-4"
+  class="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-[18px] border border-white/8 bg-[#0d1117] shadow-[0_18px_60px_rgba(0,0,0,0.28)]"
 >
-  <div class="rounded-[16px] border border-white/8 bg-carbon-black/72 px-4 py-4">
+  <div class="border-b border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] px-4 py-4 sm:px-5">
     <div class="flex flex-wrap items-center gap-2">
-      <span class="rounded-full border border-signal-blue/22 bg-signal-blue/10 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-signal-blue">
-        Browser Lab
+      <span class="rounded-md border border-signal-blue/22 bg-signal-blue/10 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-signal-blue">
+        Browser Inspector
       </span>
-      <span class="rounded-full border border-white/8 bg-white/4 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.2em] text-fog/52">
+      <span class="rounded-md border border-white/8 bg-white/4 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.2em] text-fog/52">
         {runtimeActive ? "brave live" : "runtime idle"}
       </span>
       <button
         type="button"
-        class={`rounded-full border px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.2em] transition ${
+        class={`rounded-md border px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.2em] transition ${
           headless
             ? "border-white/10 bg-white/6 text-fog/60 hover:border-white/16 hover:bg-white/8"
             : "border-misty-green/24 bg-misty-green/10 text-misty-green hover:border-misty-green/32"
@@ -82,9 +82,9 @@
     </div>
 
     <p class="mt-3 text-sm leading-6 text-fog/74">
-      Internal browser surface for quick page inspection, snapshots, and future
-      browser-assisted flows. This talks to the vendored browser sidecar, not the
-      Harness coding runtime.
+      A slim local inspector for Brave. Use it to sanity-check the browser sidecar,
+      inspect snapshots, and keep browser-assisted agent work visible without making
+      the browser a separate product.
     </p>
 
     <div class="mt-4 space-y-3">
@@ -93,14 +93,14 @@
           URL
         </span>
         <input
-          class="w-full rounded-[14px] border border-white/8 bg-dark-slate/92 px-4 py-3 font-['SF_Mono','JetBrains_Mono','IBM_Plex_Mono',Menlo,monospace] text-[0.88rem] text-fog/84 outline-none transition focus:border-signal-blue/35 focus:bg-dark-slate"
+          class="w-full rounded-[12px] border border-white/8 bg-[#0f141b] px-4 py-3 font-['SF_Mono','JetBrains_Mono','IBM_Plex_Mono',Menlo,monospace] text-[0.88rem] text-fog/84 outline-none transition focus:border-signal-blue/35 focus:bg-[#111722]"
           value={browserUrl}
           placeholder="https://example.com"
           oninput={(event) => onBrowserUrlInput((event.currentTarget as HTMLInputElement).value)}
         />
       </label>
 
-      <div class="rounded-[12px] border border-white/8 bg-white/[0.035] px-4 py-3 text-sm leading-6 text-fog/66">
+      <div class="rounded-[10px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm leading-6 text-fog/66">
         {statusLine}
       </div>
 
@@ -130,10 +130,10 @@
     </div>
   </div>
 
-  <div class="mt-3 min-h-0 flex-1 overflow-y-auto pr-1">
+  <div class="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
     {#if runtimeInfo}
-      <div class="mb-3 rounded-[16px] border border-white/8 bg-carbon-black/72 p-3">
-        <div class="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-fog/46">
+      <div class="mb-3 rounded-[12px] border border-white/8 bg-[#0a0d12] p-3">
+        <div class="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-fog/42">
           Runtime
         </div>
         <div class="mt-3 grid gap-2 text-sm leading-6 text-fog/74">
@@ -145,19 +145,19 @@
     {/if}
 
     {#if activity.length}
-      <div class="mb-3 rounded-[16px] border border-white/8 bg-carbon-black/72 p-3">
+      <div class="mb-3 rounded-[12px] border border-white/8 bg-[#0a0d12] p-3">
         <div class="flex items-center justify-between gap-3">
-          <div class="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-fog/46">
-            Browser Feed
+          <div class="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-fog/42">
+            Recent Browser Steps
           </div>
           <div class="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fog/38">
-            {activity.length} visible
+            {activity.length}
           </div>
         </div>
 
         <div class="mt-3 space-y-2">
-          {#each activity as item}
-            <article class={`rounded-[14px] border px-3 py-3 ${activityStyle(item)}`}>
+          {#each activity.slice(0, 4) as item}
+            <article class={`rounded-[10px] border px-3 py-3 ${activityStyle(item)}`}>
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                   <div class="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-fog/52">
@@ -176,18 +176,18 @@
     {/if}
 
     <div class="space-y-3">
-      <section class="rounded-[16px] border border-white/8 bg-carbon-black/72 p-3">
-        <div class="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-fog/46">
+      <section class="rounded-[12px] border border-white/8 bg-[#0a0d12] p-3">
+        <div class="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-fog/42">
           Latest Snapshot
         </div>
-        <pre class="mt-3 max-h-[220px] overflow-auto whitespace-pre-wrap rounded-[12px] border border-white/8 bg-dark-slate/92 p-3 font-['SF_Mono','JetBrains_Mono','IBM_Plex_Mono',Menlo,monospace] text-[0.8rem] leading-6 text-fog/78">{latestSnapshot || "No snapshot yet. Open a URL or capture the current page."}</pre>
+        <pre class="mt-3 max-h-[220px] overflow-auto whitespace-pre-wrap rounded-[10px] border border-white/8 bg-[#0f141b] p-3 font-['SF_Mono','JetBrains_Mono','IBM_Plex_Mono',Menlo,monospace] text-[0.8rem] leading-6 text-fog/78">{latestSnapshot || "No snapshot yet. Open a URL or capture the current page."}</pre>
       </section>
 
-      <section class="rounded-[16px] border border-white/8 bg-carbon-black/72 p-3">
-        <div class="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-fog/46">
+      <section class="rounded-[12px] border border-white/8 bg-[#0a0d12] p-3">
+        <div class="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-fog/42">
           Latest Response
         </div>
-        <pre class="mt-3 max-h-[220px] overflow-auto whitespace-pre-wrap rounded-[12px] border border-white/8 bg-dark-slate/92 p-3 font-['SF_Mono','JetBrains_Mono','IBM_Plex_Mono',Menlo,monospace] text-[0.76rem] leading-6 text-fog/72">{latestPayload || "Waiting for a browser action."}</pre>
+        <pre class="mt-3 max-h-[220px] overflow-auto whitespace-pre-wrap rounded-[10px] border border-white/8 bg-[#0f141b] p-3 font-['SF_Mono','JetBrains_Mono','IBM_Plex_Mono',Menlo,monospace] text-[0.76rem] leading-6 text-fog/72">{latestPayload || "Waiting for a browser action."}</pre>
       </section>
     </div>
   </div>
