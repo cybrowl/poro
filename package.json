@@ -10,6 +10,7 @@
     "prepare": "svelte-kit sync || echo ''",
     "type-check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check": "npm run type-check",
+    "guard:private": "bash ./scripts/guard-private-assets.sh",
     "harness:build": "cargo build -p harness-server --manifest-path ../harness/Cargo.toml",
     "tauri": "npm run harness:build && tauri dev -c ./tauri/tauri.conf.json",
     "tauri:dev": "npm run harness:build && tauri dev -c ./tauri/tauri.conf.json",

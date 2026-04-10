@@ -5,6 +5,8 @@
 
 # environment and configuration
 .env
+.env.*
+!.env.example
 
 # dfx
 .dfx
@@ -26,5 +28,14 @@ package-lock.json
 npm-debug.log*
 
 target/
+/tauri/target/
 
 .mops
+
+/icpswap-hft-bot/logs/
+
+# local harness + eval artifacts
+/.harness/
+/harness/
+/harness-server
+/harness-server.exe
