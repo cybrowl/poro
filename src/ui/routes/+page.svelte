@@ -1160,7 +1160,7 @@
 </svelte:head>
 
 <div class="min-h-screen bg-obsidian text-soft-ivory">
-  <div class="mx-auto flex min-h-screen max-w-[1600px] flex-col lg:flex-row">
+  <div class="flex min-h-screen w-full flex-col lg:flex-row">
     <Sidebar
       workspaces={workspaceList}
       {selectedWorkspaceId}
@@ -1173,7 +1173,7 @@
     />
 
     <main class="flex min-h-0 min-w-0 flex-1 flex-col">
-      <section class="min-h-0 flex-1">
+      <section class="flex min-h-0 flex-1">
         <TranscriptPanel
           session={selectedSession}
           browserActivity={browserActivity}
