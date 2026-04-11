@@ -32,7 +32,7 @@
 </script>
 
 <aside
-  class="flex min-h-0 w-full shrink-0 flex-col border-r border-white/6 bg-deep-charcoal lg:w-[248px]"
+  class="flex min-h-0 w-full shrink-0 flex-col border-r border-white/6 bg-deep-charcoal lg:h-screen lg:w-[248px]"
 >
   <div class="flex items-center justify-between px-4 py-3">
     <div class="flex items-center gap-2">

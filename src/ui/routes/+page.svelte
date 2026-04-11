@@ -103,6 +103,7 @@
   );
   let selectedRuntime = $derived(activeRuntimeByWorkspace[selectedWorkspace.path] ?? null);
   let runtimeBusy = $derived(turnInFlightByWorkspace[selectedWorkspace.path] ?? false);
+  let runtimeActivity = $derived(runtimeFeedByWorkspace[selectedWorkspace.path] ?? []);
   let selectedBrowserRuntime = $derived(activeBrowserByWorkspace[selectedWorkspace.path] ?? null);
   let browserBusy = $derived(browserBusyByWorkspace[selectedWorkspace.path] ?? false);
   let browserUrl = $derived(
@@ -529,6 +530,111 @@
     runtimeFeedByWorkspace = {
       ...runtimeFeedByWorkspace,
       [workspacePath]: [nextItem, ...(runtimeFeedByWorkspace[workspacePath] ?? [])].slice(0, 8),
+    };
+  }
+
+  function describeRuntimeOutput(
+    line: string,
+    stream: string
+  ): Pick<ActivityItem, "label" | "summary" | "status"> {
+    const text = line.trim();
+    if (!text) {
+      return {
+        label: stream === "stderr" ? "Runtime warning" : "Agent update",
+        summary: "Harness emitted an empty runtime line.",
+        status: stream === "stderr" ? "queued" : "active",
+      };
+    }
+
+    if (text.startsWith("Running verification: ")) {
+      return {
+        label: "Verification running",
+        summary: text.replace("Running verification: ", ""),
+        status: "active",
+      };
+    }
+
+    if (text.startsWith("Verification passed: ")) {
+      return {
+        label: "Verification passed",
+        summary: text.replace("Verification passed: ", ""),
+        status: "complete",
+      };
+    }
+
+    if (text.startsWith("Verification failed: ")) {
+      return {
+        label: "Verification failed",
+        summary: text.replace("Verification failed: ", ""),
+        status: "queued",
+      };
+    }
+
+    if (text.startsWith("Runtime critique started: ")) {
+      return {
+        label: "Thinking",
+        summary: text.replace("Runtime critique started: ", ""),
+        status: "active",
+      };
+    }
+
+    if (text.startsWith("Runtime critique finished: ")) {
+      return {
+        label: "Thinking complete",
+        summary: text.replace("Runtime critique finished: ", ""),
+        status: "complete",
+      };
+    }
+
+    if (text.startsWith("Patch prepared for ")) {
+      return {
+        label: "Patch prepared",
+        summary: text.replace("Patch prepared for ", ""),
+        status: "complete",
+      };
+    }
+
+    if (text.startsWith("Approval requested for `")) {
+      return {
+        label: "Approval needed",
+        summary: text,
+        status: "queued",
+      };
+    }
+
+    if (text.startsWith("Approved `") || text.startsWith("Rejected `")) {
+      return {
+        label: "Approval resolved",
+        summary: text,
+        status: text.startsWith("Approved `") ? "complete" : "queued",
+      };
+    }
+
+    if (text.startsWith("Harness session started")) {
+      return {
+        label: "Session started",
+        summary: text,
+        status: "complete",
+      };
+    }
+
+    if (text.includes(":")) {
+      const [head, ...tail] = text.split(":");
+      const prefix = head.trim();
+      const summary = tail.join(":").trim();
+      if (/^[a-z_][a-z0-9_]*$/i.test(prefix)) {
+        return {
+          label: stream === "stderr" ? `Tool issue • ${prefix}` : `Tool • ${prefix}`,
+          summary: summary || text,
+          status: stream === "stderr" ? "queued" : "active",
+        };
+      }
+    }
+
+    return {
+      label: stream === "stderr" ? "Runtime warning" : "Agent update",
+      summary: text,
+      status: stream === "stderr" ? "queued" : "active",
     };
   }
 
@@ -973,11 +1079,12 @@
     if (event.type === "output") {
       const workspacePath = runtimeWorkspaceById[event.runtimeId];
       if (workspacePath) {
+        const details = describeRuntimeOutput(event.line, event.stream);
         pushRuntimeFeed(
           workspacePath,
-          event.stream === "stderr" ? "Runtime stderr" : "Runtime output",
-          event.line,
-          event.stream === "stderr" ? "queued" : "active",
+          details.label,
+          details.summary,
+          details.status,
           event.timestamp
         );
       }
@@ -993,8 +1100,8 @@
         };
         pushRuntimeFeed(
           workspacePath,
-          "Harness working",
-          event.inputPreview,
+          "Thinking",
+          `Planning the next steps for: ${event.inputPreview}`,
           "active"
         );
       }
@@ -1220,8 +1327,8 @@
   />
 </svelte:head>
 
-<div class="min-h-screen bg-obsidian text-soft-ivory">
-  <div class="flex min-h-screen w-full flex-col lg:flex-row">
+<div class="min-h-screen bg-obsidian text-soft-ivory lg:h-screen lg:overflow-hidden">
+  <div class="flex min-h-screen w-full flex-col lg:h-screen lg:flex-row">
     <Sidebar
       workspaces={workspaceList}
       {selectedWorkspaceId}
@@ -1234,10 +1341,11 @@
       onOpenSettings={() => (showSettings = true)}
     />
 
-    <main class="flex min-h-0 min-w-0 flex-1 flex-col">
+    <main class="flex min-h-0 min-w-0 flex-1 flex-col lg:overflow-hidden">
       <section class="flex min-h-0 flex-1">
         <TranscriptPanel
           session={selectedSession}
+          {runtimeActivity}
           browserActivity={browserActivity}
           {selectedModel}
           {selectedPermission}

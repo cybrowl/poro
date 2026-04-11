@@ -9,6 +9,7 @@
 
   interface Props {
     session: SessionRecord;
+    runtimeActivity: ActivityItem[];
     browserActivity: ActivityItem[];
     selectedModel: string;
     selectedPermission: PermissionMode;
@@ -28,6 +29,7 @@
 
   let {
     session,
+    runtimeActivity,
     browserActivity,
     selectedModel,
     selectedPermission,
@@ -57,6 +59,7 @@
   type SurfaceActivity = ActivityItem & {
     source: "agent" | "browser";
     kind: ActivityKind;
+    live: boolean;
   };
 
   function messageStyle(message: TranscriptMessage) {
@@ -204,6 +207,7 @@
           ...nextPrimary,
           source: "agent",
           kind: activityKind("agent", nextPrimary),
+          live: true,
         });
         seen.add(nextPrimary.id);
       }
@@ -213,6 +217,7 @@
           ...nextSecondary,
           source: "browser",
           kind: activityKind("browser", nextSecondary),
+          live: true,
         });
         seen.add(nextSecondary.id);
       }
@@ -221,7 +226,18 @@
     return merged.slice(0, 10);
   }
 
-  let visibleActivity = $derived(interleaveActivity(session.activity, browserActivity));
+  function mapRecordedActivity(items: ActivityItem[]): SurfaceActivity[] {
+    return items.slice(0, 6).map((item) => ({
+      ...item,
+      source: "agent",
+      kind: activityKind("agent", item),
+      live: false,
+    }));
+  }
+
+  let liveActivity = $derived(interleaveActivity(runtimeActivity, browserActivity));
+  let recordedActivity = $derived(mapRecordedActivity(session.activity));
+  let visibleActivity = $derived(liveActivity.length ? liveActivity : recordedActivity);
   let currentActivity = $derived(
     visibleActivity.find((item) => item.status !== "complete") ?? visibleActivity[0] ?? null
   );
@@ -230,6 +246,7 @@
       ? visibleActivity.filter((item) => item.id !== currentActivity.id).slice(0, 4)
       : visibleActivity.slice(0, 4)
   );
+  let historyActivity = $derived(recordedActivity.slice(0, 4));
 </script>
 
 <section class="flex min-h-0 flex-1 flex-col bg-obsidian">
@@ -283,7 +300,9 @@
 
         {#if recentActivity.length}
           <section>
-            <div class="mb-2 type-label text-fog/34">Recent activity</div>
+            <div class="mb-2 type-label text-fog/34">
+              {liveActivity.length ? "Live activity" : "Recent activity"}
+            </div>
             <div class="space-y-2">
               {#each recentActivity as item}
                 <article class={`rounded-xl border px-3 py-3 ${activityTone(item)}`}>
@@ -299,6 +318,30 @@
                         </span>
                       </div>
                       <div class="mt-1 type-body-4 text-fog/70">{item.summary}</div>
+                    </div>
+                    <div class="shrink-0 type-body-5 text-fog/34">{item.timestamp}</div>
+                  </div>
+                </article>
+              {/each}
+            </div>
+          </section>
+        {/if}
+
+        {#if liveActivity.length && historyActivity.length}
+          <section>
+            <div class="mb-2 type-label text-fog/34">Session history</div>
+            <div class="space-y-2">
+              {#each historyActivity as item}
+                <article class="rounded-xl border border-white/6 bg-white/[0.02] px-3 py-3">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <div class="type-heading-4 text-soft-ivory">{item.label}</div>
+                        <span class={`rounded-md px-2 py-0.5 text-[11px] ${activityKindBadge(item.kind)}`}>
+                          {activityKindLabel(item.kind)}
+                        </span>
+                      </div>
+                      <div class="mt-1 type-body-4 text-fog/68">{item.summary}</div>
                     </div>
                     <div class="shrink-0 type-body-5 text-fog/34">{item.timestamp}</div>
                   </div>
