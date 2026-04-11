@@ -258,6 +258,86 @@ The latest visual pass surfaced a few concrete problems we should keep using as 
 
 ### Screenshot Analysis Note
 
+## 7. Document Composer Roadmap
+
+We have chosen a hybrid editor architecture for the main prompt surface:
+
+- `pretext` owns text layout and visible rendering
+- a hidden native input layer still handles typing, composition, selection semantics, and clipboard behavior
+- we progressively close the gap until the surface feels like a real native document editor
+
+### Phase 0: Interaction baseline
+
+Goal:
+
+- make the hybrid composer feel intentional instead of looking like a transparent textarea trick
+
+Workstreams:
+
+- render visible text exclusively from the `pretext` layer
+- track focus and selection state from the hidden native input
+- add custom caret and selection visuals that align with the rendered text layer
+- hide native selection/background artifacts so the document surface looks coherent
+
+Exit criteria:
+
+- the composer visibly behaves like a document surface
+- caret and selection feel present and legible
+- typing still uses stable native input semantics underneath
+
+### Phase 1: Editing fidelity
+
+Goal:
+
+- improve the feeling of editing so the surface behaves more like a document than a form field
+
+Workstreams:
+
+- make caret motion and selection visuals match rendered lines more closely
+- support click placement and drag selection with fewer visible mismatches
+- refine focus, current-line, and empty-state behaviors
+- improve scroll anchoring so long documents feel calm while typing
+
+Exit criteria:
+
+- common editing actions feel trustworthy
+- the visible document and the native input state rarely drift in obvious ways
+
+### Phase 2: Rich document behaviors
+
+Goal:
+
+- make the surface capable of more than plain prompt entry
+
+Workstreams:
+
+- introduce richer inline blocks such as references, chips, or lightweight structured segments
+- support document sections, prompt templates, and reusable snippets
+- explore richer visual hierarchy inside the composer without losing text-editing stability
+
+Exit criteria:
+
+- the composer can support more complex prompt documents than a plain textbox
+- richer structures still feel editor-like, not widget-heavy
+
+### Phase 3: Decide the editor ceiling
+
+Goal:
+
+- decide how far Poro should go toward a real document editor
+
+Decision paths:
+
+- keep the current hybrid model and polish it as a premium prompt/document surface
+- extend the hybrid model into a deeper editor with stronger custom behaviors
+- or adopt a fuller editor architecture only if the product clearly needs it
+
+Decision criteria:
+
+- whether Poro benefits materially from a true editor surface
+- whether the added complexity improves the core workflow enough to justify it
+- whether the hybrid model already feels good enough for the product
+
 If DOM snapshots are not enough for judging the rendered UI, we can use screenshot analysis as a helper lane. A candidate to evaluate later is [Falcon-Perception](https://github.com/tiiuae/Falcon-Perception), mainly for OCR / screenshot understanding, not as a replacement for the browser sidecar or prompt-driven browser actions.
 
 ### UI Verification Rule

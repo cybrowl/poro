@@ -347,3 +347,28 @@ input {
   border: 0;
   background: transparent;
 }
+
+.ui-document-input {
+  caret-color: transparent;
+}
+
+.ui-document-input::selection {
+  background: transparent;
+  color: transparent;
+}
+
+@keyframes ui-document-caret-blink {
+  0%,
+  44% {
+    opacity: 1;
+  }
+
+  45%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.ui-document-caret {
+  animation: ui-document-caret-blink 1.08s steps(1) infinite;
+}
