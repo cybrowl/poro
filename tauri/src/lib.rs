@@ -1249,7 +1249,7 @@ fn mission_snapshot_from_record(record: &SessionRecord) -> Option<ClawMissionSna
         .as_ref()
         .map(|progress| progress.remaining_files.clone())
         .unwrap_or_default();
-    let verification_state = mission
+    let progress_verification_state = mission
         .progress
         .as_ref()
         .map(|progress| progress.verification.clone())
@@ -1277,9 +1277,16 @@ fn mission_snapshot_from_record(record: &SessionRecord) -> Option<ClawMissionSna
         }
     });
 
-    let (last_command, last_success, exit_code) = match latest_finished {
+    let (last_command, last_success, exit_code) = match latest_finished.clone() {
         Some((command, success, exit_code)) => (Some(command), Some(success), exit_code),
         None => (latest_started, None, None),
+    };
+
+    let verification_state = match latest_finished {
+        Some((_, true, _)) => harness_events::VerificationState::Passed,
+        Some((_, false, _)) => harness_events::VerificationState::Failed,
+        None if last_command.is_some() => harness_events::VerificationState::Pending,
+        None => progress_verification_state,
     };
 
     Some(ClawMissionSnapshot {
@@ -2580,4 +2587,243 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running Poro desktop");
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use std::path::Path;
+
+    use harness_events::{EventPayload, RuntimeEvent};
+    use harness_storage::{SessionMetadata, SessionRecord};
+    use tempfile::tempdir;
+    use uuid::Uuid;
+
+    use super::{mission_snapshot_from_record, snapshot_from_record};
+
+    fn session_record_with_events(workspace_root: &Path, events: Vec<RuntimeEvent>) -> SessionRecord {
+        let session_id = events
+            .first()
+            .map(|event| event.session_id)
+            .unwrap_or_else(Uuid::new_v4);
+        let updated_at_ms = events.last().map(|event| event.timestamp_ms).unwrap_or(1);
+        SessionRecord {
+            metadata: SessionMetadata {
+                session_id,
+                cwd: workspace_root.display().to_string(),
+                provider: "ollama".to_string(),
+                model: "gemma4:e2b".to_string(),
+                permission_mode: "workspace-write".to_string(),
+                created_at_ms: 1,
+                updated_at_ms,
+            },
+            events,
+            pending_approval: None,
+        }
+    }
+
+    fn read_package_event(session_id: Uuid, sequence: u64, timestamp_ms: u64) -> RuntimeEvent {
+        RuntimeEvent::new(
+            session_id,
+            sequence,
+            timestamp_ms,
+            EventPayload::ToolFinished {
+                tool: "read_file".to_string(),
+                summary: "Read package.json".to_string(),
+                output: "{\"name\":\"poro\",\"version\":\"0.1.0\"}".to_string(),
+                arguments_json: "{\"path\":\"package.json\"}".to_string(),
+                success: true,
+            },
+        )
+    }
+
+    fn apply_package_patch_event(session_id: Uuid, sequence: u64, timestamp_ms: u64) -> RuntimeEvent {
+        RuntimeEvent::new(
+            session_id,
+            sequence,
+            timestamp_ms,
+            EventPayload::ToolFinished {
+                tool: "apply_patch".to_string(),
+                summary: "Patched package.json".to_string(),
+                output: "{}".to_string(),
+                arguments_json:
+                    "{\"path\":\"package.json\",\"old\":\"\\\"version\\\": \\\"0.1.0\\\"\",\"new\":\"\\\"version\\\": \\\"0.1.1\\\"\"}"
+                        .to_string(),
+                success: true,
+            },
+        )
+    }
+
+    fn patch_generated_event(session_id: Uuid, sequence: u64, timestamp_ms: u64) -> RuntimeEvent {
+        RuntimeEvent::new(
+            session_id,
+            sequence,
+            timestamp_ms,
+            EventPayload::PatchGenerated {
+                files: vec!["package.json".to_string()],
+            },
+        )
+    }
+
+    fn seed_version_sync_workspace(workspace_root: &Path) {
+        fs::create_dir_all(workspace_root.join("src")).expect("src dir should be created");
+        fs::write(
+            workspace_root.join("package.json"),
+            "{\n  \"name\": \"poro\",\n  \"version\": \"0.1.1\"\n}\n",
+        )
+        .expect("package.json should be written");
+        fs::write(
+            workspace_root.join("src/version.ts"),
+            "export const VERSION = '0.1.0';\n",
+        )
+        .expect("src/version.ts should be written");
+    }
+
+    #[test]
+    fn mission_snapshot_reflects_live_verification_and_remaining_files() {
+        let temp = tempdir().expect("tempdir should be created");
+        seed_version_sync_workspace(temp.path());
+        let session_id = Uuid::new_v4();
+        let record = session_record_with_events(
+            temp.path(),
+            vec![
+                RuntimeEvent::new(
+                    session_id,
+                    0,
+                    1,
+                    EventPayload::MessageUser {
+                        message: "Update the package version from 0.1.0 to 0.1.1.".to_string(),
+                    },
+                ),
+                read_package_event(session_id, 1, 2),
+                apply_package_patch_event(session_id, 2, 3),
+                patch_generated_event(session_id, 3, 4),
+                RuntimeEvent::new(
+                    session_id,
+                    4,
+                    5,
+                    EventPayload::VerificationStarted {
+                        command: "npm run check".to_string(),
+                    },
+                ),
+            ],
+        );
+
+        let mission = mission_snapshot_from_record(&record).expect("mission snapshot should exist");
+
+        assert_eq!(mission.goal, "Update the package version from 0.1.0 to 0.1.1.");
+        assert_eq!(mission.task_kind, "version_sync");
+        assert_eq!(mission.phase, "verifying");
+        assert_eq!(
+            mission.active_step.as_deref(),
+            Some("patch the remaining files: src/version.ts")
+        );
+        assert_eq!(mission.verification.state, "pending");
+        assert_eq!(mission.verification.last_command.as_deref(), Some("npm run check"));
+        assert_eq!(mission.verification.last_success, None);
+        assert_eq!(mission.verification.exit_code, None);
+        assert_eq!(mission.completed_files, vec!["package.json".to_string()]);
+        assert_eq!(mission.remaining_files, vec!["src/version.ts".to_string()]);
+        assert!(mission
+            .plan_outline
+            .iter()
+            .any(|step| step == "apply the requested edits to the correct files"));
+        assert!(!mission.objectively_complete);
+    }
+
+    #[test]
+    fn mission_snapshot_reflects_failed_verification_recovery_details() {
+        let temp = tempdir().expect("tempdir should be created");
+        seed_version_sync_workspace(temp.path());
+        let session_id = Uuid::new_v4();
+        let record = session_record_with_events(
+            temp.path(),
+            vec![
+                RuntimeEvent::new(
+                    session_id,
+                    0,
+                    1,
+                    EventPayload::MessageUser {
+                        message: "Update the package version from 0.1.0 to 0.1.1.".to_string(),
+                    },
+                ),
+                read_package_event(session_id, 1, 2),
+                RuntimeEvent::new(
+                    session_id,
+                    2,
+                    3,
+                    EventPayload::VerificationFinished {
+                        command: "npm run check".to_string(),
+                        success: false,
+                        exit_code: Some(1),
+                        output: Some("package.json: Expected 0.1.1".to_string()),
+                        protected_paths: Vec::new(),
+                    },
+                ),
+            ],
+        );
+
+        let mission = mission_snapshot_from_record(&record).expect("mission snapshot should exist");
+
+        assert_eq!(mission.phase, "recovering");
+        assert_eq!(mission.verification.state, "failed");
+        assert_eq!(mission.verification.last_command.as_deref(), Some("npm run check"));
+        assert_eq!(mission.verification.last_success, Some(false));
+        assert_eq!(mission.verification.exit_code, Some(1));
+        assert!(
+            mission
+                .active_subgoal
+                .as_deref()
+                .is_some_and(|subgoal| subgoal.contains("package.json")),
+            "expected active_subgoal to point at the implicated package.json"
+        );
+        assert!(
+            mission
+                .blocker
+                .as_deref()
+                .is_some_and(|blocker| blocker.contains("Expected 0.1.1")),
+            "expected blocker to preserve the verification mismatch clue"
+        );
+    }
+
+    #[test]
+    fn session_snapshot_embeds_mission_snapshot_for_the_ui() {
+        let temp = tempdir().expect("tempdir should be created");
+        seed_version_sync_workspace(temp.path());
+        let session_id = Uuid::new_v4();
+        let record = session_record_with_events(
+            temp.path(),
+            vec![
+                RuntimeEvent::new(
+                    session_id,
+                    0,
+                    1,
+                    EventPayload::MessageUser {
+                        message: "Update the package version from 0.1.0 to 0.1.1.".to_string(),
+                    },
+                ),
+                read_package_event(session_id, 1, 2),
+                apply_package_patch_event(session_id, 2, 3),
+                patch_generated_event(session_id, 3, 4),
+            ],
+        );
+        let session_path = temp.path().join("session.json");
+
+        let snapshot = snapshot_from_record(&session_path, &record);
+
+        assert_eq!(snapshot.path, session_path.display().to_string());
+        assert_eq!(snapshot.workspace_path, temp.path().display().to_string());
+        assert_eq!(
+            snapshot.mission.as_ref().map(|mission| mission.phase.as_str()),
+            Some("executing")
+        );
+        assert_eq!(
+            snapshot
+                .mission
+                .as_ref()
+                .and_then(|mission| mission.remaining_files.first())
+                .map(String::as_str),
+            Some("src/version.ts")
+        );
+    }
 }
