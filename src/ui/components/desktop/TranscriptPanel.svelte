@@ -464,49 +464,47 @@
     </div>
 
     <div class="ui-scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto lg:basis-1/2">
-      <div class="mx-auto flex w-full max-w-[620px] items-center justify-end px-8 py-5">
-        <div class="flex items-center gap-2">
-          <PoroIconButton
-            iconSrc={folderIconUrl}
-            variant="ghost"
-            iconSize="1.3rem"
-            buttonSize="2.4rem"
-            ariaLabel="Open workspace and session switcher"
-            title="Open workspace and session switcher"
-            onclick={onOpenWorkspaceSwitcher}
-            iconClass="opacity-85"
-          />
-          <PoroIconButton
-            iconSrc={settingsIconUrl}
-            variant="ghost"
-            iconSize="1.3rem"
-            buttonSize="2.4rem"
-            ariaLabel="Open settings"
-            title="Open settings"
-            onclick={onOpenSettings}
-            iconClass="opacity-85"
-          />
-          <PoroIconButton
-            iconSrc={newChatIconUrl}
-            variant="ghost"
-            iconSize="1.3rem"
-            buttonSize="2.4rem"
-            ariaLabel="Clear draft"
-            title="Clear draft"
-            onclick={() => onComposerInput("")}
-            iconClass="opacity-85"
-          />
-        </div>
-      </div>
-
       <div class="flex min-h-0 flex-1 flex-col px-8 pb-6">
         <div class="relative mx-auto flex w-full max-w-[620px] min-h-0 flex-1 flex-col overflow-visible rounded-[28px] bg-transparent">
+          <div class="absolute right-0 top-0 z-10 flex items-center gap-2">
+            <PoroIconButton
+              iconSrc={folderIconUrl}
+              variant="ghost"
+              iconSize="1.45rem"
+              buttonSize="2.65rem"
+              ariaLabel="Open workspace and session switcher"
+              title="Open workspace and session switcher"
+              onclick={onOpenWorkspaceSwitcher}
+              iconClass="opacity-88"
+            />
+            <PoroIconButton
+              iconSrc={settingsIconUrl}
+              variant="ghost"
+              iconSize="1.45rem"
+              buttonSize="2.65rem"
+              ariaLabel="Open settings"
+              title="Open settings"
+              onclick={onOpenSettings}
+              iconClass="opacity-88"
+            />
+            <PoroIconButton
+              iconSrc={newChatIconUrl}
+              variant="ghost"
+              iconSize="1.45rem"
+              buttonSize="2.65rem"
+              ariaLabel="Clear draft"
+              title="Clear draft"
+              onclick={() => onComposerInput("")}
+              iconClass="opacity-88"
+            />
+          </div>
+
           <PoroIconButton
             iconSrc={submitIconUrl}
             variant="gold"
             iconSize="1.35rem"
             buttonSize="3rem"
-            class="absolute right-0 top-8 z-10 transition-transform duration-150 hover:translate-y-[-1px] disabled:translate-y-0 disabled:opacity-55"
+            class="absolute right-0 top-[4.7rem] z-10 transition-transform duration-150 hover:translate-y-[-1px] disabled:translate-y-0 disabled:opacity-55"
             ariaLabel={submitButtonLabel}
             title={submitButtonLabel}
             disabled={runtimeBusy || !composerText.trim()}
