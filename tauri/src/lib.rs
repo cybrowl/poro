@@ -1635,6 +1635,41 @@ fn load_claw_session(
 }
 
 #[tauri::command]
+fn delete_claw_session(
+    app: AppHandle,
+    manager: State<'_, RuntimeManager>,
+    workspace_path: String,
+    session_path: String,
+) -> Result<(), String> {
+    let workspace_path = PathBuf::from(normalize_workspace_path(workspace_path));
+    let allowed_root = workspace_session_root(&app, &workspace_path)?;
+    let session_path = PathBuf::from(session_path);
+
+    if !session_path.starts_with(&allowed_root) {
+        return Err("Requested session path is outside the workspace session store.".to_string());
+    }
+
+    {
+        let runtimes = manager.runtimes.lock().map_err(|error| error.to_string())?;
+        if runtimes
+            .values()
+            .any(|runtime| runtime.session_path == session_path)
+        {
+            return Err(
+                "Stop the active Harness runtime before deleting this session.".to_string(),
+            );
+        }
+    }
+
+    if !session_path.exists() {
+        return Ok(());
+    }
+
+    fs::remove_file(&session_path).map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
 fn start_claw_runtime(
     app: AppHandle,
     manager: State<'_, RuntimeManager>,
@@ -2043,6 +2078,7 @@ pub fn run() {
             check_claw_backend,
             list_claw_sessions,
             load_claw_session,
+            delete_claw_session,
             start_claw_runtime,
             send_claw_input,
             stop_claw_runtime,

@@ -201,6 +201,20 @@ export async function loadClawSession(
   });
 }
 
+export async function deleteClawSession(
+  workspacePath: string,
+  sessionPath: string
+): Promise<void> {
+  if (!isDesktopEnvironment()) {
+    return;
+  }
+
+  await invokeCommand("delete_claw_session", {
+    workspacePath,
+    sessionPath,
+  });
+}
+
 export async function startClawRuntime(
   request: LaunchRuntimeRequest
 ): Promise<RuntimeLaunch> {

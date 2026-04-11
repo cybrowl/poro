@@ -15,6 +15,7 @@
   } from "$lib/browserRuntime";
   import {
     checkClawBackend,
+    deleteClawSession,
     listenToClawRuntimeEvents,
     listClawSessions,
     loadClawSession,
@@ -574,6 +575,66 @@
     selectedSessionId = id;
     composerText = session.draft;
     await hydrateSession(session);
+  }
+
+  async function deleteSession(id: string) {
+    const workspace = selectedWorkspace;
+    const session = workspace.sessions.find((item) => item.id === id);
+    if (!session) {
+      return;
+    }
+
+    const message = session.sessionPath
+      ? `Delete "${session.title}" from this workspace? This removes its saved local session.`
+      : `Delete "${session.title}" from the current thread list?`;
+    const confirmed =
+      typeof globalThis.confirm === "function" ? globalThis.confirm(message) : true;
+
+    if (!confirmed) {
+      return;
+    }
+
+    runtimeError = null;
+
+    try {
+      if (desktopReady && session.sessionPath) {
+        await deleteClawSession(workspace.path, session.sessionPath);
+        await refreshWorkspaceSessions(workspace.id, selectedSessionId === id);
+
+        const refreshedWorkspace = workspaceList.find((item) => item.id === workspace.id);
+        const nextSession =
+          refreshedWorkspace?.sessions.find((item) => item.id === selectedSessionId) ??
+          refreshedWorkspace?.sessions[0];
+        if (nextSession) {
+          composerText = nextSession.draft;
+        }
+        return;
+      }
+
+      const remainingSessions = workspace.sessions.filter((item) => item.id !== id);
+      const nextSessions = remainingSessions.length
+        ? remainingSessions
+        : [createPlaceholderSession(workspace)];
+      const nextSelectedSession =
+        selectedSessionId === id
+          ? nextSessions[0]
+          : nextSessions.find((item) => item.id === selectedSessionId) ?? nextSessions[0];
+
+      updateWorkspace(workspace.id, (currentWorkspace) => ({
+        ...currentWorkspace,
+        status: nextSessions.some((item) => item.status === "Live")
+          ? "Active session"
+          : "Ready",
+        sessions: nextSessions,
+      }));
+
+      if (selectedWorkspaceId === workspace.id) {
+        selectedSessionId = nextSelectedSession.id;
+        composerText = nextSelectedSession.draft;
+      }
+    } catch (error) {
+      runtimeError = error instanceof Error ? error.message : String(error);
+    }
   }
 
   async function setProvider(id: string) {
@@ -1167,6 +1228,7 @@
       {selectedSessionId}
       onSelectWorkspace={selectWorkspace}
       onSelectSession={selectSession}
+      onDeleteSession={deleteSession}
       onPickWorkspace={openWorkspaceFromDisk}
       onOpenWorkspacePicker={() => (showWorkspacePicker = true)}
       onOpenSettings={() => (showSettings = true)}
