@@ -466,7 +466,7 @@
     <div class="ui-scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto lg:basis-1/2">
       <div class="flex min-h-0 flex-1 flex-col px-8 pb-6">
         <div class="relative mx-auto flex w-full max-w-[620px] min-h-0 flex-1 flex-col overflow-visible rounded-[28px] bg-transparent">
-          <div class="absolute right-0 top-0 z-10 flex items-center gap-2">
+          <div class="absolute right-0 top-4 z-10 flex items-center gap-2">
             <PoroIconButton
               iconSrc={folderIconUrl}
               variant="ghost"
@@ -504,7 +504,7 @@
             variant="gold"
             iconSize="1.35rem"
             buttonSize="3rem"
-            class="absolute right-0 top-[4.7rem] z-10 transition-transform duration-150 hover:translate-y-[-1px] disabled:translate-y-0 disabled:opacity-55"
+            class="absolute right-0 top-[5.7rem] z-10 transition-transform duration-150 hover:translate-y-[-1px] disabled:translate-y-0 disabled:opacity-55"
             ariaLabel={submitButtonLabel}
             title={submitButtonLabel}
             disabled={runtimeBusy || !composerText.trim()}

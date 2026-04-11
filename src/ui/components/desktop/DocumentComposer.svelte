@@ -27,7 +27,9 @@
   let preparedSource = "";
 
   const horizontalPadding = 72;
-  const verticalPadding = 96;
+  const topPadding = 140;
+  const bottomPadding = 40;
+  const verticalPadding = topPadding + bottomPadding;
   const lineHeight = 36;
   const minHeight = 420;
   const font = '400 20px "Noto Sans"';
@@ -102,9 +104,10 @@
 
 <div bind:this={frameEl} class="relative mx-auto flex w-full max-w-[620px] flex-1">
   <div
-    class={`pointer-events-none absolute inset-0 overflow-hidden px-9 pb-10 pt-6 text-[20px] leading-[36px] text-fog/84 transition-opacity duration-100 ${
+    class={`pointer-events-none absolute inset-0 overflow-hidden text-[20px] leading-[36px] text-fog/84 transition-opacity duration-100 ${
       isFocused ? "opacity-0" : "opacity-100"
     }`}
+    style={`padding-left: ${horizontalPadding / 2}px; padding-right: ${horizontalPadding / 2}px; padding-top: ${topPadding}px; padding-bottom: ${bottomPadding}px;`}
     aria-hidden="true"
   >
     {#if value.length}
@@ -121,10 +124,10 @@
   </div>
 
   <textarea
-    class={`ui-scrollbar-hidden min-h-0 w-full flex-1 resize-none overflow-hidden bg-transparent px-9 pb-10 pt-6 text-[20px] leading-[36px] outline-none transition-colors duration-100 placeholder:text-transparent ${
+    class={`ui-scrollbar-hidden min-h-0 w-full flex-1 resize-none overflow-hidden bg-transparent text-[20px] leading-[36px] outline-none transition-colors duration-100 placeholder:text-transparent ${
       isFocused ? "text-fog/84 caret-accent-gold" : "text-transparent caret-transparent"
     }`}
-    style={`height: ${composerHeight}px;`}
+    style={`height: ${composerHeight}px; padding-left: ${horizontalPadding / 2}px; padding-right: ${horizontalPadding / 2}px; padding-top: ${topPadding}px; padding-bottom: ${bottomPadding}px;`}
     {disabled}
     placeholder=""
     value={value}
