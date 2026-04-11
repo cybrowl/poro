@@ -194,6 +194,24 @@
     );
   }
 
+  function findRuntimeSession(workspacePath: string, runtimeId: string) {
+    const workspace = findWorkspaceByPath(workspacePath);
+    if (!workspace) {
+      return null;
+    }
+
+    const activeRuntime = activeRuntimeByWorkspace[workspacePath];
+    return (
+      workspace.sessions.find((session) => {
+        return (
+          session.runtimeId === runtimeId ||
+          (activeRuntime?.sessionPath != null && session.sessionPath === activeRuntime.sessionPath) ||
+          (activeRuntime?.sessionId != null && session.id === activeRuntime.sessionId)
+        );
+      }) ?? null
+    );
+  }
+
   function applyMissionToRuntimeSession(
     workspacePath: string,
     runtimeId: string,
@@ -230,6 +248,89 @@
         sessions: nextSessions,
       };
     });
+  }
+
+  function missionPhaseLabel(phase: string | null | undefined) {
+    return (phase ?? "idle").replace(/_/g, " ");
+  }
+
+  function describeMissionTransition(
+    previousMission: SessionRecord["mission"],
+    nextMission: SessionRecord["mission"]
+  ): Pick<ActivityItem, "label" | "summary" | "status"> | null {
+    if (!nextMission) {
+      return null;
+    }
+
+    if (nextMission.blocker && nextMission.blocker !== previousMission?.blocker) {
+      return {
+        label: "Blocked",
+        summary: nextMission.blocker,
+        status: "queued",
+      };
+    }
+
+    const verificationChanged =
+      nextMission.verification.state !== previousMission?.verification?.state ||
+      nextMission.verification.lastCommand !== previousMission?.verification?.lastCommand;
+    if (verificationChanged) {
+      if (nextMission.verification.state === "pending") {
+        return {
+          label: "Verification running",
+          summary:
+            nextMission.verification.lastCommand ?? "Harness queued verification for this turn.",
+          status: "active",
+        };
+      }
+      if (nextMission.verification.state === "passed") {
+        return {
+          label: "Verification passed",
+          summary:
+            nextMission.verification.lastCommand ?? "The planned verification finished cleanly.",
+          status: "complete",
+        };
+      }
+      if (nextMission.verification.state === "failed") {
+        return {
+          label: "Verification failed",
+          summary:
+            nextMission.verification.lastCommand ??
+            "The planned verification failed and recovery is now required.",
+          status: "queued",
+        };
+      }
+    }
+
+    if (nextMission.activeStep && nextMission.activeStep !== previousMission?.activeStep) {
+      const label =
+        nextMission.phase === "recovering"
+          ? "Recovering"
+          : nextMission.phase === "planning"
+            ? "Planning"
+            : nextMission.phase === "verifying"
+              ? "Verifying"
+              : "Current step";
+      return {
+        label,
+        summary: nextMission.activeStep,
+        status: nextMission.phase === "blocked" ? "queued" : "active",
+      };
+    }
+
+    if (nextMission.phase !== previousMission?.phase) {
+      return {
+        label: `Phase • ${missionPhaseLabel(nextMission.phase)}`,
+        summary: nextMission.goal,
+        status:
+          nextMission.phase === "completed"
+            ? "complete"
+            : nextMission.phase === "blocked"
+              ? "queued"
+              : "active",
+      };
+    }
+
+    return null;
   }
 
   function applyWorkspaceGitState(workspaceId: string, gitState: WorkspaceGitState) {
@@ -1282,7 +1383,12 @@
     if (event.type === "missionUpdated") {
       const workspacePath = runtimeWorkspaceById[event.runtimeId];
       if (workspacePath) {
+        const previousMission = findRuntimeSession(workspacePath, event.runtimeId)?.mission ?? null;
         applyMissionToRuntimeSession(workspacePath, event.runtimeId, event.mission);
+        const activity = describeMissionTransition(previousMission, event.mission);
+        if (activity) {
+          pushRuntimeFeed(workspacePath, activity.label, activity.summary, activity.status);
+        }
       }
       return;
     }
