@@ -35,11 +35,8 @@
 <aside
   class="flex min-h-0 w-full shrink-0 flex-col border-r border-white/6 bg-deep-charcoal lg:h-screen lg:w-[248px]"
 >
-  <div class="flex items-center justify-between px-4 py-3">
+  <div class="px-4 py-3">
     <img src={logoUrl} alt="Poro" class="h-9 w-auto object-contain" />
-    <span class="rounded-md border border-white/6 bg-white/[0.025] px-2 py-1 text-[11px] text-fog/36">
-      desktop
-    </span>
   </div>
 
   <div class="px-3 pb-2">
