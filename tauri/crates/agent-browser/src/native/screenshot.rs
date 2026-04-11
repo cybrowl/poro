@@ -221,11 +221,83 @@ async fn capture_screenshot_base64(
         }
     }
 
+    let primary = capture_screenshot_with_params(client, session_id, &params).await?;
+    if !is_probably_blank_capture(&primary) {
+        return Ok(primary);
+    }
+
+    params.from_surface = Some(false);
+    let fallback = capture_screenshot_with_params(client, session_id, &params).await?;
+    if !is_probably_blank_capture(&fallback) {
+        return Ok(fallback);
+    }
+
+    params.from_surface = None;
+    capture_screenshot_with_params(client, session_id, &params).await
+}
+
+async fn capture_screenshot_with_params(
+    client: &CdpClient,
+    session_id: &str,
+    params: &CaptureScreenshotParams,
+) -> Result<String, String> {
     let result: CaptureScreenshotResult = client
-        .send_command_typed("Page.captureScreenshot", &params, Some(session_id))
+        .send_command_typed("Page.captureScreenshot", params, Some(session_id))
         .await?;
 
     Ok(result.data)
+}
+
+fn is_probably_blank_capture(base64_data: &str) -> bool {
+    let bytes = match base64::Engine::decode(&base64::engine::general_purpose::STANDARD, base64_data)
+    {
+        Ok(bytes) => bytes,
+        Err(_) => return false,
+    };
+
+    let image = match image::load_from_memory(&bytes) {
+        Ok(image) => image.to_rgba8(),
+        Err(_) => return false,
+    };
+
+    if image.width() == 0 || image.height() == 0 {
+        return false;
+    }
+
+    let mut min_r = u8::MAX;
+    let mut min_g = u8::MAX;
+    let mut min_b = u8::MAX;
+    let mut min_a = u8::MAX;
+    let mut max_r = u8::MIN;
+    let mut max_g = u8::MIN;
+    let mut max_b = u8::MIN;
+    let mut max_a = u8::MIN;
+
+    for pixel in image.pixels() {
+        let [r, g, b, a] = pixel.0;
+        min_r = min_r.min(r);
+        min_g = min_g.min(g);
+        min_b = min_b.min(b);
+        min_a = min_a.min(a);
+        max_r = max_r.max(r);
+        max_g = max_g.max(g);
+        max_b = max_b.max(b);
+        max_a = max_a.max(a);
+    }
+
+    let range_r = max_r.saturating_sub(min_r);
+    let range_g = max_g.saturating_sub(min_g);
+    let range_b = max_b.saturating_sub(min_b);
+    let range_a = max_a.saturating_sub(min_a);
+
+    max_r <= 8
+        && max_g <= 8
+        && max_b <= 8
+        && min_a >= 250
+        && range_r <= 2
+        && range_g <= 2
+        && range_b <= 2
+        && range_a <= 2
 }
 
 async fn collect_annotations(
@@ -600,6 +672,8 @@ fn get_screenshot_dir() -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use image::{DynamicImage, ImageFormat, Rgba, RgbaImage};
+    use std::io::Cursor;
 
     #[test]
     fn filters_annotations_to_target_overlap() {
@@ -687,5 +761,28 @@ mod tests {
         let projected = project_annotations(&annotations, None, Some((10.0, 1000.0)));
         assert_eq!(projected[0].box_.x, 15);
         assert_eq!(projected[0].box_.y, 1012);
+    }
+
+    fn png_base64(image: RgbaImage) -> String {
+        let mut bytes = Vec::new();
+        DynamicImage::ImageRgba8(image)
+            .write_to(&mut Cursor::new(&mut bytes), ImageFormat::Png)
+            .expect("png encode");
+        base64::Engine::encode(&base64::engine::general_purpose::STANDARD, bytes)
+    }
+
+    #[test]
+    fn detects_blank_black_capture() {
+        let image = RgbaImage::from_pixel(8, 8, Rgba([0, 0, 0, 255]));
+        let encoded = png_base64(image);
+        assert!(is_probably_blank_capture(&encoded));
+    }
+
+    #[test]
+    fn keeps_nonblank_dark_capture() {
+        let mut image = RgbaImage::from_pixel(8, 8, Rgba([0, 0, 0, 255]));
+        image.put_pixel(4, 4, Rgba([213, 161, 42, 255]));
+        let encoded = png_base64(image);
+        assert!(!is_probably_blank_capture(&encoded));
     }
 }
