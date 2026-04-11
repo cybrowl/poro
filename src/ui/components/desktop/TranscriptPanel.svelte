@@ -470,8 +470,8 @@
           <PoroIconButton
             iconSrc={folderIconUrl}
             variant="ghost"
-            iconSize="1.15rem"
-            buttonSize="2.15rem"
+            iconSize="1.3rem"
+            buttonSize="2.4rem"
             ariaLabel="Open workspace and session switcher"
             title="Open workspace and session switcher"
             onclick={onOpenWorkspaceSwitcher}
@@ -480,8 +480,8 @@
           <PoroIconButton
             iconSrc={settingsIconUrl}
             variant="ghost"
-            iconSize="1.15rem"
-            buttonSize="2.15rem"
+            iconSize="1.3rem"
+            buttonSize="2.4rem"
             ariaLabel="Open settings"
             title="Open settings"
             onclick={onOpenSettings}
@@ -490,8 +490,8 @@
           <PoroIconButton
             iconSrc={newChatIconUrl}
             variant="ghost"
-            iconSize="1.15rem"
-            buttonSize="2.15rem"
+            iconSize="1.3rem"
+            buttonSize="2.4rem"
             ariaLabel="Clear draft"
             title="Clear draft"
             onclick={() => onComposerInput("")}
