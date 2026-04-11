@@ -36,6 +36,7 @@ target/
 
 # local harness + eval artifacts
 /.harness/
+/.agent-browser/
 /harness/
 /harness-server
 /harness-server.exe

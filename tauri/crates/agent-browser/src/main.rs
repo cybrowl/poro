@@ -29,6 +29,7 @@ use output::{
 };
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, Write};
+use std::path::{Path, PathBuf};
 
 fn serialize_json_value(value: &serde_json::Value) -> String {
     serde_json::to_string(value).unwrap_or_else(|_| {
@@ -86,6 +87,522 @@ struct StdioResponse {
     warning: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     error_type: Option<&'static str>,
+}
+
+#[derive(Debug, Clone)]
+enum BaselineMode {
+    Capture,
+    Compare,
+    Approve,
+}
+
+#[derive(Debug, Clone)]
+struct BaselineCommand {
+    mode: BaselineMode,
+    name: String,
+    slug: String,
+    selector: Option<String>,
+    full_page: bool,
+    threshold: Option<f64>,
+}
+
+#[derive(Debug, Clone)]
+struct BaselinePaths {
+    directory: PathBuf,
+    baseline: PathBuf,
+    current: PathBuf,
+    diff: PathBuf,
+    meta: PathBuf,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+struct BaselineMetadata {
+    name: String,
+    slug: String,
+    session: String,
+    selector: Option<String>,
+    full_page: bool,
+    threshold: f64,
+    updated_at: String,
+    baseline_path: String,
+    current_path: String,
+    diff_path: String,
+}
+
+#[derive(Debug)]
+struct BaselineExecution {
+    action: String,
+    success: bool,
+    data: serde_json::Value,
+    error: Option<String>,
+}
+
+fn slugify_baseline_name(name: &str) -> Option<String> {
+    let mut slug = String::with_capacity(name.len());
+    let mut last_dash = false;
+
+    for ch in name.trim().chars() {
+        let normalized = if ch.is_ascii_alphanumeric() {
+            last_dash = false;
+            Some(ch.to_ascii_lowercase())
+        } else if matches!(ch, '-' | '_' | '.' | ' ') {
+            if last_dash {
+                None
+            } else {
+                last_dash = true;
+                Some('-')
+            }
+        } else if last_dash {
+            None
+        } else {
+            last_dash = true;
+            Some('-')
+        };
+
+        if let Some(value) = normalized {
+            slug.push(value);
+        }
+    }
+
+    let slug = slug.trim_matches('-').to_string();
+    if slug.is_empty() {
+        None
+    } else {
+        Some(slug)
+    }
+}
+
+fn parse_baseline_command(args: &[String]) -> Result<BaselineCommand, ParseError> {
+    let subcommand =
+        args.get(1)
+            .map(|value| value.as_str())
+            .ok_or_else(|| ParseError::MissingArguments {
+                context: "baseline".to_string(),
+                usage: "baseline <capture|compare|approve> <name>",
+            })?;
+
+    let mode = match subcommand {
+        "capture" => BaselineMode::Capture,
+        "compare" => BaselineMode::Compare,
+        "approve" => BaselineMode::Approve,
+        other => {
+            return Err(ParseError::UnknownSubcommand {
+                subcommand: other.to_string(),
+                valid_options: &["capture", "compare", "approve"],
+            });
+        }
+    };
+
+    let name = args.get(2).ok_or_else(|| ParseError::MissingArguments {
+        context: format!("baseline {}", subcommand),
+        usage: "baseline <capture|compare|approve> <name>",
+    })?;
+
+    let slug = slugify_baseline_name(name).ok_or_else(|| ParseError::InvalidValue {
+        message: format!("Invalid baseline name: '{}'", name),
+        usage: "baseline <capture|compare|approve> <name>",
+    })?;
+
+    let mut selector = None;
+    let mut full_page = false;
+    let mut threshold = None;
+    let mut index = 3;
+
+    while index < args.len() {
+        match args[index].as_str() {
+            "-s" | "--selector" => {
+                let value = args
+                    .get(index + 1)
+                    .ok_or_else(|| ParseError::MissingArguments {
+                        context: format!("baseline {} --selector", subcommand),
+                        usage:
+                            "baseline <capture|compare> <name> [--selector <sel>] [--full/-f] [--threshold <0-1>]",
+                    })?;
+                selector = Some(value.clone());
+                index += 1;
+            }
+            "--full" | "-f" => {
+                full_page = true;
+            }
+            "-t" | "--threshold" => {
+                if !matches!(mode, BaselineMode::Compare) {
+                    return Err(ParseError::InvalidValue {
+                        message: "--threshold only applies to baseline compare".to_string(),
+                        usage: "baseline compare <name> [--threshold <0-1>]",
+                    });
+                }
+                let value = args
+                    .get(index + 1)
+                    .ok_or_else(|| ParseError::MissingArguments {
+                        context: "baseline compare --threshold".to_string(),
+                        usage: "baseline compare <name> [--threshold <0-1>]",
+                    })?;
+                let parsed = value.parse::<f64>().map_err(|_| ParseError::InvalidValue {
+                    message: format!("Invalid threshold value: {}", value),
+                    usage: "baseline compare <name> [--threshold <0-1>]",
+                })?;
+                if !(0.0..=1.0).contains(&parsed) {
+                    return Err(ParseError::InvalidValue {
+                        message: format!("Threshold must be between 0 and 1, got {}", parsed),
+                        usage: "baseline compare <name> [--threshold <0-1>]",
+                    });
+                }
+                threshold = Some(parsed);
+                index += 1;
+            }
+            other => {
+                return Err(ParseError::InvalidValue {
+                    message: format!("Unknown flag: {}", other),
+                    usage:
+                        "baseline <capture|compare> <name> [--selector <sel>] [--full/-f] [--threshold <0-1>]",
+                });
+            }
+        }
+        index += 1;
+    }
+
+    Ok(BaselineCommand {
+        mode,
+        name: name.clone(),
+        slug,
+        selector,
+        full_page,
+        threshold,
+    })
+}
+
+fn baseline_root_dir() -> PathBuf {
+    if let Ok(path) = env::var("AGENT_BROWSER_BASELINE_DIR") {
+        if !path.trim().is_empty() {
+            return PathBuf::from(path);
+        }
+    }
+
+    env::current_dir()
+        .unwrap_or_else(|_| env::temp_dir())
+        .join(".agent-browser")
+        .join("baselines")
+}
+
+fn baseline_paths(slug: &str) -> BaselinePaths {
+    let directory = baseline_root_dir().join(slug);
+    BaselinePaths {
+        baseline: directory.join("baseline.png"),
+        current: directory.join("current.png"),
+        diff: directory.join("diff.png"),
+        meta: directory.join("meta.json"),
+        directory,
+    }
+}
+
+fn read_baseline_metadata(path: &Path) -> Option<BaselineMetadata> {
+    fs::read_to_string(path)
+        .ok()
+        .and_then(|content| serde_json::from_str::<BaselineMetadata>(&content).ok())
+}
+
+fn write_baseline_metadata(path: &Path, metadata: &BaselineMetadata) -> Result<(), String> {
+    let serialized = serde_json::to_string_pretty(metadata)
+        .map_err(|error| format!("Failed to serialize baseline metadata: {}", error))?;
+    fs::write(path, serialized).map_err(|error| {
+        format!(
+            "Failed to write baseline metadata to {}: {}",
+            path.display(),
+            error
+        )
+    })
+}
+
+fn capture_screenshot_to_path(
+    flags: &Flags,
+    session: &str,
+    path: &Path,
+    selector: Option<&str>,
+    full_page: bool,
+) -> Result<Response, String> {
+    let mut command = json!({
+        "id": gen_id(),
+        "action": "screenshot",
+        "path": path.to_string_lossy().to_string(),
+        "fullPage": full_page,
+    });
+
+    if let Some(selector) = selector {
+        command["selector"] = json!(selector);
+    }
+
+    let (response, _) = execute_supported_command(flags, session, command, false)?;
+    Ok(response)
+}
+
+fn run_diff_screenshot(
+    flags: &Flags,
+    session: &str,
+    baseline_path: &Path,
+    diff_path: &Path,
+    selector: Option<&str>,
+    full_page: bool,
+    threshold: f64,
+) -> Result<Response, String> {
+    let mut command = json!({
+        "id": gen_id(),
+        "action": "diff_screenshot",
+        "baseline": baseline_path.to_string_lossy().to_string(),
+        "output": diff_path.to_string_lossy().to_string(),
+        "threshold": threshold,
+        "fullPage": full_page,
+    });
+
+    if let Some(selector) = selector {
+        command["selector"] = json!(selector);
+    }
+
+    let (response, _) = execute_supported_command(flags, session, command, false)?;
+    Ok(response)
+}
+
+fn execute_baseline_command(
+    flags: &Flags,
+    session: &str,
+    command: &BaselineCommand,
+) -> Result<BaselineExecution, String> {
+    let paths = baseline_paths(&command.slug);
+    fs::create_dir_all(&paths.directory).map_err(|error| {
+        format!(
+            "Failed to create baseline directory {}: {}",
+            paths.directory.display(),
+            error
+        )
+    })?;
+
+    let existing_meta = read_baseline_metadata(&paths.meta).unwrap_or_default();
+    let selector = command
+        .selector
+        .clone()
+        .or(existing_meta.selector.clone())
+        .filter(|value| !value.is_empty());
+    let full_page = command.full_page || existing_meta.full_page;
+    let threshold = command.threshold.unwrap_or_else(|| {
+        if existing_meta.threshold > 0.0 {
+            existing_meta.threshold
+        } else {
+            0.1
+        }
+    });
+
+    match command.mode {
+        BaselineMode::Capture => {
+            let response = capture_screenshot_to_path(
+                flags,
+                session,
+                &paths.baseline,
+                selector.as_deref(),
+                full_page,
+            )?;
+            if !response.success {
+                return Ok(BaselineExecution {
+                    action: "baseline_capture".to_string(),
+                    success: false,
+                    data: json!({}),
+                    error: response.error,
+                });
+            }
+
+            let _ = fs::remove_file(&paths.current);
+            let _ = fs::remove_file(&paths.diff);
+
+            let metadata = BaselineMetadata {
+                name: command.name.clone(),
+                slug: command.slug.clone(),
+                session: session.to_string(),
+                selector,
+                full_page,
+                threshold,
+                updated_at: chrono::Utc::now().to_rfc3339(),
+                baseline_path: paths.baseline.to_string_lossy().to_string(),
+                current_path: paths.current.to_string_lossy().to_string(),
+                diff_path: paths.diff.to_string_lossy().to_string(),
+            };
+            write_baseline_metadata(&paths.meta, &metadata)?;
+
+            Ok(BaselineExecution {
+                action: "baseline_capture".to_string(),
+                success: true,
+                data: json!({
+                    "name": command.name,
+                    "slug": command.slug,
+                    "baselinePath": paths.baseline,
+                    "metaPath": paths.meta,
+                    "selector": metadata.selector,
+                    "fullPage": metadata.full_page,
+                    "threshold": metadata.threshold,
+                }),
+                error: None,
+            })
+        }
+        BaselineMode::Compare => {
+            if !paths.baseline.exists() {
+                return Err(format!(
+                    "No saved baseline found for '{}' at {}. Run `agent-browser baseline capture {}` first.",
+                    command.name,
+                    paths.baseline.display(),
+                    command.slug
+                ));
+            }
+
+            let _ = fs::remove_file(&paths.diff);
+            let response = capture_screenshot_to_path(
+                flags,
+                session,
+                &paths.current,
+                selector.as_deref(),
+                full_page,
+            )?;
+            if !response.success {
+                return Ok(BaselineExecution {
+                    action: "baseline_compare".to_string(),
+                    success: false,
+                    data: json!({}),
+                    error: response.error,
+                });
+            }
+
+            let diff_response = run_diff_screenshot(
+                flags,
+                session,
+                &paths.baseline,
+                &paths.diff,
+                selector.as_deref(),
+                full_page,
+                threshold,
+            )?;
+
+            if !diff_response.success {
+                return Ok(BaselineExecution {
+                    action: "baseline_compare".to_string(),
+                    success: false,
+                    data: json!({}),
+                    error: diff_response.error,
+                });
+            }
+
+            let mut data = diff_response.data.unwrap_or_else(|| json!({}));
+            let matched = data
+                .get("match")
+                .and_then(|value| value.as_bool())
+                .unwrap_or(false);
+
+            if !paths.diff.exists() {
+                if let Some(object) = data.as_object_mut() {
+                    object.insert("diffPath".to_string(), serde_json::Value::Null);
+                }
+            }
+
+            let metadata = BaselineMetadata {
+                name: command.name.clone(),
+                slug: command.slug.clone(),
+                session: session.to_string(),
+                selector,
+                full_page,
+                threshold,
+                updated_at: chrono::Utc::now().to_rfc3339(),
+                baseline_path: paths.baseline.to_string_lossy().to_string(),
+                current_path: paths.current.to_string_lossy().to_string(),
+                diff_path: paths.diff.to_string_lossy().to_string(),
+            };
+            write_baseline_metadata(&paths.meta, &metadata)?;
+
+            if let Some(object) = data.as_object_mut() {
+                object.insert(
+                    "baselinePath".to_string(),
+                    json!(paths.baseline.to_string_lossy().to_string()),
+                );
+                object.insert(
+                    "currentPath".to_string(),
+                    json!(paths.current.to_string_lossy().to_string()),
+                );
+                object.insert(
+                    "metaPath".to_string(),
+                    json!(paths.meta.to_string_lossy().to_string()),
+                );
+                object.insert("name".to_string(), json!(command.name.clone()));
+                object.insert("slug".to_string(), json!(command.slug.clone()));
+            }
+
+            Ok(BaselineExecution {
+                action: "baseline_compare".to_string(),
+                success: matched,
+                data,
+                error: if matched {
+                    None
+                } else {
+                    Some("Baseline mismatch".to_string())
+                },
+            })
+        }
+        BaselineMode::Approve => {
+            if !paths.current.exists() {
+                if !paths.baseline.exists() {
+                    return Err(format!(
+                        "No baseline state exists for '{}'. Run `agent-browser baseline capture {}` first.",
+                        command.name, command.slug
+                    ));
+                }
+
+                let response = capture_screenshot_to_path(
+                    flags,
+                    session,
+                    &paths.current,
+                    selector.as_deref(),
+                    full_page,
+                )?;
+                if !response.success {
+                    return Ok(BaselineExecution {
+                        action: "baseline_approve".to_string(),
+                        success: false,
+                        data: json!({}),
+                        error: response.error,
+                    });
+                }
+            }
+
+            fs::copy(&paths.current, &paths.baseline).map_err(|error| {
+                format!(
+                    "Failed to update baseline {}: {}",
+                    paths.baseline.display(),
+                    error
+                )
+            })?;
+            let _ = fs::remove_file(&paths.diff);
+
+            let metadata = BaselineMetadata {
+                name: command.name.clone(),
+                slug: command.slug.clone(),
+                session: session.to_string(),
+                selector,
+                full_page,
+                threshold,
+                updated_at: chrono::Utc::now().to_rfc3339(),
+                baseline_path: paths.baseline.to_string_lossy().to_string(),
+                current_path: paths.current.to_string_lossy().to_string(),
+                diff_path: paths.diff.to_string_lossy().to_string(),
+            };
+            write_baseline_metadata(&paths.meta, &metadata)?;
+
+            Ok(BaselineExecution {
+                action: "baseline_approve".to_string(),
+                success: true,
+                data: json!({
+                    "name": command.name,
+                    "slug": command.slug,
+                    "baselinePath": paths.baseline,
+                    "currentPath": paths.current,
+                    "metaPath": paths.meta,
+                }),
+                error: None,
+            })
+        }
+    }
 }
 
 fn parse_proxy(proxy_str: &str) -> ParsedProxy {
@@ -874,6 +1391,58 @@ fn run_stdio_protocol(base_flags: &Flags) {
             continue;
         }
 
+        if request.command.first().map(|value| value.as_str()) == Some("baseline") {
+            let parsed = match parse_baseline_command(&request.command) {
+                Ok(parsed) => parsed,
+                Err(error) => {
+                    let response = StdioResponse {
+                        id: request.id,
+                        session,
+                        success: false,
+                        action: None,
+                        data: None,
+                        error: Some(error.format()),
+                        warning: None,
+                        error_type: Some(parse_error_type(&error)),
+                    };
+                    let _ = writeln!(stdout, "{}", serialize_json_value(&json!(response)));
+                    let _ = stdout.flush();
+                    continue;
+                }
+            };
+
+            let response = match execute_baseline_command(base_flags, &session, &parsed) {
+                Ok(result) => StdioResponse {
+                    id: request.id,
+                    session,
+                    success: result.success,
+                    action: Some(result.action),
+                    data: Some(result.data),
+                    error: result.error,
+                    warning: None,
+                    error_type: if result.success {
+                        None
+                    } else {
+                        Some("baseline_mismatch")
+                    },
+                },
+                Err(error) => StdioResponse {
+                    id: request.id,
+                    session,
+                    success: false,
+                    action: Some("baseline_error".to_string()),
+                    data: None,
+                    error: Some(error),
+                    warning: None,
+                    error_type: Some("execution_error"),
+                },
+            };
+
+            let _ = writeln!(stdout, "{}", serialize_json_value(&json!(response)));
+            let _ = stdout.flush();
+            continue;
+        }
+
         if matches!(
             request.command.first().map(|s| s.as_str()),
             Some("close") | Some("quit") | Some("exit")
@@ -991,6 +1560,123 @@ fn main() {
     if clean.first().map(|s| s.as_str()) == Some("stdio") {
         run_stdio_protocol(&flags);
         return;
+    }
+
+    if clean.first().map(|value| value.as_str()) == Some("baseline") {
+        let parsed = match parse_baseline_command(&clean) {
+            Ok(parsed) => parsed,
+            Err(error) => {
+                if flags.json {
+                    let error_type = parse_error_type(&error);
+                    print_json_error_with_type(error.format(), error_type);
+                } else {
+                    eprintln!("{}", color::red(&error.format()));
+                }
+                exit(1);
+            }
+        };
+
+        match execute_baseline_command(&flags, &flags.session, &parsed) {
+            Ok(result) => {
+                if flags.json {
+                    print_json_value(json!({
+                        "success": result.success,
+                        "action": result.action,
+                        "data": result.data,
+                        "error": result.error,
+                    }));
+                } else {
+                    match result.action.as_str() {
+                        "baseline_capture" => {
+                            println!(
+                                "{} Captured baseline '{}' at {}",
+                                color::success_indicator(),
+                                parsed.name,
+                                color::green(
+                                    result
+                                        .data
+                                        .get("baselinePath")
+                                        .and_then(|value| value.as_str())
+                                        .unwrap_or("")
+                                )
+                            );
+                        }
+                        "baseline_compare" => {
+                            let mismatch = result
+                                .data
+                                .get("mismatchPercentage")
+                                .and_then(|value| value.as_f64())
+                                .unwrap_or(0.0);
+                            let baseline_path = result
+                                .data
+                                .get("baselinePath")
+                                .and_then(|value| value.as_str())
+                                .unwrap_or("");
+                            let current_path = result
+                                .data
+                                .get("currentPath")
+                                .and_then(|value| value.as_str())
+                                .unwrap_or("");
+                            let diff_path = result
+                                .data
+                                .get("diffPath")
+                                .and_then(|value| value.as_str())
+                                .filter(|value| !value.is_empty());
+
+                            if result.success {
+                                println!(
+                                    "{} Baseline '{}' matched (0% difference)",
+                                    color::success_indicator(),
+                                    parsed.name
+                                );
+                            } else {
+                                println!(
+                                    "{} Baseline '{}' changed ({:.2}% mismatch)",
+                                    color::error_indicator(),
+                                    parsed.name,
+                                    mismatch
+                                );
+                            }
+                            println!("  Baseline: {}", color::green(baseline_path));
+                            println!("  Current:  {}", color::green(current_path));
+                            if let Some(diff_path) = diff_path {
+                                println!("  Diff:     {}", color::green(diff_path));
+                            }
+                        }
+                        "baseline_approve" => {
+                            println!(
+                                "{} Approved baseline '{}' at {}",
+                                color::success_indicator(),
+                                parsed.name,
+                                color::green(
+                                    result
+                                        .data
+                                        .get("baselinePath")
+                                        .and_then(|value| value.as_str())
+                                        .unwrap_or("")
+                                )
+                            );
+                        }
+                        _ => {
+                            println!("{}", color::success_indicator());
+                        }
+                    }
+                }
+
+                if !result.success {
+                    exit(1);
+                }
+                return;
+            }
+            Err(error) => {
+                if flags.json {
+                    print_json_error(error);
+                } else {
+                    eprintln!("{} {}", color::error_indicator(), error);
+                }
+                exit(1);
+            }
+        }
     }
 
     // Handle close --all: close all active sessions
@@ -1193,5 +1879,51 @@ mod tests {
             parsed["error"],
             "Daemon process exited during startup:\nline \"quoted\"\u{001b}[2mansi\u{001b}[22m"
         );
+    }
+
+    #[test]
+    fn test_slugify_baseline_name() {
+        assert_eq!(
+            slugify_baseline_name("Poro Shell Review"),
+            Some("poro-shell-review".to_string())
+        );
+        assert_eq!(
+            slugify_baseline_name("sidebar/main@v2"),
+            Some("sidebar-main-v2".to_string())
+        );
+    }
+
+    #[test]
+    fn test_parse_baseline_compare_command() {
+        let command = parse_baseline_command(&[
+            "baseline".to_string(),
+            "compare".to_string(),
+            "poro-shell".to_string(),
+            "--selector".to_string(),
+            "main".to_string(),
+            "--threshold".to_string(),
+            "0.05".to_string(),
+            "--full".to_string(),
+        ])
+        .expect("baseline compare should parse");
+
+        assert!(matches!(command.mode, BaselineMode::Compare));
+        assert_eq!(command.name, "poro-shell");
+        assert_eq!(command.slug, "poro-shell");
+        assert_eq!(command.selector.as_deref(), Some("main"));
+        assert!(command.full_page);
+        assert_eq!(command.threshold, Some(0.05));
+    }
+
+    #[test]
+    fn test_parse_baseline_unknown_subcommand() {
+        let error = parse_baseline_command(&[
+            "baseline".to_string(),
+            "ship".to_string(),
+            "poro-shell".to_string(),
+        ])
+        .expect_err("unknown baseline subcommand should fail");
+
+        assert!(matches!(error, ParseError::UnknownSubcommand { .. }));
     }
 }

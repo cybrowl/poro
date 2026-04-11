@@ -2655,6 +2655,55 @@ Examples:
 "##
         }
 
+        "baseline" => {
+            r##"
+agent-browser baseline - Capture and compare named visual baselines
+
+Subcommands:
+
+  baseline capture <name>     Save the current view as the named baseline
+  baseline compare <name>     Capture the current view and diff it against the named baseline
+  baseline approve <name>     Promote the latest current capture to the named baseline
+
+Baselines are stored in the current project at:
+  .agent-browser/baselines/<name>/
+
+Capture:
+
+  Usage: agent-browser baseline capture <name> [options]
+
+  Options:
+    -s, --selector <sel>     Scope screenshot to an element
+        --full               Capture a full-page screenshot
+
+Compare:
+
+  Usage: agent-browser baseline compare <name> [options]
+
+  Options:
+    -s, --selector <sel>     Override the stored selector for this compare run
+        --full               Force a full-page screenshot for this compare run
+    -t, --threshold <0-1>    Color distance threshold (default: 0.1)
+
+Approve:
+
+  Usage: agent-browser baseline approve <name>
+
+If there is no saved current capture yet, approve will take one first using the
+baseline's saved selector/full-page settings.
+
+Global Options:
+  --json               Output as JSON
+  --session <name>     Use specific session
+
+Examples:
+  agent-browser baseline capture poro-shell
+  agent-browser baseline compare poro-shell
+  agent-browser baseline compare poro-shell --selector main --threshold 0.05
+  agent-browser baseline approve poro-shell
+"##
+        }
+
         "batch" => {
             r##"
 agent-browser batch - Execute multiple commands sequentially
@@ -2760,6 +2809,7 @@ agent-browser - stripped browser automation skeleton for agents
 Usage: agent-browser <command> [args] [options]
 
 Supported Commands:
+  baseline <subcommand>      Visual baseline capture/compare/approve
   open <url>                 Navigate to URL
   click <sel>                Click element (or @ref)
   type <sel> <text>          Type into element
@@ -2875,6 +2925,8 @@ Environment:
   AGENT_BROWSER_SCREENSHOT_FORMAT Screenshot format: png, jpeg
 
 Examples:
+  agent-browser baseline capture poro-shell
+  agent-browser baseline compare poro-shell
   agent-browser open example.com
   agent-browser snapshot -i              # Interactive elements only
   agent-browser click @e2                # Click by ref from snapshot

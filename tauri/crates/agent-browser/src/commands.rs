@@ -7,6 +7,7 @@ use crate::flags::Flags;
 use crate::validation::{is_valid_session_name, session_name_error};
 
 const SUPPORTED_TOP_LEVEL_COMMANDS: &[&str] = &[
+    "baseline",
     "open",
     "goto",
     "navigate",
