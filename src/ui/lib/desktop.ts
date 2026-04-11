@@ -68,8 +68,7 @@ export function createWorkspaceRecord(path: string): WorkspaceRecord {
         cost: "On-device",
         cwd: path,
         goal: "Set up a real workspace selected from the native desktop picker.",
-        draft:
-          "This workspace came from the Tauri folder picker. Launch a local Ollama-backed Gemma session when you're ready.",
+        draft: "",
         transcript: [
           {
             id: `${id}-system`,

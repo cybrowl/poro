@@ -516,29 +516,6 @@
             value={composerText}
             onInput={onComposerInput}
           />
-
-          <div class="mt-auto border-t border-white/[0.04] px-4 py-3">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div class="type-body-5 text-fog/38">{runtimeStatusLine}</div>
-              <div class="flex items-center gap-2">
-                {#if runtimeActive}
-                  <button
-                    type="button"
-                    class="rounded-md px-2.5 py-1 text-[12px] text-fog/44 transition hover:bg-white/[0.03] hover:text-soft-ivory"
-                    onclick={onStopRuntime}
-                  >
-                    Stop
-                  </button>
-                {/if}
-                <button
-                  type="button"
-                  class={`rounded-md border px-2.5 py-1 text-[11px] ${sessionStateTone()}`}
-                >
-                  {sessionStateLabel()}
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
 
         {#if showWorkingTree}

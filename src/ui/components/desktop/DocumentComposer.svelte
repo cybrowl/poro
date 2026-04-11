@@ -17,6 +17,7 @@
   }: Props = $props();
 
   let frameEl: HTMLDivElement | null = null;
+  let textareaEl: HTMLTextAreaElement | null = null;
   let contentWidth = $state(0);
   let composerHeight = $state(420);
   let renderedLines = $state<LayoutLine[]>([]);
@@ -90,6 +91,12 @@
       contentWidth = frameEl.clientWidth;
     }
 
+    if (!disabled) {
+      requestAnimationFrame(() => {
+        textareaEl?.focus();
+      });
+    }
+
     return () => {
       cancelled = true;
       resizeObserver?.disconnect();
@@ -118,12 +125,11 @@
           </div>
         {/each}
       </div>
-    {:else}
-      <div class="text-fog/16">{placeholder}</div>
     {/if}
   </div>
 
   <textarea
+    bind:this={textareaEl}
     class={`ui-scrollbar-hidden min-h-0 w-full flex-1 resize-none overflow-hidden bg-transparent text-[20px] leading-[36px] outline-none transition-colors duration-100 placeholder:text-transparent ${
       isFocused ? "text-fog/84 caret-accent-gold" : "text-transparent caret-transparent"
     }`}

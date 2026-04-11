@@ -70,7 +70,7 @@
   let selectedModel = $state(defaultDesktopSettings.selectedModel);
   let selectedPermission = $state<PermissionMode>("workspace-write");
   let backendPath = $state(defaultDesktopSettings.backendPath);
-  let composerText = $state(initialWorkspaces[0].sessions[0].draft);
+  let composerText = $state("");
   let desktopReady = $state(false);
   let showSessionSwitcher = $state(false);
   let showSettings = $state(false);
@@ -166,7 +166,7 @@
 
       const settings = await loadDesktopSettings();
       applyDesktopSettings(settings);
-      composerText = workspaceList[0]?.sessions[0]?.draft ?? "";
+      composerText = "";
 
       if (desktopReady) {
         stopListening = await listenToClawRuntimeEvents((event) => {
@@ -230,8 +230,7 @@
       goal: runtime
         ? runtime.message
         : "Launch a real Harness session to replace the placeholder shell state.",
-      draft:
-        "Describe the coding task you want to run. Poro will launch the selected Harness runtime and sync transcript state from the desktop session store.",
+      draft: "",
       transcript: [
         {
           id: `${workspace.id}-ready-system`,
@@ -289,6 +288,9 @@
     snapshot: ClawSessionSnapshot,
     runtimeId: string | null = null
   ): SessionRecord {
+    const existing = workspace.sessions.find(
+      (session) => session.sessionPath === snapshot.path || session.id === snapshot.id
+    );
     const runtime = activeRuntimeByWorkspace[workspace.path];
     const isLive =
       !!runtime &&
@@ -316,7 +318,7 @@
       cost: runtime?.providerId === "local" ? "On-device" : "BYO provider",
       cwd: workspace.path,
       goal: snapshot.preview,
-      draft: composerText || snapshot.preview,
+      draft: existing?.draft ?? "",
       transcript: snapshot.transcript.map((message) => ({
         id: message.id,
         role: toTranscriptRole(message.role),
@@ -364,7 +366,7 @@
       cost: existing?.cost ?? (selectedProviderId === "local" ? "On-device" : "BYO provider"),
       cwd: workspace.path,
       goal: existing?.goal ?? summary.preview,
-      draft: existing?.draft ?? (composerText || summary.preview),
+      draft: existing?.draft ?? "",
       transcript:
         existing?.transcript ??
         [
