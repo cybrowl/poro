@@ -62,6 +62,19 @@
     live: boolean;
   };
 
+  type ConversationBlock =
+    | {
+        kind: "message";
+        id: string;
+        message: TranscriptMessage;
+      }
+    | {
+        kind: "actions";
+        id: string;
+        messages: TranscriptMessage[];
+        defaultOpen: boolean;
+      };
+
   function messageStyle(message: TranscriptMessage) {
     if (message.role === "assistant") {
       return "bg-transparent text-fog/92";
@@ -190,6 +203,70 @@
     return message.role === "system" || message.role === "tool";
   }
 
+  function truncateText(value: string, max = 180) {
+    return value.length > max ? `${value.slice(0, max)}…` : value;
+  }
+
+  function groupConversation(messages: TranscriptMessage[], busy: boolean): ConversationBlock[] {
+    const blocks: ConversationBlock[] = [];
+    let compactGroup: TranscriptMessage[] = [];
+
+    function flushCompactGroup(nextIsTail = false) {
+      if (!compactGroup.length) {
+        return;
+      }
+
+      blocks.push({
+        kind: "actions",
+        id: compactGroup[0].id,
+        messages: compactGroup,
+        defaultOpen: busy && nextIsTail,
+      });
+      compactGroup = [];
+    }
+
+    messages.forEach((message, index) => {
+      if (isCompactMessage(message)) {
+        compactGroup.push(message);
+      } else {
+        flushCompactGroup(false);
+        blocks.push({
+          kind: "message",
+          id: message.id,
+          message,
+        });
+      }
+
+      if (index === messages.length - 1) {
+        flushCompactGroup(true);
+      }
+    });
+
+    return blocks;
+  }
+
+  function actionGroupSummary(messages: TranscriptMessage[]) {
+    const latest = messages[messages.length - 1];
+    return `${messages.length} action${messages.length === 1 ? "" : "s"} • ${latest.title}`;
+  }
+
+  function actionGroupDetail(messages: TranscriptMessage[]) {
+    const latest = messages[messages.length - 1];
+    return truncateText(latest.body, 220);
+  }
+
+  function actionGroupTone(messages: TranscriptMessage[]) {
+    const latest = messages[messages.length - 1];
+    const meta = latest.meta.toLowerCase();
+    if (meta.includes("failed") || meta.includes("approval")) {
+      return "border-warning-amber/16 bg-warning-amber/[0.055]";
+    }
+    if (meta.includes("verification")) {
+      return "border-misty-green/16 bg-misty-green/[0.055]";
+    }
+    return "border-white/6 bg-white/[0.02]";
+  }
+
   function interleaveActivity(
     primary: ActivityItem[],
     secondary: ActivityItem[]
@@ -247,6 +324,7 @@
       : visibleActivity.slice(0, 4)
   );
   let historyActivity = $derived(recordedActivity.slice(0, 4));
+  let conversationBlocks = $derived(groupConversation(session.transcript, runtimeBusy));
 </script>
 
 <section class="flex min-h-0 flex-1 flex-col bg-obsidian">
@@ -354,34 +432,66 @@
 
       <div class="space-y-4">
         <div class="type-label text-fog/34">Conversation</div>
-        {#each session.transcript as message}
-          <article class={messageStyle(message)}>
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <div class="mb-2 type-label text-fog/34">
-                  {roleLabel(message)}
-                </div>
-                {#if message.role !== "assistant"}
-                  <div class="type-heading-4 text-soft-ivory">{message.title}</div>
-                {/if}
-                <div class={`${
-                  isCompactMessage(message)
-                    ? "mt-1 type-body-4 text-fog/72"
-                    : message.role === "assistant"
-                      ? "type-body-3 text-fog/88"
-                      : "mt-2 type-body-3 text-fog/82"
-                }`}>
-                  {message.body}
+        {#each conversationBlocks as block}
+          {#if block.kind === "message"}
+            <article class={messageStyle(block.message)}>
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="mb-2 type-label text-fog/34">
+                    {roleLabel(block.message)}
+                  </div>
+                  {#if block.message.role !== "assistant"}
+                    <div class="type-heading-4 text-soft-ivory">{block.message.title}</div>
+                  {/if}
+                  <div class={`${block.message.role === "assistant" ? "type-body-3 text-fog/88" : "mt-2 type-body-3 text-fog/82"}`}>
+                    {block.message.body}
+                  </div>
                 </div>
               </div>
-              {#if isCompactMessage(message)}
-                <div class="shrink-0 type-body-5 text-fog/34">{message.meta}</div>
-              {/if}
-            </div>
-            {#if !isCompactMessage(message)}
-              <div class="mt-3 type-body-5 text-fog/36">{message.meta}</div>
-            {/if}
-          </article>
+              <div class="mt-3 type-body-5 text-fog/36">{block.message.meta}</div>
+            </article>
+          {:else}
+            <details class={`rounded-2xl border ${actionGroupTone(block.messages)}`} open={block.defaultOpen}>
+              <summary class="list-none cursor-pointer px-4 py-4 [&::-webkit-details-marker]:hidden">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="mb-2 flex flex-wrap items-center gap-2">
+                      <span class="type-label text-fog/34">Actions</span>
+                      <span class="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-fog/58">
+                        {block.messages.length}
+                      </span>
+                    </div>
+                    <div class="type-heading-4 text-soft-ivory">{actionGroupSummary(block.messages)}</div>
+                    <div class="mt-2 type-body-4 text-fog/70">{actionGroupDetail(block.messages)}</div>
+                  </div>
+                  <div class="shrink-0 type-body-5 text-fog/34">
+                    {block.messages[block.messages.length - 1]?.meta}
+                  </div>
+                </div>
+              </summary>
+
+              <div class="border-t border-white/6 px-4 py-3">
+                <div class="space-y-3">
+                  {#each block.messages as message}
+                    <article class="rounded-xl border border-white/6 bg-white/[0.02] px-3 py-3">
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                          <div class="mb-1 flex flex-wrap items-center gap-2">
+                            <span class="type-heading-4 text-soft-ivory">{message.title}</span>
+                            <span class="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-fog/54">
+                              {roleLabel(message)}
+                            </span>
+                          </div>
+                          <div class="type-body-4 whitespace-pre-wrap break-words text-fog/72">{message.body}</div>
+                        </div>
+                        <div class="shrink-0 type-body-5 text-fog/34">{message.meta}</div>
+                      </div>
+                    </article>
+                  {/each}
+                </div>
+              </div>
+            </details>
+          {/if}
         {/each}
       </div>
     </div>
