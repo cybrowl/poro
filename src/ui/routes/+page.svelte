@@ -3,9 +3,7 @@
   import BrowserPanel from "$components/desktop/BrowserPanel.svelte";
   import SessionSwitcherModal from "$components/desktop/SessionSwitcherModal.svelte";
   import SettingsSheet from "$components/desktop/SettingsSheet.svelte";
-  import Sidebar from "$components/desktop/Sidebar.svelte";
   import TranscriptPanel from "$components/desktop/TranscriptPanel.svelte";
-  import WorkspacePickerModal from "$components/desktop/WorkspacePickerModal.svelte";
   import {
     listenToBrowserRuntimeEvents,
     sendBrowserCommand,
@@ -74,7 +72,6 @@
   let backendPath = $state(defaultDesktopSettings.backendPath);
   let composerText = $state(initialWorkspaces[0].sessions[0].draft);
   let desktopReady = $state(false);
-  let showWorkspacePicker = $state(false);
   let showSessionSwitcher = $state(false);
   let showSettings = $state(false);
   let showBrowserInspector = $state(false);
@@ -791,7 +788,7 @@
     selectedWorkspaceId = workspace.id;
     selectedSessionId = workspace.sessions[0].id;
     composerText = workspace.sessions[0].draft;
-    showWorkspacePicker = false;
+    showSessionSwitcher = false;
     await persistDesktopSettings();
     await refreshSelectedWorkspace();
   }
@@ -915,7 +912,7 @@
   async function openWorkspaceFromDisk() {
     const path = await pickWorkspaceDirectory();
     if (!path) {
-      showWorkspacePicker = true;
+      showSessionSwitcher = true;
       return;
     }
 
@@ -1482,14 +1479,7 @@
 </svelte:head>
 
 <div class="min-h-screen bg-obsidian text-soft-ivory lg:h-screen lg:overflow-hidden">
-  <div class="flex min-h-screen w-full flex-col lg:h-screen lg:flex-row">
-    <Sidebar
-      onPickWorkspace={openWorkspaceFromDisk}
-      onOpenWorkspacePicker={() => (showWorkspacePicker = true)}
-      onOpenSessionSwitcher={() => (showSessionSwitcher = true)}
-      onOpenSettings={() => (showSettings = true)}
-    />
-
+  <div class="flex min-h-screen w-full flex-col lg:h-screen">
     <main class="flex min-h-0 min-w-0 flex-1 flex-col lg:overflow-hidden">
       <section class="flex min-h-0 flex-1">
         <TranscriptPanel
@@ -1515,21 +1505,13 @@
           onSubmitPrompt={submitPrompt}
           onSelectGitPath={selectGitPath}
           onRefreshGit={() => refreshWorkspaceGitState(selectedWorkspaceId)}
+          onOpenWorkspaceSwitcher={() => (showSessionSwitcher = true)}
           onOpenSettings={() => (showSettings = true)}
           onStopRuntime={stopSelectedRuntime}
         />
       </section>
     </main>
   </div>
-
-  <WorkspacePickerModal
-    open={showWorkspacePicker}
-    workspaces={workspaceList}
-    {selectedWorkspaceId}
-    onSelectWorkspace={selectWorkspace}
-    onOpenFromDisk={openWorkspaceFromDisk}
-    onClose={() => (showWorkspacePicker = false)}
-  />
 
   <SessionSwitcherModal
     open={showSessionSwitcher}
@@ -1542,6 +1524,7 @@
     }}
     onSelectSession={selectSessionFromSwitcher}
     onDeleteSession={deleteSession}
+    onOpenFromDisk={openWorkspaceFromDisk}
     onClose={() => (showSessionSwitcher = false)}
   />
 

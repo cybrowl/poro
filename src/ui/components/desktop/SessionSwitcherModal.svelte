@@ -10,6 +10,7 @@
     onSelectWorkspace: (id: string) => void | Promise<void>;
     onSelectSession: (workspaceId: string, sessionId: string) => void | Promise<void>;
     onDeleteSession: (sessionId: string) => void | Promise<void>;
+    onOpenFromDisk: () => void | Promise<void>;
     onClose: () => void;
   }
 
@@ -21,6 +22,7 @@
     onSelectWorkspace,
     onSelectSession,
     onDeleteSession,
+    onOpenFromDisk,
     onClose,
   }: Props = $props();
 </script>
@@ -44,22 +46,31 @@
     >
       <div class="flex items-start justify-between gap-4">
         <div>
-          <div class="ui-section-label">Session Switcher</div>
+          <div class="ui-section-label">Workspace Switcher</div>
           <h3 class="mt-3 type-heading-1 tracking-[-0.05em] text-soft-ivory">
-            Jump between workspaces and recent sessions without keeping the rail crowded
+            Open a codebase or jump between recent sessions without crowding the rail
           </h3>
           <p class="mt-3 max-w-2xl type-body-4 text-fog/68">
             Open a workspace, resume a prior session, or remove an older local session from the list.
           </p>
         </div>
 
-        <button
-          type="button"
-          class="rounded-md px-3 py-2 text-sm text-fog/62 transition hover:bg-white/[0.04] hover:text-soft-ivory"
-          onclick={onClose}
-        >
-          Close
-        </button>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="rounded-md border border-accent-gold/24 bg-accent-gold/10 px-3 py-2 text-sm text-accent-gold transition hover:bg-accent-gold/16"
+            onclick={onOpenFromDisk}
+          >
+            Open from disk
+          </button>
+          <button
+            type="button"
+            class="rounded-md px-3 py-2 text-sm text-fog/62 transition hover:bg-white/[0.04] hover:text-soft-ivory"
+            onclick={onClose}
+          >
+            Close
+          </button>
+        </div>
       </div>
 
       <div class="mt-6 max-h-[70vh] space-y-4 overflow-y-auto pr-1">

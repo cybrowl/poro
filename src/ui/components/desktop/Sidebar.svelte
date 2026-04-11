@@ -1,22 +1,14 @@
 <script lang="ts">
   import logoUrl from "../../assets/logo.svg";
-  import historyUrl from "../../assets/history.svg";
+  import folderUrl from "../../assets/folder.svg";
   import PoroIcon from "../basic_elems/PoroIcon.svelte";
   import PoroIconButton from "../basic_elems/PoroIconButton.svelte";
 
   interface Props {
-    onPickWorkspace: () => void;
-    onOpenWorkspacePicker: () => void;
-    onOpenSessionSwitcher: () => void;
-    onOpenSettings: () => void;
+    onOpenWorkspaceSwitcher: () => void;
   }
 
-  let {
-    onPickWorkspace,
-    onOpenWorkspacePicker,
-    onOpenSessionSwitcher,
-    onOpenSettings,
-  }: Props = $props();
+  let { onOpenWorkspaceSwitcher }: Props = $props();
 </script>
 
 <aside
@@ -32,43 +24,15 @@
       fit="contain"
     />
     <PoroIconButton
-      iconSrc={historyUrl}
+      iconSrc={folderUrl}
       variant="bare"
       iconSize="1.15rem"
       buttonSize="2rem"
-      ariaLabel="Open session switcher"
-      title="Open session switcher"
-      onclick={onOpenSessionSwitcher}
+      ariaLabel="Open workspace and session switcher"
+      title="Open workspace and session switcher"
+      onclick={onOpenWorkspaceSwitcher}
       iconClass="opacity-72"
     />
   </div>
-
-  <div class="px-3 pb-2">
-    <div class="space-y-1">
-      <button
-        type="button"
-        class="flex w-full items-center rounded-md px-3 py-2 text-left type-body-4 text-fog/72 transition hover:bg-white/[0.035] hover:text-soft-ivory"
-        onclick={onPickWorkspace}
-      >
-        Open workspace
-      </button>
-      <button
-        type="button"
-        class="flex w-full items-center rounded-md px-3 py-2 text-left type-body-4 text-fog/72 transition hover:bg-white/[0.035] hover:text-soft-ivory"
-        onclick={onOpenWorkspacePicker}
-      >
-        Search
-      </button>
-      <button
-        type="button"
-        class="flex w-full items-center rounded-md px-3 py-2 text-left type-body-4 text-fog/72 transition hover:bg-white/[0.035] hover:text-soft-ivory"
-        onclick={onOpenSettings}
-      >
-        Settings
-      </button>
-    </div>
-  </div>
-
-  <div class="border-t border-white/6"></div>
   <div class="flex-1"></div>
 </aside>

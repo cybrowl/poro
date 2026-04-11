@@ -1,4 +1,5 @@
 <script lang="ts">
+  import folderIconUrl from "../../assets/folder.svg";
   import newChatIconUrl from "../../assets/new_chat.svg";
   import settingsIconUrl from "../../assets/settings.svg";
   import submitIconUrl from "../../assets/submit.svg";
@@ -37,6 +38,7 @@
     onSubmitPrompt: () => void;
     onSelectGitPath: (path: string) => void;
     onRefreshGit: () => void;
+    onOpenWorkspaceSwitcher: () => void;
     onOpenSettings: () => void;
     onStopRuntime: () => void;
   }
@@ -64,6 +66,7 @@
     onSubmitPrompt,
     onSelectGitPath,
     onRefreshGit,
+    onOpenWorkspaceSwitcher,
     onOpenSettings,
     onStopRuntime,
   }: Props = $props();
@@ -463,9 +466,17 @@
 
     <div class="flex min-h-0 flex-1 flex-col">
       <div class="flex items-center justify-end px-6 py-5">
-        <div class="mr-auto h-px w-20 bg-transparent"></div>
         <div class="flex items-center gap-2">
-          <div class="h-5 w-px bg-white/8"></div>
+          <PoroIconButton
+            iconSrc={folderIconUrl}
+            variant="ghost"
+            iconSize="1.15rem"
+            buttonSize="2.15rem"
+            ariaLabel="Open workspace and session switcher"
+            title="Open workspace and session switcher"
+            onclick={onOpenWorkspaceSwitcher}
+            iconClass="opacity-85"
+          />
           <PoroIconButton
             iconSrc={settingsIconUrl}
             variant="ghost"
