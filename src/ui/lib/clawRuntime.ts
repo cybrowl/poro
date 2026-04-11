@@ -104,6 +104,11 @@ export type RuntimeEvent =
       launch: RuntimeLaunch;
     }
   | {
+      type: "missionUpdated";
+      runtimeId: string;
+      mission: HarnessMissionState | null;
+    }
+  | {
       type: "output";
       runtimeId: string;
       line: string;

@@ -223,6 +223,10 @@ enum RuntimeEventPayload {
     Started {
         launch: RuntimeLaunch,
     },
+    MissionUpdated {
+        runtime_id: String,
+        mission: Option<ClawMissionSnapshot>,
+    },
     Output {
         runtime_id: String,
         line: String,
@@ -2305,15 +2309,21 @@ fn send_claw_input(
     thread::spawn(move || {
         let started_at = Instant::now();
         let result = (|| -> Result<(), String> {
-            let events = {
+            let batch = {
                 let mut client = client.lock().map_err(|error| error.to_string())?;
                 client
                     .submit_user_message(session_id, input)
                     .map_err(|error| error.to_string())?
-                    .events
             };
 
-            emit_batch_events(&app_handle, &runtime_id_for_thread, &events);
+            emit_batch_events(&app_handle, &runtime_id_for_thread, &batch.events);
+            emit_runtime_event(
+                &app_handle,
+                RuntimeEventPayload::MissionUpdated {
+                    runtime_id: runtime_id_for_thread.clone(),
+                    mission: load_snapshot(&session_path)?.mission,
+                },
+            );
             emit_runtime_event(
                 &app_handle,
                 RuntimeEventPayload::Snapshot {

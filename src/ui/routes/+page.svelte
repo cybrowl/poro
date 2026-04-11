@@ -194,6 +194,44 @@
     );
   }
 
+  function applyMissionToRuntimeSession(
+    workspacePath: string,
+    runtimeId: string,
+    mission: SessionRecord["mission"]
+  ) {
+    const workspace = findWorkspaceByPath(workspacePath);
+    if (!workspace) {
+      return;
+    }
+
+    const activeRuntime = activeRuntimeByWorkspace[workspacePath];
+    const missionGoal = mission?.goal?.trim();
+
+    updateWorkspace(workspace.id, (currentWorkspace) => {
+      const nextSessions = currentWorkspace.sessions.map((session) => {
+        const matchesRuntime =
+          session.runtimeId === runtimeId ||
+          (activeRuntime?.sessionPath != null && session.sessionPath === activeRuntime.sessionPath) ||
+          (activeRuntime?.sessionId != null && session.id === activeRuntime.sessionId);
+
+        if (!matchesRuntime) {
+          return session;
+        }
+
+        return {
+          ...session,
+          mission,
+          goal: missionGoal ? missionGoal : session.goal,
+        };
+      });
+
+      return {
+        ...currentWorkspace,
+        sessions: nextSessions,
+      };
+    });
+  }
+
   function applyWorkspaceGitState(workspaceId: string, gitState: WorkspaceGitState) {
     updateWorkspace(workspaceId, (currentWorkspace) => ({
       ...currentWorkspace,
@@ -1237,6 +1275,14 @@
       const workspaceId = findWorkspaceIdByPath(launch.workspacePath);
       if (workspaceId) {
         await refreshWorkspaceSessions(workspaceId, workspaceId === selectedWorkspaceId);
+      }
+      return;
+    }
+
+    if (event.type === "missionUpdated") {
+      const workspacePath = runtimeWorkspaceById[event.runtimeId];
+      if (workspacePath) {
+        applyMissionToRuntimeSession(workspacePath, event.runtimeId, event.mission);
       }
       return;
     }

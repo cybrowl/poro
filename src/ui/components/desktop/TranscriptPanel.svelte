@@ -253,6 +253,66 @@
     return state.replace(/_/g, " ");
   }
 
+  function controllerCardTone(phase: string | null | undefined) {
+    if (phase === "blocked") {
+      return "border-warning-amber/18 bg-warning-amber/[0.055]";
+    }
+    if (phase === "verifying") {
+      return "border-misty-green/18 bg-misty-green/[0.05]";
+    }
+    if (phase === "recovering") {
+      return "border-accent-gold/18 bg-accent-gold/[0.055]";
+    }
+    if (phase === "completed") {
+      return "border-misty-green/16 bg-white/[0.025]";
+    }
+    return "border-white/6 bg-white/[0.025]";
+  }
+
+  function controllerAccentTone(phase: string | null | undefined) {
+    if (phase === "blocked") return "bg-warning-amber";
+    if (phase === "verifying") return "bg-misty-green";
+    if (phase === "recovering") return "bg-accent-gold";
+    if (phase === "completed") return "bg-misty-green";
+    return "bg-white/10";
+  }
+
+  function controllerHeadlineTone(phase: string | null | undefined) {
+    if (phase === "blocked") return "text-warning-amber";
+    if (phase === "verifying") return "text-misty-green";
+    if (phase === "recovering") return "text-accent-gold";
+    return "text-soft-ivory";
+  }
+
+  function activeStepTone(step: string, activeStep: string | null | undefined) {
+    return activeStep === step
+      ? "border-accent-gold/20 bg-accent-gold/[0.055] text-soft-ivory"
+      : "border-white/6 bg-white/[0.02] text-fog/62";
+  }
+
+  function verificationSummary() {
+    if (!mission?.verification.lastCommand) {
+      if (mission?.verification.state === "not_needed") {
+        return "No repo verification is currently required for this mission.";
+      }
+      return "No verification command has run yet.";
+    }
+
+    const prefix =
+      mission.verification.state === "passed"
+        ? "Passed"
+        : mission.verification.state === "failed"
+          ? "Failed"
+          : mission.verification.state === "pending"
+            ? "Queued"
+            : "Command";
+    const exit =
+      mission.verification.exitCode === null || mission.verification.exitCode === undefined
+        ? ""
+        : ` • exit ${mission.verification.exitCode}`;
+    return `${prefix}: ${mission.verification.lastCommand}${exit}`;
+  }
+
   function controllerHeadline() {
     if (session.mission?.blocker) {
       return session.mission.blocker;
@@ -452,9 +512,13 @@
         {/if}
 
         {#if mission || runtimeStatusLine}
-          <section class="rounded-2xl border border-white/6 bg-white/[0.025] px-4 py-4">
+          <section class={`relative overflow-hidden rounded-2xl border px-4 py-4 ${controllerCardTone(mission?.phase)}`}>
+            <div class={`absolute inset-y-0 left-0 w-[2px] ${controllerAccentTone(mission?.phase)}`}></div>
             <div class="flex flex-wrap items-center justify-between gap-3">
-              <div class="type-body-5 uppercase tracking-[0.22em] text-fog/34">Controller</div>
+              <div class="flex items-center gap-3">
+                <div class={`h-2.5 w-2.5 rounded-full ${controllerAccentTone(mission?.phase)} ${runtimeBusy ? "animate-pulse" : ""}`}></div>
+                <div class="type-body-5 uppercase tracking-[0.22em] text-fog/34">Controller</div>
+              </div>
               <div class="flex flex-wrap items-center gap-2">
                 {#if mission}
                   <span class={`rounded-full px-2.5 py-1 text-[0.6875rem] uppercase tracking-[0.18em] ${phaseTone(mission.phase)}`}>
@@ -472,12 +536,38 @@
             </div>
 
             <div class="mt-3">
-              <div class="type-heading-4 text-soft-ivory">{controllerHeadline()}</div>
+              <div class={`type-heading-4 ${controllerHeadlineTone(mission?.phase)}`}>{controllerHeadline()}</div>
               <div class="mt-1 text-[0.875rem] leading-[1.5] text-fog/60">{controllerSummary()}</div>
             </div>
 
             {#if mission}
               <div class="mt-4 space-y-3">
+                {#if mission.activeStep}
+                  <div class="rounded-xl border border-white/6 bg-white/[0.02] px-3 py-3">
+                    <div class="type-body-5 uppercase tracking-[0.18em] text-fog/34">Now</div>
+                    <div class="mt-1 text-[0.875rem] leading-[1.45] text-soft-ivory">{mission.activeStep}</div>
+                  </div>
+                {/if}
+
+                {#if mission.verification.state !== "not_needed"}
+                  <div class="rounded-xl border border-white/6 bg-white/[0.02] px-3 py-3">
+                    <div class="flex items-center justify-between gap-3">
+                      <div class="type-body-5 uppercase tracking-[0.18em] text-fog/34">Verification</div>
+                      <span class={`rounded-full px-2 py-1 text-[0.6875rem] uppercase tracking-[0.16em] ${verificationTone(mission.verification.state)}`}>
+                        {verificationLabel(mission.verification.state)}
+                      </span>
+                    </div>
+                    <div class="mt-2 text-[0.875rem] leading-[1.45] text-fog/66">{verificationSummary()}</div>
+                  </div>
+                {/if}
+
+                {#if mission.blocker}
+                  <div class="rounded-xl border border-warning-amber/16 bg-warning-amber/[0.055] px-3 py-3">
+                    <div class="type-body-5 uppercase tracking-[0.18em] text-warning-amber">Blocked</div>
+                    <div class="mt-1 text-[0.875rem] leading-[1.45] text-fog/82">{mission.blocker}</div>
+                  </div>
+                {/if}
+
                 {#if mission.completedFiles.length || mission.remainingFiles.length}
                   <div class="flex flex-wrap gap-2">
                     {#if mission.remainingFiles.length}
@@ -502,15 +592,14 @@
                   <div class="space-y-2">
                     <div class="type-body-5 uppercase tracking-[0.18em] text-fog/34">Plan</div>
                     <div class="space-y-2">
-                      {#each mission.planOutline.slice(0, 4) as step}
+                      {#each mission.planOutline.slice(0, 4) as step, index}
                         <div
-                          class={`rounded-xl border px-3 py-2 text-[0.8125rem] leading-[1.45] ${
-                            mission.activeStep === step
-                              ? "border-accent-gold/20 bg-accent-gold/[0.055] text-soft-ivory"
-                              : "border-white/6 bg-white/[0.02] text-fog/62"
-                          }`}
+                          class={`flex items-start gap-3 rounded-xl border px-3 py-2 text-[0.8125rem] leading-[1.45] ${activeStepTone(step, mission.activeStep)}`}
                         >
-                          {step}
+                          <span class="mt-[1px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/[0.04] text-[0.6875rem] text-fog/48">
+                            {index + 1}
+                          </span>
+                          <span>{step}</span>
                         </div>
                       {/each}
                     </div>
