@@ -329,3 +329,21 @@ input {
   background: transparent;
   opacity: 1;
 }
+
+.ui-scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-color: transparent transparent;
+}
+
+.ui-scrollbar-hidden::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.ui-scrollbar-hidden::-webkit-scrollbar-thumb,
+.ui-scrollbar-hidden::-webkit-scrollbar-track {
+  border: 0;
+  background: transparent;
+}

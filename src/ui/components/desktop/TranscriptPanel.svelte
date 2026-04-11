@@ -5,6 +5,7 @@
   import submitIconUrl from "../../assets/submit.svg";
   import logoUrl from "../../assets/logo.svg";
   import grokIconUrl from "../../assets/models/grok.svg";
+  import DocumentComposer from "./DocumentComposer.svelte";
   import PoroIcon from "../basic_elems/PoroIcon.svelte";
   import PoroIconButton from "../basic_elems/PoroIconButton.svelte";
   import type { WorkspaceGitState } from "$lib/gitRuntime";
@@ -387,8 +388,8 @@
 
 <section class="flex min-h-0 flex-1 bg-obsidian">
   <div class="flex min-h-0 flex-1 flex-col lg:flex-row">
-    <div class="min-h-0 flex-1 overflow-y-auto lg:w-[44%] lg:flex-none">
-      <div class="mx-auto flex w-full max-w-[560px] flex-col gap-8 px-8 py-10">
+    <div class="ui-scrollbar-hidden min-h-0 flex-1 overflow-y-auto lg:basis-1/2 lg:flex-none">
+      <div class="mx-auto flex w-full max-w-[620px] flex-col gap-8 px-8 py-10">
         {#if currentActivity && runtimeBusy}
           <div class="flex items-center gap-3 text-fog/48">
             <span class="h-2 w-2 animate-pulse rounded-full bg-accent-gold"></span>
@@ -462,10 +463,8 @@
       </div>
     </div>
 
-    <div class="hidden w-px bg-white/6 lg:block"></div>
-
-    <div class="flex min-h-0 flex-1 flex-col">
-      <div class="flex items-center justify-end px-6 py-5">
+    <div class="ui-scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto lg:basis-1/2">
+      <div class="mx-auto flex w-full max-w-[620px] items-center justify-end px-8 py-5">
         <div class="flex items-center gap-2">
           <PoroIconButton
             iconSrc={folderIconUrl}
@@ -500,14 +499,14 @@
         </div>
       </div>
 
-      <div class="flex min-h-0 flex-1 flex-col px-6 pb-6">
-        <div class="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] bg-transparent">
+      <div class="flex min-h-0 flex-1 flex-col px-8 pb-6">
+        <div class="relative mx-auto flex w-full max-w-[620px] min-h-0 flex-1 flex-col overflow-visible rounded-[28px] bg-transparent">
           <PoroIconButton
             iconSrc={submitIconUrl}
             variant="gold"
             iconSize="1.35rem"
             buttonSize="3rem"
-            class="absolute right-0 top-10 z-10 transition-transform duration-150 hover:translate-y-[-1px] disabled:translate-y-0 disabled:opacity-55"
+            class="absolute right-0 top-8 z-10 transition-transform duration-150 hover:translate-y-[-1px] disabled:translate-y-0 disabled:opacity-55"
             ariaLabel={submitButtonLabel}
             title={submitButtonLabel}
             disabled={runtimeBusy || !composerText.trim()}
@@ -515,14 +514,12 @@
             pulse={runtimeBusy}
           />
 
-          <textarea
-            class="type-body-2 min-h-0 flex-1 resize-none bg-transparent px-4 py-4 pr-20 text-fog/82 outline-none placeholder:text-fog/20"
+          <DocumentComposer
             value={composerText}
-            placeholder="|"
-            oninput={(event) => onComposerInput((event.currentTarget as HTMLTextAreaElement).value)}
-          ></textarea>
+            onInput={onComposerInput}
+          />
 
-          <div class="mt-auto border-t border-white/6 px-4 py-3">
+          <div class="mt-auto border-t border-white/[0.04] px-4 py-3">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div class="type-body-5 text-fog/38">{runtimeStatusLine}</div>
               <div class="flex items-center gap-2">
