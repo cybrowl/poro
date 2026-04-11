@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Button from "$components/basic_elems/Button.svelte";
   import historyIconUrl from "../../assets/history.svg";
   import newChatIconUrl from "../../assets/new_chat.svg";
   import settingsIconUrl from "../../assets/settings.svg";
@@ -413,7 +412,12 @@
               {:else if block.message.role === "assistant"}
                 <article class="space-y-3">
                   <div class="flex items-center gap-2">
-                    <img src={assistantIcon()} alt="" class="h-7 w-7" />
+                    <img
+                      src={assistantIcon()}
+                      alt=""
+                      class="ui-icon"
+                      style="--icon-size: 1.9rem;"
+                    />
                     <span class="type-heading-4 text-accent-gold">{assistantName()}</span>
                   </div>
                   <div class="space-y-5 pl-9 pr-4">
@@ -464,53 +468,54 @@
       <div class="flex items-center justify-end gap-2 px-6 py-5">
         <button
           type="button"
-          class="flex h-8 w-8 items-center justify-center rounded-lg text-fog/44 transition hover:bg-white/[0.03] hover:text-soft-ivory"
+          class="ui-icon-button text-fog/44 hover:text-soft-ivory"
+          style="--icon-size: 1.15rem; --icon-button-size: 2.15rem;"
           aria-label="Clear draft"
           title="Clear draft"
           onclick={() => onComposerInput("")}
         >
-          <img src={newChatIconUrl} alt="" class="h-4 w-4 opacity-80" />
+          <img src={newChatIconUrl} alt="" class="ui-icon opacity-80" />
         </button>
         <button
           type="button"
-          class="flex h-8 w-8 items-center justify-center rounded-lg text-fog/44 transition hover:bg-white/[0.03] hover:text-soft-ivory"
+          class="ui-icon-button text-fog/44 hover:text-soft-ivory"
+          style="--icon-size: 1.15rem; --icon-button-size: 2.15rem;"
           aria-label="Refresh session"
           title="Refresh session"
           onclick={onRefreshRuntime}
         >
-          <img src={historyIconUrl} alt="" class="h-4 w-4 opacity-80" />
+          <img src={historyIconUrl} alt="" class="ui-icon opacity-80" />
         </button>
         <button
           type="button"
-          class="flex h-8 w-8 items-center justify-center rounded-lg text-fog/44 transition hover:bg-white/[0.03] hover:text-soft-ivory"
+          class="ui-icon-button text-fog/44 hover:text-soft-ivory"
+          style="--icon-size: 1.15rem; --icon-button-size: 2.15rem;"
           aria-label="Open settings"
           title="Open settings"
           onclick={onOpenSettings}
         >
-          <img src={settingsIconUrl} alt="" class="h-4 w-4 opacity-80" />
+          <img src={settingsIconUrl} alt="" class="ui-icon opacity-80" />
         </button>
       </div>
 
       <div class="flex min-h-0 flex-1 flex-col px-6 pb-6">
         <div class="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] bg-transparent">
-          <Button
-            label=""
-            ariaLabel={submitButtonLabel}
+          <button
+            type="button"
+            class="absolute right-3 top-3 z-10 flex items-center justify-center border-0 bg-transparent p-0 text-soft-ivory transition-opacity duration-150 hover:opacity-85 disabled:opacity-55"
+            style="line-height: 0;"
+            aria-label={submitButtonLabel}
             title={submitButtonLabel}
-            variant="gold"
             disabled={runtimeBusy || !composerText.trim()}
-            class="absolute right-0 top-0 z-10 h-14 w-14 min-w-14 rounded-[18px] border-0 shadow-[0_12px_40px_rgba(213,161,42,0.18)]"
-            height="h-14"
             onclick={onSubmitPrompt}
           >
-            {#snippet children()}
-              {#if runtimeBusy}
-                <span class="text-[11px] font-medium tracking-[0.04em] text-[#1f1807]">...</span>
-              {:else}
-                <img src={submitIconUrl} alt="" class="h-7 w-7" />
-              {/if}
-            {/snippet}
-          </Button>
+            <img
+              src={submitIconUrl}
+              alt=""
+              class={`ui-icon ${runtimeBusy ? "animate-pulse" : ""}`}
+              style="--icon-size: 1.85rem;"
+            />
+          </button>
 
           <textarea
             class="type-body-2 min-h-0 flex-1 resize-none bg-transparent px-4 py-4 pr-20 text-fog/82 outline-none placeholder:text-fog/20"
@@ -524,13 +529,13 @@
               <div class="type-body-5 text-fog/38">{runtimeStatusLine}</div>
               <div class="flex items-center gap-2">
                 {#if runtimeActive}
-                  <Button
-                    label="Stop"
-                    variant="ghost"
-                    height="h-8"
-                    class="text-fog/44"
+                  <button
+                    type="button"
+                    class="rounded-md px-2.5 py-1 text-[12px] text-fog/44 transition hover:bg-white/[0.03] hover:text-soft-ivory"
                     onclick={onStopRuntime}
-                  />
+                  >
+                    Stop
+                  </button>
                 {/if}
                 <button
                   type="button"

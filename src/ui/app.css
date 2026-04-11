@@ -77,6 +77,14 @@ textarea {
   font: inherit;
 }
 
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 textarea,
 input {
   caret-color: var(--color-accent-gold);
@@ -279,4 +287,45 @@ input {
   border-radius: 12px;
   background: rgb(15 20 27 / 0.98);
   font-family: var(--font-family-mono);
+}
+
+.ui-icon {
+  width: var(--icon-size, 1rem);
+  height: var(--icon-size, 1rem);
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.ui-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-button-size, calc(var(--icon-size, 1rem) + 1rem));
+  height: var(--icon-button-size, calc(var(--icon-size, 1rem) + 1rem));
+  border: 0;
+  border-radius: var(--icon-button-radius, 0.75rem);
+  background: transparent;
+  color: inherit;
+  transition:
+    background-color 150ms ease,
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.ui-icon-button:hover {
+  background: rgb(255 255 255 / 0.03);
+}
+
+.ui-icon-button:active {
+  transform: translateY(1px);
+}
+
+.ui-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.ui-icon-button-bare:hover {
+  background: transparent;
+  opacity: 1;
 }
