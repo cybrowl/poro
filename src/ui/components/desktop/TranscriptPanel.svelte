@@ -630,62 +630,64 @@
   </div>
 
   <div class="mt-auto border-t border-white/6 bg-obsidian">
-    <div class="mx-auto flex w-full max-w-[760px] flex-col gap-3 px-6 pb-3 pt-4">
-      <textarea
-        class="type-body-3 min-h-28 w-full resize-none bg-transparent px-0 py-0 text-fog/88 outline-none placeholder:text-fog/34"
-        value={composerText}
-        placeholder="Ask Poro to edit code, inspect the repo, or use the browser when needed."
-        oninput={(event) => onComposerInput((event.currentTarget as HTMLTextAreaElement).value)}
-      ></textarea>
+    <div class="mx-auto w-full max-w-[760px] px-6 pb-3 pt-4">
+      <div class="ui-panel-subtle rounded-[24px] px-4 py-4">
+        <textarea
+          class="type-body-3 min-h-28 w-full resize-none bg-transparent px-0 py-0 text-fog/88 outline-none placeholder:text-fog/34"
+          value={composerText}
+          placeholder="Ask Poro to edit code, inspect the repo, or use the browser when needed."
+          oninput={(event) => onComposerInput((event.currentTarget as HTMLTextAreaElement).value)}
+        ></textarea>
 
-      <div class="flex flex-wrap items-center justify-between gap-3 border-t border-white/6 pt-3">
-        <div class="type-body-5 text-fog/46">{runtimeStatusLine}</div>
-        <div class="flex flex-wrap gap-2">
-          <Button
-            label="Model"
-            variant="outline"
-            height="h-8"
-            onclick={() =>
-              onSelectModel(
-                modelOptions[(modelOptions.indexOf(selectedModel) + 1) % modelOptions.length] ??
-                  selectedModel
-              )}
-          />
-          <Button
-            label="Permission"
-            variant="outline"
-            height="h-8"
-            onclick={() =>
-              onSelectPermission(
-                permissionModes[
-                  (permissionModes.indexOf(selectedPermission) + 1) % permissionModes.length
-                ] ?? selectedPermission
-              )}
-          />
-          <Button
-            label=""
-            ariaLabel={submitButtonLabel}
-            title={submitButtonLabel}
-            variant="ghost"
-            disabled={runtimeBusy || !composerText.trim()}
-            class="w-10 min-w-10 rounded-2xl bg-transparent p-0 hover:bg-white/[0.03]"
-            height="h-10"
-            onclick={onSubmitPrompt}
-          >
-            {#snippet children()}
-              {#if runtimeBusy}
-                <span class="text-[11px] font-medium tracking-[0.04em]">...</span>
-              {:else}
-                <img src={submitIconUrl} alt="" class="h-9 w-9" />
-              {/if}
-            {/snippet}
-          </Button>
-          <Button
-            label={runtimeActive ? "Stop" : "Refresh"}
-            variant="ghost"
-            height="h-8"
-            onclick={runtimeActive ? onStopRuntime : onRefreshRuntime}
-          />
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-white/6 pt-3">
+          <div class="type-body-5 text-fog/46">{runtimeStatusLine}</div>
+          <div class="flex flex-wrap gap-2">
+            <Button
+              label="Model"
+              variant="outline"
+              height="h-8"
+              onclick={() =>
+                onSelectModel(
+                  modelOptions[(modelOptions.indexOf(selectedModel) + 1) % modelOptions.length] ??
+                    selectedModel
+                )}
+            />
+            <Button
+              label="Permission"
+              variant="outline"
+              height="h-8"
+              onclick={() =>
+                onSelectPermission(
+                  permissionModes[
+                    (permissionModes.indexOf(selectedPermission) + 1) % permissionModes.length
+                  ] ?? selectedPermission
+                )}
+            />
+            <Button
+              label=""
+              ariaLabel={submitButtonLabel}
+              title={submitButtonLabel}
+              variant="ghost"
+              disabled={runtimeBusy || !composerText.trim()}
+              class="w-10 min-w-10 rounded-2xl bg-transparent p-0 hover:bg-white/[0.03]"
+              height="h-10"
+              onclick={onSubmitPrompt}
+            >
+              {#snippet children()}
+                {#if runtimeBusy}
+                  <span class="text-[11px] font-medium tracking-[0.04em]">...</span>
+                {:else}
+                  <img src={submitIconUrl} alt="" class="h-9 w-9" />
+                {/if}
+              {/snippet}
+            </Button>
+            <Button
+              label={runtimeActive ? "Stop" : "Refresh"}
+              variant="ghost"
+              height="h-8"
+              onclick={runtimeActive ? onStopRuntime : onRefreshRuntime}
+            />
+          </div>
         </div>
       </div>
     </div>
