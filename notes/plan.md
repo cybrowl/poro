@@ -258,6 +258,20 @@ The latest visual pass surfaced a few concrete problems we should keep using as 
 
 ### Screenshot Analysis Note
 
+### Browser Debug And Screenshot Truth
+
+For UI work we should use three layers of truth together:
+
+- a deterministic browser-debug route that renders the same session surface outside Tauri
+- native user screenshots as the source of truth for actual app-window behavior
+- a stronger screenshot-verification lane later for the true app surface, not just the browser shell
+
+Near-term rule:
+
+- use the browser-debug route for fast inspection and repeatable screenshot checks
+- keep using native screenshots to catch Tauri-only or app-window-only issues
+- do not treat browser-only verification as sufficient for native-window visual claims
+
 ## 7. Document Composer Roadmap
 
 We have chosen a hybrid editor architecture for the main prompt surface:
