@@ -1,7 +1,12 @@
 <script lang="ts">
   import Button from "$components/basic_elems/Button.svelte";
   import type { BackendHealth } from "$lib/clawRuntime";
-  import type { PermissionMode, ProviderRecord } from "$lib/mockDesktopData";
+  import {
+    providerDefaultModel,
+    providerModelOptions,
+    type PermissionMode,
+    type ProviderRecord,
+  } from "$lib/mockDesktopData";
   import { fade, fly } from "svelte/transition";
 
   interface Props {
@@ -53,6 +58,62 @@
     permissionModes,
     onClose,
   }: Props = $props();
+
+  let draftBackendPath = $state("");
+  let draftXAiApiKey = $state("");
+  let draftOpenAiApiKey = $state("");
+  let draftSelectedProviderId = $state("local");
+  let draftSelectedModel = $state("");
+  let draftSelectedPermission = $state<PermissionMode>("workspace-write");
+
+  let draftModelOptions = $derived(
+    providerModelOptions[draftSelectedProviderId] ?? modelOptions
+  );
+  let hasUnsavedChanges = $derived(
+    draftBackendPath !== backendPath ||
+      draftXAiApiKey !== xAiApiKey ||
+      draftOpenAiApiKey !== openAiApiKey ||
+      draftSelectedProviderId !== selectedProviderId ||
+      draftSelectedModel !== selectedModel ||
+      draftSelectedPermission !== selectedPermission
+  );
+
+  $effect(() => {
+    if (!open) return;
+
+    draftBackendPath = backendPath;
+    draftXAiApiKey = xAiApiKey;
+    draftOpenAiApiKey = openAiApiKey;
+    draftSelectedProviderId = selectedProviderId;
+    draftSelectedModel = selectedModel;
+    draftSelectedPermission = selectedPermission;
+  });
+
+  function updateDraftProvider(id: string) {
+    draftSelectedProviderId = id;
+    const nextOptions = providerModelOptions[id] ?? modelOptions;
+    if (!nextOptions.includes(draftSelectedModel)) {
+      draftSelectedModel = providerDefaultModel[id] ?? nextOptions[0] ?? draftSelectedModel;
+    }
+  }
+
+  async function applyDraft(closeAfter = false) {
+    onBackendPathChange(draftBackendPath);
+    onXAiApiKeyChange(draftXAiApiKey);
+    onOpenAiApiKeyChange(draftOpenAiApiKey);
+    await onSelectProvider(draftSelectedProviderId);
+    await onSelectModel(draftSelectedModel);
+    await onSelectPermission(draftSelectedPermission);
+
+    if (closeAfter) {
+      onClose();
+    }
+  }
+
+  async function runDraftHealthCheck() {
+    await applyDraft(false);
+    onRunHealthCheck();
+  }
 </script>
 
 {#if open}
@@ -98,15 +159,15 @@
         <div class="ui-section-label">Backend</div>
         <label class="mt-4 block">
           <span class="sr-only">Backend path</span>
-          <input
-            class="ui-input code-font px-4 py-3 text-sm"
-            type="text"
-            value={backendPath}
-            placeholder="harness-server"
-            oninput={(event) =>
-              onBackendPathChange((event.currentTarget as HTMLInputElement).value)}
-          />
-        </label>
+            <input
+              class="ui-input code-font px-4 py-3 text-sm"
+              type="text"
+              value={draftBackendPath}
+              placeholder="harness-server"
+              oninput={(event) =>
+                (draftBackendPath = (event.currentTarget as HTMLInputElement).value)}
+            />
+          </label>
 
         <div class="mt-4 flex flex-wrap gap-2">
           <Button
@@ -114,7 +175,7 @@
             variant="dark"
             height="h-10"
             disabled={healthCheckPending}
-            onclick={onRunHealthCheck}
+            onclick={runDraftHealthCheck}
           />
           <span
             class={`ui-chip ${
@@ -198,17 +259,16 @@
           </div>
         {/if}
 
-        {#if selectedProviderId === "local"}
+        {#if draftSelectedProviderId === "local"}
           <div class="ui-panel-accent mt-4 px-4 py-4 text-sm leading-7 text-fog/70">
             Local mode expects Ollama on `http://127.0.0.1:11434` with a Gemma 4
             model available. `ollama pull gemma4:e2b` is still the easiest first
             boot path.
           </div>
-        {:else if selectedProviderId === "grok"}
+        {:else if draftSelectedProviderId === "grok"}
           <div class="ui-panel-accent mt-4 px-4 py-4 text-sm leading-7 text-fog/70">
-            Grok mode uses the hosted xAI API through the sibling Harness. Launch
-            Poro from a terminal that exports `XAI_API_KEY`, then pick the model
-            you want to test.
+            Grok mode uses the hosted xAI API through the sibling Harness. Save a
+            valid `XAI_API_KEY` here, then run a health check before launching.
           </div>
         {/if}
       </section>
@@ -221,12 +281,12 @@
             <input
               class="ui-input code-font px-4 py-3 text-sm"
               type="password"
-              value={xAiApiKey}
+              value={draftXAiApiKey}
               placeholder="xai-..."
               autocomplete="off"
               spellcheck="false"
               oninput={(event) =>
-                onXAiApiKeyChange((event.currentTarget as HTMLInputElement).value)}
+                (draftXAiApiKey = (event.currentTarget as HTMLInputElement).value)}
             />
           </label>
 
@@ -235,12 +295,12 @@
             <input
               class="ui-input code-font px-4 py-3 text-sm"
               type="password"
-              value={openAiApiKey}
+              value={draftOpenAiApiKey}
               placeholder="sk-..."
               autocomplete="off"
               spellcheck="false"
               oninput={(event) =>
-                onOpenAiApiKeyChange((event.currentTarget as HTMLInputElement).value)}
+                (draftOpenAiApiKey = (event.currentTarget as HTMLInputElement).value)}
             />
           </label>
         </div>
@@ -257,11 +317,11 @@
             <button
               type="button"
               class={`ui-panel-soft w-full px-4 py-4 text-left transition ${
-                selectedProviderId === provider.id
+                draftSelectedProviderId === provider.id
                   ? "border-accent-gold/18 bg-accent-gold/[0.05]"
                   : "hover:border-white/14 hover:bg-white/[0.05]"
               }`}
-              onclick={() => onSelectProvider(provider.id)}
+              onclick={() => updateDraftProvider(provider.id)}
             >
               <div class="flex items-center justify-between gap-4">
                 <div>
@@ -284,15 +344,15 @@
       <section class="ui-panel p-4">
         <div class="ui-section-label">Default Model</div>
         <div class="mt-4 flex flex-wrap gap-2">
-          {#each modelOptions as model}
+          {#each draftModelOptions as model}
             <button
               type="button"
               class={`code-font rounded-xl border px-3 py-2 text-[0.68rem] uppercase tracking-[0.18em] transition ${
-                selectedModel === model
+                draftSelectedModel === model
                   ? "border-accent-gold/35 bg-accent-gold/10 text-accent-gold"
                   : "border-white/10 bg-dark-slate/90 text-fog/58 hover:border-white/16 hover:bg-white/[0.05]"
               }`}
-              onclick={() => onSelectModel(model)}
+              onclick={() => (draftSelectedModel = model)}
             >
               {model}
             </button>
@@ -307,7 +367,7 @@
             <button
               type="button"
               class={`code-font rounded-xl border px-3 py-2 text-[0.68rem] uppercase tracking-[0.18em] transition ${
-                selectedPermission === mode
+                draftSelectedPermission === mode
                   ? mode === "danger-full-access"
                     ? "border-red-400/30 bg-red-400/10 text-red-200"
                     : mode === "workspace-write"
@@ -315,7 +375,7 @@
                       : "border-white/16 bg-white/8 text-soft-ivory"
                   : "border-white/10 bg-dark-slate/90 text-fog/58 hover:border-white/16 hover:bg-white/[0.05]"
               }`}
-              onclick={() => onSelectPermission(mode)}
+              onclick={() => (draftSelectedPermission = mode)}
             >
               {mode}
             </button>
@@ -346,6 +406,23 @@
           </div>
         </div>
       </section>
+
+      <div class="flex items-center justify-end gap-2 border-t border-white/[0.05] pt-4">
+        <button
+          type="button"
+          class="rounded-xl px-3 py-2 text-[0.8125rem] text-fog/52 transition hover:bg-white/[0.03] hover:text-soft-ivory"
+          onclick={onClose}
+        >
+          Cancel
+        </button>
+        <Button
+          label="Save"
+          variant="gold"
+          height="h-10"
+          disabled={!hasUnsavedChanges}
+          onclick={() => applyDraft(true)}
+        />
+      </div>
       </div>
     </section>
   </div>
