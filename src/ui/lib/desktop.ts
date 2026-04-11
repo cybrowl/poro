@@ -48,7 +48,7 @@ export function createWorkspaceRecord(path: string): WorkspaceRecord {
     id,
     name,
     path,
-    branch: "main",
+    branch: "detecting…",
     status: "Ready",
     lastOpened: "Just now",
     summary:
@@ -58,7 +58,7 @@ export function createWorkspaceRecord(path: string): WorkspaceRecord {
       {
         id: `${id}-new-session`,
         title: "New desktop session",
-        branch: "main",
+        branch: "detecting…",
         status: "Ready",
         updatedAt: "Created just now",
         model: "gemma4:e2b",

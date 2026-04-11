@@ -30,6 +30,11 @@
     type RuntimeLaunch,
   } from "$lib/clawRuntime";
   import {
+    loadWorkspaceGitDiff,
+    loadWorkspaceGitState,
+    type WorkspaceGitState,
+  } from "$lib/gitRuntime";
+  import {
     permissionModes,
     providers,
     providerDefaultModel,
@@ -74,6 +79,11 @@
   let backendHealth = $state<BackendHealth | null>(null);
   let healthCheckPending = $state(false);
   let runtimeError = $state<string | null>(null);
+  let gitStateByWorkspace = $state<Record<string, WorkspaceGitState | null>>({});
+  let gitSelectedPathByWorkspace = $state<Record<string, string | null>>({});
+  let gitDiffByWorkspace = $state<Record<string, string>>({});
+  let gitDiffLoadingByWorkspace = $state<Record<string, boolean>>({});
+  let gitErrorByWorkspace = $state<Record<string, string | null>>({});
   let runtimeFeedByWorkspace = $state<Record<string, ActivityItem[]>>({});
   let activeRuntimeByWorkspace = $state<Record<string, RuntimeLaunch>>({});
   let runtimeWorkspaceById = $state<Record<string, string>>({});
@@ -104,6 +114,11 @@
   let selectedRuntime = $derived(activeRuntimeByWorkspace[selectedWorkspace.path] ?? null);
   let runtimeBusy = $derived(turnInFlightByWorkspace[selectedWorkspace.path] ?? false);
   let runtimeActivity = $derived(runtimeFeedByWorkspace[selectedWorkspace.path] ?? []);
+  let gitState = $derived(gitStateByWorkspace[selectedWorkspace.path] ?? null);
+  let selectedGitPath = $derived(gitSelectedPathByWorkspace[selectedWorkspace.path] ?? null);
+  let gitDiffText = $derived(gitDiffByWorkspace[selectedWorkspace.path] ?? "");
+  let gitDiffLoading = $derived(gitDiffLoadingByWorkspace[selectedWorkspace.path] ?? false);
+  let gitError = $derived(gitErrorByWorkspace[selectedWorkspace.path] ?? null);
   let selectedBrowserRuntime = $derived(activeBrowserByWorkspace[selectedWorkspace.path] ?? null);
   let browserBusy = $derived(browserBusyByWorkspace[selectedWorkspace.path] ?? false);
   let browserUrl = $derived(
@@ -176,6 +191,17 @@
     workspaceList = workspaceList.map((workspace) =>
       workspace.id === workspaceId ? updater(workspace) : workspace
     );
+  }
+
+  function applyWorkspaceGitState(workspaceId: string, gitState: WorkspaceGitState) {
+    updateWorkspace(workspaceId, (currentWorkspace) => ({
+      ...currentWorkspace,
+      branch: gitState.branch,
+      sessions: currentWorkspace.sessions.map((session) => ({
+        ...session,
+        branch: gitState.branch,
+      })),
+    }));
   }
 
   function findWorkspaceByPath(path: string) {
@@ -436,6 +462,99 @@
     if (selectedWorkspaceId === workspace.id) {
       selectedSessionId = session.id;
     }
+
+    void refreshWorkspaceGitState(workspace.id);
+  }
+
+  async function loadGitDiffForWorkspace(workspacePath: string, filePath: string | null) {
+    if (!desktopReady) {
+      return;
+    }
+
+    gitSelectedPathByWorkspace = {
+      ...gitSelectedPathByWorkspace,
+      [workspacePath]: filePath,
+    };
+    gitErrorByWorkspace = {
+      ...gitErrorByWorkspace,
+      [workspacePath]: null,
+    };
+
+    if (!filePath) {
+      gitDiffByWorkspace = {
+        ...gitDiffByWorkspace,
+        [workspacePath]: "",
+      };
+      gitDiffLoadingByWorkspace = {
+        ...gitDiffLoadingByWorkspace,
+        [workspacePath]: false,
+      };
+      return;
+    }
+
+    gitDiffLoadingByWorkspace = {
+      ...gitDiffLoadingByWorkspace,
+      [workspacePath]: true,
+    };
+
+    try {
+      const diff = await loadWorkspaceGitDiff(workspacePath, filePath);
+      gitDiffByWorkspace = {
+        ...gitDiffByWorkspace,
+        [workspacePath]: diff,
+      };
+    } catch (error) {
+      gitErrorByWorkspace = {
+        ...gitErrorByWorkspace,
+        [workspacePath]: error instanceof Error ? error.message : String(error),
+      };
+      gitDiffByWorkspace = {
+        ...gitDiffByWorkspace,
+        [workspacePath]: "",
+      };
+    } finally {
+      gitDiffLoadingByWorkspace = {
+        ...gitDiffLoadingByWorkspace,
+        [workspacePath]: false,
+      };
+    }
+  }
+
+  async function refreshWorkspaceGitState(workspaceId: string) {
+    const workspace = workspaceList.find((item) => item.id === workspaceId);
+    if (!workspace || !desktopReady) {
+      return;
+    }
+
+    try {
+      const gitState = await loadWorkspaceGitState(workspace.path);
+      if (!gitState) {
+        return;
+      }
+
+      applyWorkspaceGitState(workspaceId, gitState);
+
+      const currentSelection = gitSelectedPathByWorkspace[workspace.path];
+      const nextSelectedPath =
+        currentSelection && gitState.changedFiles.some((file) => file.path === currentSelection)
+          ? currentSelection
+          : gitState.changedFiles[0]?.path ?? null;
+
+      await loadGitDiffForWorkspace(workspace.path, nextSelectedPath);
+    } catch (error) {
+      gitErrorByWorkspace = {
+        ...gitErrorByWorkspace,
+        [workspace.path]: error instanceof Error ? error.message : String(error),
+      };
+      gitDiffByWorkspace = {
+        ...gitDiffByWorkspace,
+        [workspace.path]: "",
+      };
+      gitDiffLoadingByWorkspace = {
+        ...gitDiffLoadingByWorkspace,
+        [workspace.path]: false,
+      };
+    }
   }
 
   async function refreshWorkspaceSessions(workspaceId: string, focusSelected = false) {
@@ -499,8 +618,11 @@
   }
 
   async function refreshSelectedWorkspace() {
-    await refreshWorkspaceSessions(selectedWorkspaceId, true);
-    await runHealthCheck();
+    await Promise.all([
+      refreshWorkspaceSessions(selectedWorkspaceId, true),
+      refreshWorkspaceGitState(selectedWorkspaceId),
+      runHealthCheck(),
+    ]);
   }
 
   function setBackendPath(path: string) {
@@ -681,6 +803,10 @@
     selectedSessionId = id;
     composerText = session.draft;
     await hydrateSession(session);
+  }
+
+  async function selectGitPath(path: string) {
+    await loadGitDiffForWorkspace(selectedWorkspace.path, path);
   }
 
   async function deleteSession(id: string) {
@@ -1167,6 +1293,10 @@
             : `Harness stopped with an error after ${Math.max(1, Math.round(event.durationMs / 1000))}s.`,
           event.success ? "complete" : "queued"
         );
+        const workspaceId = findWorkspaceIdByPath(workspacePath);
+        if (workspaceId) {
+          await refreshWorkspaceGitState(workspaceId);
+        }
       }
       return;
     }
@@ -1195,7 +1325,10 @@
 
         const workspaceId = findWorkspaceIdByPath(workspacePath);
         if (workspaceId) {
-          await refreshWorkspaceSessions(workspaceId, workspaceId === selectedWorkspaceId);
+          await Promise.all([
+            refreshWorkspaceSessions(workspaceId, workspaceId === selectedWorkspaceId),
+            refreshWorkspaceGitState(workspaceId),
+          ]);
         }
       }
       return;
@@ -1345,6 +1478,11 @@
       <section class="flex min-h-0 flex-1">
         <TranscriptPanel
           session={selectedSession}
+          {gitState}
+          {selectedGitPath}
+          {gitDiffText}
+          {gitDiffLoading}
+          {gitError}
           {runtimeActivity}
           browserActivity={browserActivity}
           {selectedModel}
@@ -1359,6 +1497,8 @@
           onSelectPermission={setPermission}
           onComposerInput={setComposerText}
           onSubmitPrompt={submitPrompt}
+          onSelectGitPath={selectGitPath}
+          onRefreshGit={() => refreshWorkspaceGitState(selectedWorkspaceId)}
           onStopRuntime={stopSelectedRuntime}
           onRefreshRuntime={refreshSelectedWorkspace}
         />

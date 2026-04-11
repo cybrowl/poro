@@ -1,4 +1,4 @@
-use std::collections::{hash_map::DefaultHasher, HashMap, HashSet};
+use std::collections::{hash_map::DefaultHasher, BTreeMap, HashMap, HashSet};
 use std::env;
 use std::fs;
 use std::hash::{Hash, Hasher};
@@ -133,6 +133,31 @@ struct ClawSessionSnapshot {
     activity: Vec<ClawActivityItem>,
     changes: Vec<ClawFileChange>,
     latest_usage: Option<ClawUsage>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WorkspaceGitFile {
+    path: String,
+    summary: String,
+    staged_status: Option<String>,
+    unstaged_status: Option<String>,
+    additions: i64,
+    deletions: i64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WorkspaceGitState {
+    workspace_path: String,
+    is_git_repo: bool,
+    branch: String,
+    clean: bool,
+    summary: String,
+    staged_count: usize,
+    unstaged_count: usize,
+    untracked_count: usize,
+    changed_files: Vec<WorkspaceGitFile>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -453,6 +478,299 @@ fn hash_path(path: &Path) -> u64 {
     let mut hasher = DefaultHasher::new();
     path.hash(&mut hasher);
     hasher.finish()
+}
+
+#[derive(Debug, Default)]
+struct RawGitFileState {
+    staged_status: Option<char>,
+    unstaged_status: Option<char>,
+    additions: i64,
+    deletions: i64,
+}
+
+fn describe_git_status(code: char) -> &'static str {
+    match code {
+        'A' => "added",
+        'M' => "modified",
+        'D' => "deleted",
+        'R' => "renamed",
+        'C' => "copied",
+        'U' => "conflicted",
+        '?' => "untracked",
+        _ => "changed",
+    }
+}
+
+fn normalize_git_status_path(raw: &str) -> String {
+    raw.rsplit(" -> ")
+        .next()
+        .unwrap_or(raw)
+        .trim()
+        .trim_matches('"')
+        .to_string()
+}
+
+fn git_command_output(
+    workspace_path: &Path,
+    args: &[&str],
+) -> Result<std::process::Output, String> {
+    Command::new("git")
+        .arg("-C")
+        .arg(workspace_path)
+        .args(args)
+        .output()
+        .map_err(|error| format!("Could not run git in {}: {error}", workspace_path.display()))
+}
+
+fn git_command_stdout(workspace_path: &Path, args: &[&str]) -> Result<String, String> {
+    let output = git_command_output(workspace_path, args)?;
+    if output.status.success() {
+        return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
+    }
+
+    let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+    if stderr.is_empty() {
+        Err(format!(
+            "git {} failed in {}",
+            args.join(" "),
+            workspace_path.display()
+        ))
+    } else {
+        Err(stderr)
+    }
+}
+
+fn git_numstat_map(
+    workspace_path: &Path,
+    args: &[&str],
+) -> Result<HashMap<String, (i64, i64)>, String> {
+    let output = git_command_output(workspace_path, args)?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        if stderr.contains("Not a git repository") || stderr.contains("not a git repository") {
+            return Ok(HashMap::new());
+        }
+        return Err(if stderr.is_empty() {
+            format!(
+                "git {} failed in {}",
+                args.join(" "),
+                workspace_path.display()
+            )
+        } else {
+            stderr
+        });
+    }
+
+    let mut map = HashMap::new();
+    for line in String::from_utf8_lossy(&output.stdout).lines() {
+        let mut parts = line.splitn(3, '\t');
+        let additions = parts.next().unwrap_or("0");
+        let deletions = parts.next().unwrap_or("0");
+        let path = parts.next().unwrap_or("").trim();
+        if path.is_empty() {
+            continue;
+        }
+
+        let additions = additions.parse::<i64>().unwrap_or(0);
+        let deletions = deletions.parse::<i64>().unwrap_or(0);
+        map.insert(normalize_git_status_path(path), (additions, deletions));
+    }
+
+    Ok(map)
+}
+
+fn is_git_repo(workspace_path: &Path) -> Result<bool, String> {
+    let output = git_command_output(workspace_path, &["rev-parse", "--is-inside-work-tree"])?;
+    Ok(output.status.success())
+}
+
+fn current_git_branch(workspace_path: &Path) -> Result<String, String> {
+    let branch = git_command_stdout(workspace_path, &["branch", "--show-current"])?;
+    if !branch.is_empty() {
+        return Ok(branch);
+    }
+
+    let head = git_command_stdout(workspace_path, &["rev-parse", "--short", "HEAD"])?;
+    if head.is_empty() {
+        Ok("HEAD".to_string())
+    } else {
+        Ok(format!("detached@{head}"))
+    }
+}
+
+fn summarize_git_file(staged_status: Option<char>, unstaged_status: Option<char>) -> String {
+    if staged_status == Some('?') || unstaged_status == Some('?') {
+        return "Untracked file".to_string();
+    }
+
+    if matches!(staged_status, Some('U')) || matches!(unstaged_status, Some('U')) {
+        return "Merge conflict".to_string();
+    }
+
+    match (staged_status, unstaged_status) {
+        (Some(staged), Some(unstaged)) => format!(
+            "{} staged, {} in working tree",
+            describe_git_status(staged),
+            describe_git_status(unstaged)
+        ),
+        (Some(staged), None) => format!("{} staged", describe_git_status(staged)),
+        (None, Some(unstaged)) => format!("{} in working tree", describe_git_status(unstaged)),
+        _ => "Changed".to_string(),
+    }
+}
+
+fn load_workspace_git_state_for_path(workspace_path: &Path) -> Result<WorkspaceGitState, String> {
+    let workspace_label = workspace_path.display().to_string();
+    if !is_git_repo(workspace_path)? {
+        return Ok(WorkspaceGitState {
+            workspace_path: workspace_label,
+            is_git_repo: false,
+            branch: "No git repo".to_string(),
+            clean: true,
+            summary: "This workspace is not a git repository yet.".to_string(),
+            staged_count: 0,
+            unstaged_count: 0,
+            untracked_count: 0,
+            changed_files: Vec::new(),
+        });
+    }
+
+    let branch = current_git_branch(workspace_path)?;
+    let status_output = git_command_stdout(
+        workspace_path,
+        &["status", "--porcelain=v1", "--untracked-files=all"],
+    )?;
+    let unstaged_numstat = git_numstat_map(workspace_path, &["diff", "--numstat"])?;
+    let staged_numstat = git_numstat_map(workspace_path, &["diff", "--cached", "--numstat"])?;
+
+    let mut files = BTreeMap::<String, RawGitFileState>::new();
+
+    for line in status_output.lines() {
+        if line.len() < 3 {
+            continue;
+        }
+
+        let mut chars = line.chars();
+        let staged_status = chars.next().unwrap_or(' ');
+        let unstaged_status = chars.next().unwrap_or(' ');
+        let path = normalize_git_status_path(line.get(3..).unwrap_or("").trim());
+        if path.is_empty() {
+            continue;
+        }
+
+        let entry = files.entry(path).or_default();
+        if staged_status != ' ' {
+            entry.staged_status = Some(staged_status);
+        }
+        if unstaged_status != ' ' {
+            entry.unstaged_status = Some(unstaged_status);
+        }
+    }
+
+    for (path, (additions, deletions)) in unstaged_numstat {
+        let entry = files.entry(path).or_default();
+        entry.additions += additions;
+        entry.deletions += deletions;
+    }
+
+    for (path, (additions, deletions)) in staged_numstat {
+        let entry = files.entry(path).or_default();
+        entry.additions += additions;
+        entry.deletions += deletions;
+    }
+
+    let staged_count = files
+        .values()
+        .filter(|file| {
+            file.staged_status
+                .is_some_and(|status| status != '?' && status != ' ')
+        })
+        .count();
+    let unstaged_count = files
+        .values()
+        .filter(|file| {
+            file.unstaged_status
+                .is_some_and(|status| status != '?' && status != ' ')
+        })
+        .count();
+    let untracked_count = files
+        .values()
+        .filter(|file| file.staged_status == Some('?') || file.unstaged_status == Some('?'))
+        .count();
+
+    let changed_files = files
+        .into_iter()
+        .map(|(path, file)| WorkspaceGitFile {
+            summary: summarize_git_file(file.staged_status, file.unstaged_status),
+            staged_status: file
+                .staged_status
+                .map(|status| describe_git_status(status).to_string()),
+            unstaged_status: file
+                .unstaged_status
+                .map(|status| describe_git_status(status).to_string()),
+            additions: file.additions,
+            deletions: file.deletions,
+            path,
+        })
+        .collect::<Vec<_>>();
+
+    let clean = changed_files.is_empty();
+    let summary = if clean {
+        format!("Working tree clean on {branch}.")
+    } else {
+        let mut parts = vec![format!(
+            "{} changed file{}",
+            changed_files.len(),
+            if changed_files.len() == 1 { "" } else { "s" }
+        )];
+        if staged_count > 0 {
+            parts.push(format!("{staged_count} staged"));
+        }
+        if unstaged_count > 0 {
+            parts.push(format!("{unstaged_count} unstaged"));
+        }
+        if untracked_count > 0 {
+            parts.push(format!("{untracked_count} untracked"));
+        }
+        format!("{} on {branch}.", parts.join(" • "))
+    };
+
+    Ok(WorkspaceGitState {
+        workspace_path: workspace_label,
+        is_git_repo: true,
+        branch,
+        clean,
+        summary,
+        staged_count,
+        unstaged_count,
+        untracked_count,
+        changed_files,
+    })
+}
+
+fn load_workspace_git_diff_for_path(
+    workspace_path: &Path,
+    file_path: &str,
+) -> Result<String, String> {
+    if !is_git_repo(workspace_path)? {
+        return Err("This workspace is not a git repository yet.".to_string());
+    }
+
+    let unstaged = git_command_stdout(workspace_path, &["diff", "--no-color", "--", file_path])?;
+    let staged = git_command_stdout(
+        workspace_path,
+        &["diff", "--cached", "--no-color", "--", file_path],
+    )?;
+
+    match (unstaged.trim(), staged.trim()) {
+        ("", "") => Ok("No git diff is available for this path yet.".to_string()),
+        ("", staged) => Ok(staged.to_string()),
+        (unstaged, "") => Ok(unstaged.to_string()),
+        (unstaged, staged) => Ok(format!(
+            "Unstaged changes\n{separator}\n{unstaged}\n\nStaged changes\n{separator}\n{staged}",
+            separator = "────────"
+        )),
+    }
 }
 
 fn emit_runtime_event(app: &AppHandle, payload: RuntimeEventPayload) {
@@ -1603,6 +1921,18 @@ fn check_claw_backend(
 }
 
 #[tauri::command]
+fn load_workspace_git_state(workspace_path: String) -> Result<WorkspaceGitState, String> {
+    let workspace_path = PathBuf::from(normalize_workspace_path(workspace_path));
+    load_workspace_git_state_for_path(&workspace_path)
+}
+
+#[tauri::command]
+fn load_workspace_git_diff(workspace_path: String, file_path: String) -> Result<String, String> {
+    let workspace_path = PathBuf::from(normalize_workspace_path(workspace_path));
+    load_workspace_git_diff_for_path(&workspace_path, &file_path)
+}
+
+#[tauri::command]
 fn list_claw_sessions(
     app: AppHandle,
     workspace_path: String,
@@ -2076,6 +2406,8 @@ pub fn run() {
             load_desktop_settings,
             save_desktop_settings,
             check_claw_backend,
+            load_workspace_git_state,
+            load_workspace_git_diff,
             list_claw_sessions,
             load_claw_session,
             delete_claw_session,

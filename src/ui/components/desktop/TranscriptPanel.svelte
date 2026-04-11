@@ -1,6 +1,7 @@
 <script lang="ts">
   import Button from "$components/basic_elems/Button.svelte";
   import submitIconUrl from "../../assets/submit.svg";
+  import type { WorkspaceGitState } from "$lib/gitRuntime";
   import type {
     ActivityItem,
     PermissionMode,
@@ -10,6 +11,11 @@
 
   interface Props {
     session: SessionRecord;
+    gitState: WorkspaceGitState | null;
+    selectedGitPath: string | null;
+    gitDiffText: string;
+    gitDiffLoading: boolean;
+    gitError: string | null;
     runtimeActivity: ActivityItem[];
     browserActivity: ActivityItem[];
     selectedModel: string;
@@ -24,12 +30,19 @@
     onSelectPermission: (mode: PermissionMode) => void;
     onComposerInput: (value: string) => void;
     onSubmitPrompt: () => void;
+    onSelectGitPath: (path: string) => void;
+    onRefreshGit: () => void;
     onStopRuntime: () => void;
     onRefreshRuntime: () => void;
   }
 
   let {
     session,
+    gitState,
+    selectedGitPath,
+    gitDiffText,
+    gitDiffLoading,
+    gitError,
     runtimeActivity,
     browserActivity,
     selectedModel,
@@ -44,6 +57,8 @@
     onSelectPermission,
     onComposerInput,
     onSubmitPrompt,
+    onSelectGitPath,
+    onRefreshGit,
     onStopRuntime,
     onRefreshRuntime,
   }: Props = $props();
@@ -329,6 +344,15 @@
   let submitButtonLabel = $derived(
     runtimeBusy ? "Working..." : runtimeActive ? "Send message" : "Launch and send"
   );
+  let gitSummaryTone = $derived(
+    gitError
+      ? "ui-panel-warning"
+      : gitState?.isGitRepo
+        ? gitState.clean
+          ? "ui-panel-success"
+          : "ui-panel-soft"
+        : "ui-panel-soft"
+  );
 </script>
 
 <section class="flex min-h-0 flex-1 flex-col bg-obsidian">
@@ -432,6 +456,110 @@
             </div>
           </section>
         {/if}
+
+        <section class="space-y-3">
+          <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div class="min-w-0">
+              <div class="type-label text-fog/34">Working tree</div>
+              <div class="mt-2 flex flex-wrap items-center gap-2">
+                <div class="type-heading-3 text-soft-ivory">{gitState?.branch ?? session.branch}</div>
+                {#if gitState?.isGitRepo}
+                  <span class="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-fog/54">
+                    {gitState.clean ? "clean" : `${gitState.changedFiles.length} files`}
+                  </span>
+                  {#if gitState.stagedCount}
+                    <span class="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-fog/54">
+                      {gitState.stagedCount} staged
+                    </span>
+                  {/if}
+                  {#if gitState.unstagedCount}
+                    <span class="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-fog/54">
+                      {gitState.unstagedCount} unstaged
+                    </span>
+                  {/if}
+                  {#if gitState.untrackedCount}
+                    <span class="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-fog/54">
+                      {gitState.untrackedCount} untracked
+                    </span>
+                  {/if}
+                {/if}
+              </div>
+              <div class="mt-2 type-body-4 text-fog/62">
+                {gitError ?? gitState?.summary ?? "Checking the current branch and working tree."}
+              </div>
+            </div>
+
+            <div class="shrink-0">
+              <Button
+                label="Refresh git"
+                variant="ghost"
+                height="h-8"
+                onclick={onRefreshGit}
+              />
+            </div>
+          </div>
+
+          <div class={`${gitSummaryTone} rounded-2xl px-4 py-4`}>
+            {#if !gitState}
+              <div class="type-body-4 text-fog/62">Git state will appear once the workspace finishes loading.</div>
+            {:else if !gitState.isGitRepo}
+              <div class="type-body-4 text-fog/62">This workspace is not a git repository yet, so there is no branch or working-tree diff to review.</div>
+            {:else if gitState.clean}
+              <div class="type-body-4 text-fog/62">No uncommitted changes right now. When the agent edits files, they will appear here immediately.</div>
+            {:else}
+              <div class="grid gap-3 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
+                <div class="ui-panel-subtle overflow-hidden">
+                  <div class="border-b border-white/6 px-3 py-2 type-label text-fog/34">
+                    Changed files
+                  </div>
+                  <div class="max-h-[320px] overflow-y-auto p-2">
+                    <div class="space-y-1">
+                      {#each gitState.changedFiles as file}
+                        <button
+                          type="button"
+                          class={`flex w-full items-start justify-between gap-3 rounded-xl px-3 py-3 text-left transition ${
+                            file.path === selectedGitPath
+                              ? "bg-white/[0.06] text-soft-ivory"
+                              : "hover:bg-white/[0.03] text-fog/72"
+                          }`}
+                          onclick={() => onSelectGitPath(file.path)}
+                        >
+                          <div class="min-w-0">
+                            <div class="truncate type-body-4 text-soft-ivory">{file.path}</div>
+                            <div class="mt-1 type-body-5 text-fog/46">{file.summary}</div>
+                          </div>
+                          <div class="shrink-0 text-right text-[11px] text-fog/46">
+                            <div class="text-misty-green">+{file.additions}</div>
+                            <div class="mt-1 text-red-200/75">-{file.deletions}</div>
+                          </div>
+                        </button>
+                      {/each}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ui-panel-subtle min-h-[220px] overflow-hidden">
+                  <div class="border-b border-white/6 px-4 py-3">
+                    <div class="type-label text-fog/34">Diff</div>
+                    <div class="mt-2 type-body-4 text-soft-ivory">
+                      {selectedGitPath ?? "Select a changed file"}
+                    </div>
+                  </div>
+
+                  {#if gitDiffLoading}
+                    <div class="px-4 py-4 type-body-4 text-fog/62">Loading the current git diff…</div>
+                  {:else if gitError}
+                    <div class="px-4 py-4 type-body-4 text-warning-amber">{gitError}</div>
+                  {:else if gitDiffText}
+                    <pre class="ui-code-block max-h-[320px] overflow-auto px-4 py-4 text-[12px] leading-6 text-fog/82 whitespace-pre-wrap break-words">{gitDiffText}</pre>
+                  {:else}
+                    <div class="px-4 py-4 type-body-4 text-fog/62">Choose a file to inspect its current git diff.</div>
+                  {/if}
+                </div>
+              </div>
+            {/if}
+          </div>
+        </section>
       </section>
 
       <div class="space-y-4">
