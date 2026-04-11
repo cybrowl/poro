@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Button from "$components/basic_elems/Button.svelte";
   import type { WorkspaceRecord } from "$lib/mockDesktopData";
   import logoUrl from "../../assets/logo.svg";
 
@@ -26,10 +25,6 @@
     onOpenWorkspacePicker,
     onOpenSettings,
   }: Props = $props();
-
-  let selectedWorkspace = $derived(
-    workspaces.find((workspace) => workspace.id === selectedWorkspaceId) ?? workspaces[0]
-  );
 </script>
 
 <aside

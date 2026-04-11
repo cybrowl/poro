@@ -1,6 +1,11 @@
 <script lang="ts">
   import Button from "$components/basic_elems/Button.svelte";
+  import historyIconUrl from "../../assets/history.svg";
+  import newChatIconUrl from "../../assets/new_chat.svg";
+  import settingsIconUrl from "../../assets/settings.svg";
   import submitIconUrl from "../../assets/submit.svg";
+  import logoUrl from "../../assets/logo.svg";
+  import grokIconUrl from "../../assets/models/grok.svg";
   import type { WorkspaceGitState } from "$lib/gitRuntime";
   import type {
     ActivityItem,
@@ -32,6 +37,7 @@
     onSubmitPrompt: () => void;
     onSelectGitPath: (path: string) => void;
     onRefreshGit: () => void;
+    onOpenSettings: () => void;
     onStopRuntime: () => void;
     onRefreshRuntime: () => void;
   }
@@ -59,6 +65,7 @@
     onSubmitPrompt,
     onSelectGitPath,
     onRefreshGit,
+    onOpenSettings,
     onStopRuntime,
     onRefreshRuntime,
   }: Props = $props();
@@ -112,6 +119,27 @@
     if (message.role === "tool") return "Action";
     if (message.role === "user") return "You";
     return "Runtime";
+  }
+
+  function assistantName() {
+    const model = session.model.toLowerCase();
+    if (model.includes("grok")) return "Grok 4";
+    if (model.includes("claude")) return "Claude";
+    if (model.includes("gemma")) return "Poro Local";
+    return session.provider;
+  }
+
+  function assistantIcon() {
+    const model = session.model.toLowerCase();
+    if (model.includes("grok")) return grokIconUrl;
+    return logoUrl;
+  }
+
+  function splitParagraphs(value: string) {
+    return value
+      .split(/\n\s*\n/)
+      .map((part) => part.trim())
+      .filter(Boolean);
   }
 
   function activityKind(source: "agent" | "browser", item: ActivityItem): ActivityKind {
@@ -344,6 +372,7 @@
   let submitButtonLabel = $derived(
     runtimeBusy ? "Working..." : runtimeActive ? "Send message" : "Launch and send"
   );
+  let showWorkingTree = $derived(!!gitState?.isGitRepo && !gitState.clean);
   let gitSummaryTone = $derived(
     gitError
       ? "ui-panel-warning"
@@ -355,340 +384,213 @@
   );
 </script>
 
-<section class="flex min-h-0 flex-1 flex-col bg-obsidian">
-  <div class="min-h-0 flex-1 overflow-y-auto">
-    <div class="mx-auto flex w-full max-w-[760px] flex-col gap-6 px-6 py-6">
-      <section class="space-y-4">
-        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div class="min-w-0">
-            <div class="type-label text-fog/34">Session</div>
-            <div class="mt-2 type-heading-2 text-soft-ivory">{session.title}</div>
-            <div class="mt-2 type-body-4 text-fog/62">
-              {session.goal}
-            </div>
+<section class="flex min-h-0 flex-1 bg-obsidian">
+  <div class="flex min-h-0 flex-1 flex-col lg:flex-row">
+    <div class="min-h-0 flex-1 overflow-y-auto lg:w-[44%] lg:flex-none">
+      <div class="mx-auto flex w-full max-w-[560px] flex-col gap-8 px-8 py-10">
+        {#if currentActivity && runtimeBusy}
+          <div class="flex items-center gap-3 text-fog/48">
+            <span class="h-2 w-2 animate-pulse rounded-full bg-accent-gold"></span>
+            <span class="type-body-5">{currentActivity.label} • {currentActivity.summary}</span>
           </div>
+        {/if}
 
-          <div class="flex flex-wrap gap-2">
-            <span class={`rounded-md border px-2.5 py-1 text-[11px] ${sessionStateTone()}`}>
-              {sessionStateLabel()}
-            </span>
-            <span class="rounded-md border border-white/6 bg-white/[0.03] px-2.5 py-1 text-[11px] text-fog/54">
-              {session.model}
-            </span>
-            <span class="rounded-md border border-white/6 bg-white/[0.03] px-2.5 py-1 text-[11px] text-fog/54">
-              {session.permission}
-            </span>
+        <div class="space-y-8">
+          {#each conversationBlocks as block}
+            {#if block.kind === "message"}
+              {#if block.message.role === "user"}
+                <article class="space-y-3">
+                  <div class="flex items-center gap-2">
+                    <span class="flex h-7 w-7 items-center justify-center rounded-full border border-fog/26 text-[13px] text-fog/72">◌</span>
+                    <span class="type-heading-4 text-fog/82">You</span>
+                  </div>
+                  <div class="pl-9 pr-2">
+                    {#each splitParagraphs(block.message.body) as paragraph}
+                      <p class="type-body-2 leading-[1.45] text-fog/86">{paragraph}</p>
+                    {/each}
+                  </div>
+                </article>
+              {:else if block.message.role === "assistant"}
+                <article class="space-y-3">
+                  <div class="flex items-center gap-2">
+                    <img src={assistantIcon()} alt="" class="h-7 w-7" />
+                    <span class="type-heading-4 text-accent-gold">{assistantName()}</span>
+                  </div>
+                  <div class="space-y-5 pl-9 pr-4">
+                    {#each splitParagraphs(block.message.body) as paragraph}
+                      <p class="type-body-2 leading-[1.5] text-fog/82">{paragraph}</p>
+                    {/each}
+                  </div>
+                </article>
+              {:else}
+                <article class="pl-9">
+                  <div class="type-body-4 text-fog/64">{block.message.body}</div>
+                </article>
+              {/if}
+            {:else}
+              <details class="ml-9 overflow-hidden rounded-2xl border border-white/6 bg-white/[0.02]" open={block.defaultOpen}>
+                <summary class="list-none cursor-pointer px-4 py-3 [&::-webkit-details-marker]:hidden">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <div class="type-heading-4 text-soft-ivory">{actionGroupSummary(block.messages)}</div>
+                      <div class="mt-1 type-body-4 text-fog/60">{actionGroupDetail(block.messages)}</div>
+                    </div>
+                    <div class="type-body-5 text-fog/34">{block.messages[block.messages.length - 1]?.meta}</div>
+                  </div>
+                </summary>
+                <div class="border-t border-white/6 px-4 py-3">
+                  <div class="space-y-3">
+                    {#each block.messages as message}
+                      <div class="rounded-xl bg-white/[0.025] px-3 py-3">
+                        <div class="flex items-center justify-between gap-3">
+                          <div class="type-heading-4 text-soft-ivory">{message.title}</div>
+                          <div class="type-body-5 text-fog/34">{message.meta}</div>
+                        </div>
+                        <div class="mt-2 type-body-4 whitespace-pre-wrap break-words text-fog/66">{message.body}</div>
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              </details>
+            {/if}
+          {/each}
+        </div>
+      </div>
+    </div>
+
+    <div class="hidden w-px bg-white/6 lg:block"></div>
+
+    <div class="flex min-h-0 flex-1 flex-col">
+      <div class="flex items-center justify-end gap-2 px-6 py-5">
+        <button
+          type="button"
+          class="flex h-8 w-8 items-center justify-center rounded-lg text-fog/44 transition hover:bg-white/[0.03] hover:text-soft-ivory"
+          aria-label="Clear draft"
+          title="Clear draft"
+          onclick={() => onComposerInput("")}
+        >
+          <img src={newChatIconUrl} alt="" class="h-4 w-4 opacity-80" />
+        </button>
+        <button
+          type="button"
+          class="flex h-8 w-8 items-center justify-center rounded-lg text-fog/44 transition hover:bg-white/[0.03] hover:text-soft-ivory"
+          aria-label="Refresh session"
+          title="Refresh session"
+          onclick={onRefreshRuntime}
+        >
+          <img src={historyIconUrl} alt="" class="h-4 w-4 opacity-80" />
+        </button>
+        <button
+          type="button"
+          class="flex h-8 w-8 items-center justify-center rounded-lg text-fog/44 transition hover:bg-white/[0.03] hover:text-soft-ivory"
+          aria-label="Open settings"
+          title="Open settings"
+          onclick={onOpenSettings}
+        >
+          <img src={settingsIconUrl} alt="" class="h-4 w-4 opacity-80" />
+        </button>
+      </div>
+
+      <div class="flex min-h-0 flex-1 flex-col px-6 pb-6">
+        <div class="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] bg-transparent">
+          <Button
+            label=""
+            ariaLabel={submitButtonLabel}
+            title={submitButtonLabel}
+            variant="gold"
+            disabled={runtimeBusy || !composerText.trim()}
+            class="absolute right-0 top-0 z-10 h-14 w-14 min-w-14 rounded-[18px] border-0 shadow-[0_12px_40px_rgba(213,161,42,0.18)]"
+            height="h-14"
+            onclick={onSubmitPrompt}
+          >
+            {#snippet children()}
+              {#if runtimeBusy}
+                <span class="text-[11px] font-medium tracking-[0.04em] text-[#1f1807]">...</span>
+              {:else}
+                <img src={submitIconUrl} alt="" class="h-7 w-7" />
+              {/if}
+            {/snippet}
+          </Button>
+
+          <textarea
+            class="type-body-2 min-h-0 flex-1 resize-none bg-transparent px-4 py-4 pr-20 text-fog/82 outline-none placeholder:text-fog/20"
+            value={composerText}
+            placeholder="|"
+            oninput={(event) => onComposerInput((event.currentTarget as HTMLTextAreaElement).value)}
+          ></textarea>
+
+          <div class="mt-auto border-t border-white/6 px-4 py-3">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="type-body-5 text-fog/38">{runtimeStatusLine}</div>
+              <div class="flex items-center gap-2">
+                {#if runtimeActive}
+                  <Button
+                    label="Stop"
+                    variant="ghost"
+                    height="h-8"
+                    class="text-fog/44"
+                    onclick={onStopRuntime}
+                  />
+                {/if}
+                <button
+                  type="button"
+                  class={`rounded-md border px-2.5 py-1 text-[11px] ${sessionStateTone()}`}
+                >
+                  {sessionStateLabel()}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="type-body-5 text-fog/46">{sessionStateSummary()}</div>
-
-        {#if currentActivity}
-          <article class={`rounded-2xl border px-4 py-4 ${activityTone(currentActivity)}`}>
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <div class="mb-2 flex flex-wrap items-center gap-2">
-                  <span class="type-label text-fog/34">Now</span>
-                  <span class={`rounded-md px-2 py-0.5 text-[11px] ${activityKindBadge(currentActivity.kind)}`}>
-                    {activityKindLabel(currentActivity.kind)}
-                  </span>
-                  <span class={`rounded-md px-2 py-0.5 text-[11px] ${sourceTone(currentActivity.source)}`}>
-                    {currentActivity.source}
-                  </span>
+        {#if showWorkingTree}
+          <details class={`mt-4 overflow-hidden rounded-2xl ${gitSummaryTone}`}>
+            <summary class="list-none cursor-pointer px-4 py-3 [&::-webkit-details-marker]:hidden">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <div class="type-heading-4 text-soft-ivory">Working tree</div>
+                  <div class="mt-1 type-body-5 text-fog/50">{gitState?.summary}</div>
                 </div>
-                <div class="type-heading-3 text-soft-ivory">{currentActivity.label}</div>
-                <div class="mt-2 type-body-4 text-fog/72">{currentActivity.summary}</div>
+                <div class="type-body-5 text-fog/34">{gitState?.changedFiles.length ?? 0} files</div>
               </div>
-              <div class="shrink-0 type-body-5 text-fog/34">{currentActivity.timestamp}</div>
-            </div>
-          </article>
-        {/if}
+            </summary>
 
-        {#if recentActivity.length}
-          <section>
-            <div class="mb-2 type-label text-fog/34">
-              {liveActivity.length ? "Live activity" : "Recent activity"}
-            </div>
-            <div class="space-y-2">
-              {#each recentActivity as item}
-                <article class={`rounded-xl border px-3 py-3 ${activityTone(item)}`}>
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                      <div class="flex flex-wrap items-center gap-2">
-                        <div class="type-heading-4 text-soft-ivory">{item.label}</div>
-                        <span class={`rounded-md px-2 py-0.5 text-[11px] ${activityKindBadge(item.kind)}`}>
-                          {activityKindLabel(item.kind)}
-                        </span>
-                        <span class={`rounded-md px-2 py-0.5 text-[11px] ${sourceTone(item.source)}`}>
-                          {item.source}
-                        </span>
+            <div class="grid gap-px border-t border-white/6 bg-white/6 lg:grid-cols-[minmax(0,220px)_minmax(0,1fr)]">
+              <div class="bg-obsidian/70 p-2">
+                <div class="space-y-1">
+                  {#each gitState?.changedFiles ?? [] as file}
+                    <button
+                      type="button"
+                      class={`flex w-full items-start justify-between gap-3 rounded-xl px-3 py-3 text-left transition ${
+                        file.path === selectedGitPath
+                          ? "bg-white/[0.06] text-soft-ivory"
+                          : "hover:bg-white/[0.03] text-fog/72"
+                      }`}
+                      onclick={() => onSelectGitPath(file.path)}
+                    >
+                      <div class="min-w-0">
+                        <div class="truncate type-body-4 text-soft-ivory">{file.path}</div>
+                        <div class="mt-1 type-body-5 text-fog/44">{file.summary}</div>
                       </div>
-                      <div class="mt-1 type-body-4 text-fog/70">{item.summary}</div>
-                    </div>
-                    <div class="shrink-0 type-body-5 text-fog/34">{item.timestamp}</div>
-                  </div>
-                </article>
-              {/each}
-            </div>
-          </section>
-        {/if}
-
-        {#if liveActivity.length && historyActivity.length}
-          <section>
-            <div class="mb-2 type-label text-fog/34">Session history</div>
-            <div class="space-y-2">
-              {#each historyActivity as item}
-                <article class="rounded-xl border border-white/6 bg-white/[0.02] px-3 py-3">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                      <div class="flex flex-wrap items-center gap-2">
-                        <div class="type-heading-4 text-soft-ivory">{item.label}</div>
-                        <span class={`rounded-md px-2 py-0.5 text-[11px] ${activityKindBadge(item.kind)}`}>
-                          {activityKindLabel(item.kind)}
-                        </span>
-                      </div>
-                      <div class="mt-1 type-body-4 text-fog/68">{item.summary}</div>
-                    </div>
-                    <div class="shrink-0 type-body-5 text-fog/34">{item.timestamp}</div>
-                  </div>
-                </article>
-              {/each}
-            </div>
-          </section>
-        {/if}
-
-        <section class="space-y-3">
-          <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div class="min-w-0">
-              <div class="type-label text-fog/34">Working tree</div>
-              <div class="mt-2 flex flex-wrap items-center gap-2">
-                <div class="type-heading-3 text-soft-ivory">{gitState?.branch ?? session.branch}</div>
-                {#if gitState?.isGitRepo}
-                  <span class="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-fog/54">
-                    {gitState.clean ? "clean" : `${gitState.changedFiles.length} files`}
-                  </span>
-                  {#if gitState.stagedCount}
-                    <span class="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-fog/54">
-                      {gitState.stagedCount} staged
-                    </span>
-                  {/if}
-                  {#if gitState.unstagedCount}
-                    <span class="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-fog/54">
-                      {gitState.unstagedCount} unstaged
-                    </span>
-                  {/if}
-                  {#if gitState.untrackedCount}
-                    <span class="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-fog/54">
-                      {gitState.untrackedCount} untracked
-                    </span>
-                  {/if}
-                {/if}
-              </div>
-              <div class="mt-2 type-body-4 text-fog/62">
-                {gitError ?? gitState?.summary ?? "Checking the current branch and working tree."}
-              </div>
-            </div>
-
-            <div class="shrink-0">
-              <Button
-                label="Refresh git"
-                variant="ghost"
-                height="h-8"
-                onclick={onRefreshGit}
-              />
-            </div>
-          </div>
-
-          <div class={`${gitSummaryTone} rounded-2xl px-4 py-4`}>
-            {#if !gitState}
-              <div class="type-body-4 text-fog/62">Git state will appear once the workspace finishes loading.</div>
-            {:else if !gitState.isGitRepo}
-              <div class="type-body-4 text-fog/62">This workspace is not a git repository yet, so there is no branch or working-tree diff to review.</div>
-            {:else if gitState.clean}
-              <div class="type-body-4 text-fog/62">No uncommitted changes right now. When the agent edits files, they will appear here immediately.</div>
-            {:else}
-              <div class="grid gap-3 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
-                <div class="ui-panel-subtle overflow-hidden">
-                  <div class="border-b border-white/6 px-3 py-2 type-label text-fog/34">
-                    Changed files
-                  </div>
-                  <div class="max-h-[320px] overflow-y-auto p-2">
-                    <div class="space-y-1">
-                      {#each gitState.changedFiles as file}
-                        <button
-                          type="button"
-                          class={`flex w-full items-start justify-between gap-3 rounded-xl px-3 py-3 text-left transition ${
-                            file.path === selectedGitPath
-                              ? "bg-white/[0.06] text-soft-ivory"
-                              : "hover:bg-white/[0.03] text-fog/72"
-                          }`}
-                          onclick={() => onSelectGitPath(file.path)}
-                        >
-                          <div class="min-w-0">
-                            <div class="truncate type-body-4 text-soft-ivory">{file.path}</div>
-                            <div class="mt-1 type-body-5 text-fog/46">{file.summary}</div>
-                          </div>
-                          <div class="shrink-0 text-right text-[11px] text-fog/46">
-                            <div class="text-misty-green">+{file.additions}</div>
-                            <div class="mt-1 text-red-200/75">-{file.deletions}</div>
-                          </div>
-                        </button>
-                      {/each}
-                    </div>
-                  </div>
-                </div>
-
-                <div class="ui-panel-subtle min-h-[220px] overflow-hidden">
-                  <div class="border-b border-white/6 px-4 py-3">
-                    <div class="type-label text-fog/34">Diff</div>
-                    <div class="mt-2 type-body-4 text-soft-ivory">
-                      {selectedGitPath ?? "Select a changed file"}
-                    </div>
-                  </div>
-
-                  {#if gitDiffLoading}
-                    <div class="px-4 py-4 type-body-4 text-fog/62">Loading the current git diff…</div>
-                  {:else if gitError}
-                    <div class="px-4 py-4 type-body-4 text-warning-amber">{gitError}</div>
-                  {:else if gitDiffText}
-                    <pre class="ui-code-block max-h-[320px] overflow-auto px-4 py-4 text-[12px] leading-6 text-fog/82 whitespace-pre-wrap break-words">{gitDiffText}</pre>
-                  {:else}
-                    <div class="px-4 py-4 type-body-4 text-fog/62">Choose a file to inspect its current git diff.</div>
-                  {/if}
-                </div>
-              </div>
-            {/if}
-          </div>
-        </section>
-      </section>
-
-      <div class="space-y-4">
-        <div class="type-label text-fog/34">Conversation</div>
-        {#each conversationBlocks as block}
-          {#if block.kind === "message"}
-            <article class={messageStyle(block.message)}>
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <div class="mb-2 type-label text-fog/34">
-                    {roleLabel(block.message)}
-                  </div>
-                  {#if block.message.role !== "assistant"}
-                    <div class="type-heading-4 text-soft-ivory">{block.message.title}</div>
-                  {/if}
-                  <div class={`${block.message.role === "assistant" ? "type-body-3 text-fog/88" : "mt-2 type-body-3 text-fog/82"}`}>
-                    {block.message.body}
-                  </div>
-                </div>
-              </div>
-              <div class="mt-3 type-body-5 text-fog/36">{block.message.meta}</div>
-            </article>
-          {:else}
-            <details class={`rounded-2xl border ${actionGroupTone(block.messages)}`} open={block.defaultOpen}>
-              <summary class="list-none cursor-pointer px-4 py-4 [&::-webkit-details-marker]:hidden">
-                <div class="flex items-start justify-between gap-3">
-                  <div class="min-w-0">
-                    <div class="mb-2 flex flex-wrap items-center gap-2">
-                      <span class="type-label text-fog/34">Actions</span>
-                      <span class="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-fog/58">
-                        {block.messages.length}
-                      </span>
-                    </div>
-                    <div class="type-heading-4 text-soft-ivory">{actionGroupSummary(block.messages)}</div>
-                    <div class="mt-2 type-body-4 text-fog/70">{actionGroupDetail(block.messages)}</div>
-                  </div>
-                  <div class="shrink-0 type-body-5 text-fog/34">
-                    {block.messages[block.messages.length - 1]?.meta}
-                  </div>
-                </div>
-              </summary>
-
-              <div class="border-t border-white/6 px-4 py-3">
-                <div class="space-y-3">
-                  {#each block.messages as message}
-                    <article class="rounded-xl border border-white/6 bg-white/[0.02] px-3 py-3">
-                      <div class="flex items-start justify-between gap-3">
-                        <div class="min-w-0">
-                          <div class="mb-1 flex flex-wrap items-center gap-2">
-                            <span class="type-heading-4 text-soft-ivory">{message.title}</span>
-                            <span class="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-fog/54">
-                              {roleLabel(message)}
-                            </span>
-                          </div>
-                          <div class="type-body-4 whitespace-pre-wrap break-words text-fog/72">{message.body}</div>
-                        </div>
-                        <div class="shrink-0 type-body-5 text-fog/34">{message.meta}</div>
-                      </div>
-                    </article>
+                    </button>
                   {/each}
                 </div>
               </div>
-            </details>
-          {/if}
-        {/each}
-      </div>
-    </div>
-  </div>
 
-  <div class="mt-auto border-t border-white/6 bg-obsidian">
-    <div class="mx-auto w-full max-w-[760px] px-6 pb-3 pt-4">
-      <div class="ui-panel-subtle rounded-[24px] px-4 py-4">
-        <textarea
-          class="type-body-3 min-h-28 w-full resize-none bg-transparent px-0 py-0 text-fog/88 outline-none placeholder:text-fog/34"
-          value={composerText}
-          placeholder="Ask Poro to edit code, inspect the repo, or use the browser when needed."
-          oninput={(event) => onComposerInput((event.currentTarget as HTMLTextAreaElement).value)}
-        ></textarea>
-
-        <div class="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-white/6 pt-3">
-          <div class="type-body-5 text-fog/46">{runtimeStatusLine}</div>
-          <div class="flex flex-wrap gap-2">
-            <Button
-              label="Model"
-              variant="outline"
-              height="h-8"
-              onclick={() =>
-                onSelectModel(
-                  modelOptions[(modelOptions.indexOf(selectedModel) + 1) % modelOptions.length] ??
-                    selectedModel
-                )}
-            />
-            <Button
-              label="Permission"
-              variant="outline"
-              height="h-8"
-              onclick={() =>
-                onSelectPermission(
-                  permissionModes[
-                    (permissionModes.indexOf(selectedPermission) + 1) % permissionModes.length
-                  ] ?? selectedPermission
-                )}
-            />
-            <Button
-              label=""
-              ariaLabel={submitButtonLabel}
-              title={submitButtonLabel}
-              variant="ghost"
-              disabled={runtimeBusy || !composerText.trim()}
-              class="w-10 min-w-10 rounded-2xl bg-transparent p-0 hover:bg-white/[0.03]"
-              height="h-10"
-              onclick={onSubmitPrompt}
-            >
-              {#snippet children()}
-                {#if runtimeBusy}
-                  <span class="text-[11px] font-medium tracking-[0.04em]">...</span>
+              <div class="bg-obsidian/70">
+                {#if gitDiffLoading}
+                  <div class="px-4 py-4 type-body-4 text-fog/62">Loading the current git diff…</div>
+                {:else if gitError}
+                  <div class="px-4 py-4 type-body-4 text-warning-amber">{gitError}</div>
+                {:else if gitDiffText}
+                  <pre class="ui-code-block max-h-[260px] overflow-auto rounded-none border-0 bg-transparent px-4 py-4 text-[12px] leading-6 text-fog/82 whitespace-pre-wrap break-words">{gitDiffText}</pre>
                 {:else}
-                  <img src={submitIconUrl} alt="" class="h-9 w-9" />
+                  <div class="px-4 py-4 type-body-4 text-fog/62">Choose a file to inspect its current git diff.</div>
                 {/if}
-              {/snippet}
-            </Button>
-            <Button
-              label={runtimeActive ? "Stop" : "Refresh"}
-              variant="ghost"
-              height="h-8"
-              onclick={runtimeActive ? onStopRuntime : onRefreshRuntime}
-            />
-          </div>
-        </div>
+              </div>
+            </div>
+          </details>
+        {/if}
       </div>
     </div>
   </div>

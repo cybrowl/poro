@@ -1499,6 +1499,7 @@
           onSubmitPrompt={submitPrompt}
           onSelectGitPath={selectGitPath}
           onRefreshGit={() => refreshWorkspaceGitState(selectedWorkspaceId)}
+          onOpenSettings={() => (showSettings = true)}
           onStopRuntime={stopSelectedRuntime}
           onRefreshRuntime={refreshSelectedWorkspace}
         />
