@@ -26,10 +26,10 @@
   let preparedSource = "";
 
   const horizontalPadding = 72;
-  const verticalPadding = 104;
-  const lineHeight = 40;
+  const verticalPadding = 96;
+  const lineHeight = 36;
   const minHeight = 420;
-  const font = '400 24px "Noto Sans"';
+  const font = '400 20px "Noto Sans"';
 
   function ensurePrepared(text: string) {
     if (!pretextModule) return null;
@@ -101,13 +101,13 @@
 
 <div bind:this={frameEl} class="relative mx-auto flex w-full max-w-[620px] flex-1">
   <div
-    class="pointer-events-none absolute inset-0 overflow-hidden px-9 pb-10 pt-6 text-[24px] leading-[40px] tracking-[-0.024em] text-fog/84"
+    class="pointer-events-none absolute inset-0 overflow-hidden px-9 pb-10 pt-6 text-[20px] leading-[36px] text-fog/84"
     aria-hidden="true"
   >
     {#if value.length}
       <div class="space-y-0">
         {#each renderedLines as line}
-          <div class="min-h-[40px] whitespace-pre text-fog/84">
+          <div class="min-h-[36px] whitespace-pre text-fog/84">
             {line.text || "\u00a0"}
           </div>
         {/each}
@@ -118,7 +118,7 @@
   </div>
 
   <textarea
-    class="ui-scrollbar-hidden min-h-0 w-full flex-1 resize-none overflow-hidden bg-transparent px-9 pb-10 pt-6 text-[24px] leading-[40px] tracking-[-0.024em] text-transparent outline-none placeholder:text-transparent"
+    class="ui-scrollbar-hidden min-h-0 w-full flex-1 resize-none overflow-hidden bg-transparent px-9 pb-10 pt-6 text-[20px] leading-[36px] text-transparent caret-accent-gold outline-none placeholder:text-transparent"
     style={`height: ${composerHeight}px;`}
     {disabled}
     placeholder=""
