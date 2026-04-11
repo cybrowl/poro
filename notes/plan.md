@@ -108,6 +108,16 @@ The latest visual pass surfaced a few concrete problems we should keep using as 
 
 If DOM snapshots are not enough for judging the rendered UI, we can use screenshot analysis as a helper lane. A candidate to evaluate later is [Falcon-Perception](https://github.com/tiiuae/Falcon-Perception), mainly for OCR / screenshot understanding, not as a replacement for the browser sidecar or prompt-driven browser actions.
 
+### Future Product Note: Cutline
+
+Keep a note for a possible future product branch called `Cutline`.
+
+Idea:
+
+- a video editor / storytelling workspace built with the same taste for calm, guided, AI-assisted creative flow
+- focused on helping a user shape narrative, sequence clips, refine structure, and turn rough material into a coherent story
+- should be treated as a future adjacent product direction, not part of the current Poro desktop coding scope
+
 ## 6. Things We Should Not Do Right Now
 
 Avoid:
