@@ -408,7 +408,7 @@
                   </div>
                   <div class="pl-9 pr-2">
                     {#each splitParagraphs(block.message.body) as paragraph}
-                      <p class="type-body-2 leading-[1.45] text-fog/86">{paragraph}</p>
+                      <p class="text-[0.875rem] leading-[1.5] text-fog/86">{paragraph}</p>
                     {/each}
                   </div>
                 </article>
@@ -423,13 +423,13 @@
                   </div>
                   <div class="space-y-5 pl-9 pr-4">
                     {#each splitParagraphs(block.message.body) as paragraph}
-                      <p class="type-body-2 leading-[1.5] text-fog/82">{paragraph}</p>
+                      <p class="text-[0.875rem] leading-[1.5] text-fog/82">{paragraph}</p>
                     {/each}
                   </div>
                 </article>
               {:else}
                 <article class="pl-9">
-                  <div class="type-body-4 text-fog/64">{block.message.body}</div>
+                  <div class="text-[0.875rem] leading-[1.5] text-fog/64">{block.message.body}</div>
                 </article>
               {/if}
             {:else}
@@ -438,7 +438,7 @@
                   <div class="flex items-center justify-between gap-3">
                     <div>
                       <div class="type-heading-4 text-soft-ivory">{actionGroupSummary(block.messages)}</div>
-                      <div class="mt-1 type-body-4 text-fog/60">{actionGroupDetail(block.messages)}</div>
+                      <div class="mt-1 text-[0.875rem] leading-[1.5] text-fog/60">{actionGroupDetail(block.messages)}</div>
                     </div>
                     <div class="type-body-5 text-fog/34">{block.messages[block.messages.length - 1]?.meta}</div>
                   </div>
@@ -451,7 +451,7 @@
                           <div class="type-heading-4 text-soft-ivory">{message.title}</div>
                           <div class="type-body-5 text-fog/34">{message.meta}</div>
                         </div>
-                        <div class="mt-2 type-body-4 whitespace-pre-wrap break-words text-fog/66">{message.body}</div>
+                        <div class="mt-2 whitespace-pre-wrap break-words text-[0.875rem] leading-[1.5] text-fog/66">{message.body}</div>
                       </div>
                     {/each}
                   </div>
