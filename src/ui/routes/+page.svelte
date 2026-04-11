@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import BrowserPanel from "$components/desktop/BrowserPanel.svelte";
+  import SessionSwitcherModal from "$components/desktop/SessionSwitcherModal.svelte";
   import SettingsSheet from "$components/desktop/SettingsSheet.svelte";
   import Sidebar from "$components/desktop/Sidebar.svelte";
   import TranscriptPanel from "$components/desktop/TranscriptPanel.svelte";
@@ -74,6 +75,7 @@
   let composerText = $state(initialWorkspaces[0].sessions[0].draft);
   let desktopReady = $state(false);
   let showWorkspacePicker = $state(false);
+  let showSessionSwitcher = $state(false);
   let showSettings = $state(false);
   let showBrowserInspector = $state(false);
   let backendHealth = $state<BackendHealth | null>(null);
@@ -805,6 +807,25 @@
     await hydrateSession(session);
   }
 
+  async function selectSessionFromSwitcher(workspaceId: string, sessionId: string) {
+    showSessionSwitcher = false;
+
+    if (workspaceId !== selectedWorkspaceId) {
+      await selectWorkspace(workspaceId);
+    }
+
+    const refreshedWorkspace = workspaceList.find((item) => item.id === workspaceId);
+    const targetSession =
+      refreshedWorkspace?.sessions.find((item) => item.id === sessionId) ??
+      refreshedWorkspace?.sessions[0];
+
+    if (!targetSession) {
+      return;
+    }
+
+    await selectSession(targetSession.id);
+  }
+
   async function selectGitPath(path: string) {
     await loadGitDiffForWorkspace(selectedWorkspace.path, path);
   }
@@ -1463,14 +1484,9 @@
 <div class="min-h-screen bg-obsidian text-soft-ivory lg:h-screen lg:overflow-hidden">
   <div class="flex min-h-screen w-full flex-col lg:h-screen lg:flex-row">
     <Sidebar
-      workspaces={workspaceList}
-      {selectedWorkspaceId}
-      {selectedSessionId}
-      onSelectWorkspace={selectWorkspace}
-      onSelectSession={selectSession}
-      onDeleteSession={deleteSession}
       onPickWorkspace={openWorkspaceFromDisk}
       onOpenWorkspacePicker={() => (showWorkspacePicker = true)}
+      onOpenSessionSwitcher={() => (showSessionSwitcher = true)}
       onOpenSettings={() => (showSettings = true)}
     />
 
@@ -1513,6 +1529,20 @@
     onSelectWorkspace={selectWorkspace}
     onOpenFromDisk={openWorkspaceFromDisk}
     onClose={() => (showWorkspacePicker = false)}
+  />
+
+  <SessionSwitcherModal
+    open={showSessionSwitcher}
+    workspaces={workspaceList}
+    {selectedWorkspaceId}
+    {selectedSessionId}
+    onSelectWorkspace={async (id) => {
+      showSessionSwitcher = false;
+      await selectWorkspace(id);
+    }}
+    onSelectSession={selectSessionFromSwitcher}
+    onDeleteSession={deleteSession}
+    onClose={() => (showSessionSwitcher = false)}
   />
 
   <SettingsSheet
