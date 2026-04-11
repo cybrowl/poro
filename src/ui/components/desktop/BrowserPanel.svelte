@@ -49,7 +49,7 @@
 
 {#if open}
   <button
-    class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+    class="ui-overlay fixed inset-0 z-40"
     onclick={onClose}
     aria-label="Close browser inspector"
     type="button"
@@ -57,16 +57,16 @@
   ></button>
 
   <aside
-    class="fixed right-4 top-4 z-50 h-[calc(100vh-2rem)] w-[min(420px,calc(100vw-2rem))] overflow-y-auto rounded-[18px] border border-white/10 bg-[#0f141c]/98 p-5 shadow-[0_32px_120px_rgba(0,0,0,0.58)]"
+    class="ui-sheet ui-sheet-narrow fixed right-4 top-4 z-50 h-[calc(100vh-2rem)] w-[min(420px,calc(100vw-2rem))] overflow-y-auto p-5"
     transition:fly={{ duration: 180, x: 24 }}
   >
     <div class="flex items-start justify-between gap-4">
       <div>
-        <div class="text-[0.72rem] uppercase tracking-[0.16em] text-fog/38">Browser inspector</div>
-        <div class="mt-2 text-[1.3rem] font-medium tracking-[-0.03em] text-soft-ivory">
+        <div class="ui-section-label">Browser inspector</div>
+        <div class="mt-2 type-heading-2 tracking-[-0.03em] text-soft-ivory">
           Brave sidecar
         </div>
-        <div class="mt-2 text-sm leading-6 text-fog/66">
+        <div class="mt-2 type-body-4 text-fog/66">
           Secondary panel for snapshots, runtime state, and manual browser sanity checks.
         </div>
       </div>
@@ -76,12 +76,12 @@
 
     <div class="mt-5 space-y-4">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[0.68rem] text-fog/54">
+        <span class="ui-chip ui-chip-neutral">
           {runtimeActive ? "Brave live" : "Runtime idle"}
         </span>
         <button
           type="button"
-          class={`rounded-md border px-2.5 py-1 text-[0.68rem] transition ${
+          class={`ui-chip border transition ${
             headless
               ? "border-white/10 bg-white/[0.03] text-fog/54 hover:border-white/16 hover:text-soft-ivory"
               : "border-misty-green/24 bg-misty-green/10 text-misty-green"
@@ -93,16 +93,16 @@
       </div>
 
       <label class="block">
-        <div class="mb-2 text-[0.72rem] uppercase tracking-[0.16em] text-fog/38">URL</div>
+        <div class="mb-2 ui-section-label">URL</div>
         <input
-          class="w-full rounded-lg border border-white/8 bg-[#151a20] px-4 py-3 text-[0.9rem] text-fog/84 outline-none transition focus:border-signal-blue/30"
+          class="ui-input px-4 py-3 text-[0.9rem]"
           value={browserUrl}
           placeholder="https://example.com"
           oninput={(event) => onBrowserUrlInput((event.currentTarget as HTMLInputElement).value)}
         />
       </label>
 
-      <div class="rounded-lg border border-white/8 bg-white/[0.03] px-4 py-3 text-sm leading-6 text-fog/66">
+      <div class="ui-panel-soft px-4 py-3 text-sm leading-6 text-fog/66">
         {statusLine}
       </div>
 
@@ -131,8 +131,8 @@
       </div>
 
       {#if runtimeInfo}
-        <section class="rounded-lg border border-white/8 bg-[#151a20] p-4">
-          <div class="text-[0.72rem] uppercase tracking-[0.16em] text-fog/38">Runtime</div>
+        <section class="ui-panel-subtle p-4">
+          <div class="ui-section-label">Runtime</div>
           <div class="mt-3 space-y-2 text-sm text-fog/70">
             <div><span class="text-fog/42">Session:</span> {runtimeInfo.session}</div>
             <div><span class="text-fog/42">Mode:</span> {runtimeInfo.headless ? "Headless" : "Visible Brave"}</div>
@@ -141,14 +141,14 @@
         </section>
       {/if}
 
-      <section class="rounded-lg border border-white/8 bg-[#151a20] p-4">
-        <div class="text-[0.72rem] uppercase tracking-[0.16em] text-fog/38">Latest snapshot</div>
-        <pre class="mt-3 max-h-[260px] overflow-auto whitespace-pre-wrap rounded-lg border border-white/8 bg-[#0f141b] p-3 font-['SF_Mono','JetBrains_Mono','IBM_Plex_Mono',Menlo,monospace] text-[0.78rem] leading-6 text-fog/76">{latestSnapshot || "No snapshot yet."}</pre>
+      <section class="ui-panel-subtle p-4">
+        <div class="ui-section-label">Latest snapshot</div>
+        <pre class="ui-code-block mt-3 max-h-[260px] overflow-auto whitespace-pre-wrap p-3 text-[0.78rem] leading-6 text-fog/76">{latestSnapshot || "No snapshot yet."}</pre>
       </section>
 
-      <section class="rounded-lg border border-white/8 bg-[#151a20] p-4">
-        <div class="text-[0.72rem] uppercase tracking-[0.16em] text-fog/38">Latest response</div>
-        <pre class="mt-3 max-h-[220px] overflow-auto whitespace-pre-wrap rounded-lg border border-white/8 bg-[#0f141b] p-3 font-['SF_Mono','JetBrains_Mono','IBM_Plex_Mono',Menlo,monospace] text-[0.76rem] leading-6 text-fog/72">{latestPayload || "Waiting for a browser action."}</pre>
+      <section class="ui-panel-subtle p-4">
+        <div class="ui-section-label">Latest response</div>
+        <pre class="ui-code-block mt-3 max-h-[220px] overflow-auto whitespace-pre-wrap p-3 text-[0.76rem] leading-6 text-fog/72">{latestPayload || "Waiting for a browser action."}</pre>
       </section>
     </div>
   </aside>

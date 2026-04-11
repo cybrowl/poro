@@ -20,18 +20,18 @@
 </script>
 
 <section
-  class="rounded-[16px] border border-white/8 bg-[#0d1117] px-4 py-3 shadow-[0_18px_60px_rgba(0,0,0,0.3)] sm:px-5"
+  class="ui-panel px-4 py-3 shadow-[0_18px_60px_rgba(0,0,0,0.3)] sm:px-5"
 >
   <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
     <div class="min-w-0">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="rounded-md border border-signal-blue/24 bg-signal-blue/10 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-signal-blue">
+        <span class="ui-chip code-font border border-accent-gold/24 bg-accent-gold/10 text-accent-gold">
           Session
         </span>
-        <span class="rounded-md border border-white/8 bg-white/4 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-fog/55">
+        <span class="ui-chip code-font border border-white/8 bg-white/4 text-fog/55">
           {workspace.name}
         </span>
-        <span class="rounded-md border border-white/8 bg-white/4 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-fog/55">
+        <span class="ui-chip code-font border border-white/8 bg-white/4 text-fog/55">
           {session.branch}
         </span>
       </div>
@@ -41,12 +41,12 @@
           {session.title}
         </h2>
         <span
-          class={`rounded-md px-3 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.22em] ${
+          class={`ui-chip code-font ${
             session.status === "Live"
-              ? "bg-misty-green/12 text-misty-green"
+              ? "ui-chip-success"
               : session.status === "Paused"
-                ? "bg-white/6 text-fog/65"
-                : "bg-signal-blue/12 text-signal-blue"
+                ? "ui-chip-neutral"
+                : "ui-chip-accent"
           }`}
         >
           {session.status}
@@ -58,13 +58,13 @@
 
     <div class="flex min-w-0 flex-col gap-3 xl:items-end">
       <div class="flex flex-wrap gap-2">
-        <span class="rounded-md border border-white/8 bg-[#0a0d12] px-3 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fog/55">
+        <span class="ui-chip code-font border border-white/8 bg-[#0a0d12] text-fog/55">
           {activeProviderLabel}
         </span>
-        <span class="rounded-md border border-white/8 bg-[#0a0d12] px-3 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fog/55">
+        <span class="ui-chip code-font border border-white/8 bg-[#0a0d12] text-fog/55">
           {session.model}
         </span>
-        <span class="rounded-md border border-white/8 bg-[#0a0d12] px-3 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fog/55">
+        <span class="ui-chip code-font border border-white/8 bg-[#0a0d12] text-fog/55">
           {session.permission}
         </span>
       </div>

@@ -24,7 +24,7 @@
 
 {#if open}
   <button
-    class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+    class="ui-overlay fixed inset-0 z-40"
     onclick={onClose}
     aria-label="Close workspace picker"
     type="button"
@@ -36,18 +36,16 @@
     transition:fly={{ duration: 180, y: 18 }}
   >
     <section
-      class="rounded-[22px] border border-white/10 bg-[#0f141c]/97 p-5 shadow-[0_32px_120px_rgba(0,0,0,0.55)]"
+      class="ui-sheet p-5"
       transition:scale={{ duration: 160, start: 0.98 }}
     >
       <div class="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
         <div>
-          <div class="font-mono text-[0.66rem] uppercase tracking-[0.34em] text-fog/48">
-            Workspace Switcher
-          </div>
-          <h3 class="mt-3 text-[2rem] font-medium leading-none tracking-[-0.05em] text-soft-ivory">
+          <div class="ui-section-label">Workspace Switcher</div>
+          <h3 class="mt-3 type-heading-1 tracking-[-0.05em] text-soft-ivory">
             Open another codebase without losing the session flow
           </h3>
-          <p class="mt-3 max-w-2xl text-sm leading-7 text-fog/68">
+          <p class="mt-3 max-w-2xl type-body-4 text-fog/68">
             This modal is now styled closer to an editor switcher: recent repos,
             branch context, and just enough summary to choose quickly.
           </p>
@@ -63,33 +61,33 @@
         {#each workspaces as workspace}
           <button
             type="button"
-            class={`rounded-[16px] border p-4 text-left transition ${
+            class={`ui-panel p-4 text-left transition ${
               workspace.id === selectedWorkspaceId
-                ? "border-signal-blue/35 bg-signal-blue/10"
-                : "border-white/8 bg-white/[0.03] hover:border-white/14 hover:bg-white/[0.05]"
+                ? "border-accent-gold/35 bg-accent-gold/10"
+                : "hover:border-white/14 hover:bg-white/[0.05]"
             }`}
             onclick={() => onSelectWorkspace(workspace.id)}
           >
             <div class="flex items-start justify-between gap-4">
               <div class="min-w-0">
-                <div class="text-lg font-medium leading-none text-soft-ivory">{workspace.name}</div>
-                <div class="mt-2 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-fog/42">
+                <div class="type-heading-2 leading-none text-soft-ivory">{workspace.name}</div>
+                <div class="code-font mt-2 text-[0.68rem] uppercase tracking-[0.18em] text-fog/42">
                   {workspace.branch}
                 </div>
               </div>
-              <span class="rounded-full bg-white/6 px-3 py-1 font-mono text-[0.58rem] uppercase tracking-[0.22em] text-fog/54">
+              <span class="ui-chip ui-chip-neutral">
                 {workspace.status}
               </span>
             </div>
 
-            <p class="mt-4 text-sm leading-6 text-fog/68">{workspace.summary}</p>
+            <p class="mt-4 type-body-4 text-fog/68">{workspace.summary}</p>
 
-            <div class="mt-4 flex flex-wrap gap-3 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fog/40">
+            <div class="code-font mt-4 flex flex-wrap gap-3 text-[0.66rem] uppercase tracking-[0.16em] text-fog/40">
               <span>{workspace.lastOpened}</span>
               <span>{workspace.sessions.length} session(s)</span>
             </div>
 
-            <div class="mt-4 truncate font-mono text-[0.72rem] text-fog/46">{workspace.path}</div>
+            <div class="code-font mt-4 truncate text-[0.72rem] text-fog/46">{workspace.path}</div>
           </button>
         {/each}
       </div>

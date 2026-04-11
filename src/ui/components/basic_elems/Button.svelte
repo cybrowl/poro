@@ -24,7 +24,7 @@
 
   const variants = {
     dark: "border border-white/8 bg-white/[0.035] text-fog/84 hover:border-white/12 hover:bg-white/[0.055] hover:text-soft-ivory",
-    gold: "border border-signal-blue/26 bg-signal-blue text-[#1f1807] hover:bg-warning-amber",
+    gold: "border border-accent-gold/26 bg-accent-gold text-[#1f1807] hover:bg-warning-amber",
     ghost:
       "border border-transparent bg-transparent text-fog/62 hover:bg-white/[0.04] hover:text-soft-ivory",
     outline:

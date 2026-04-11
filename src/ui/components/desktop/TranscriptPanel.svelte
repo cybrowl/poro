@@ -130,7 +130,7 @@
   }
 
   function activityTone(item: SurfaceActivity) {
-    if (item.status === "queued") return "border-signal-blue/18 bg-signal-blue/[0.055]";
+    if (item.status === "queued") return "border-accent-gold/18 bg-accent-gold/[0.055]";
     if (item.kind === "verification") return "border-misty-green/16 bg-misty-green/[0.055]";
     if (item.kind === "blocked") return "border-warning-amber/16 bg-warning-amber/[0.055]";
     if (item.status === "complete") return "border-white/8 bg-white/[0.03]";
@@ -139,7 +139,7 @@
 
   function sourceTone(source: "agent" | "browser") {
     return source === "browser"
-      ? "bg-signal-blue/[0.08] text-signal-blue"
+      ? "bg-accent-gold/[0.08] text-accent-gold"
       : "bg-white/[0.04] text-fog/54";
   }
 
@@ -155,10 +155,10 @@
 
   function activityKindBadge(kind: ActivityKind) {
     if (kind === "planning") return "bg-white/[0.04] text-fog/58";
-    if (kind === "editing") return "bg-signal-blue/[0.08] text-signal-blue";
+    if (kind === "editing") return "bg-accent-gold/[0.08] text-accent-gold";
     if (kind === "verification") return "bg-misty-green/[0.12] text-misty-green";
     if (kind === "review") return "bg-white/[0.04] text-fog/58";
-    if (kind === "browser") return "bg-signal-blue/[0.08] text-signal-blue";
+    if (kind === "browser") return "bg-accent-gold/[0.08] text-accent-gold";
     if (kind === "blocked") return "bg-warning-amber/[0.12] text-warning-amber";
     return "bg-white/[0.04] text-fog/54";
   }
@@ -178,7 +178,7 @@
   }
 
   function sessionStateTone() {
-    if (runtimeBusy) return "border-signal-blue/18 bg-signal-blue/[0.055] text-signal-blue";
+    if (runtimeBusy) return "border-accent-gold/18 bg-accent-gold/[0.055] text-accent-gold";
     if (runtimeActive) return "border-misty-green/16 bg-misty-green/[0.055] text-misty-green";
     return "border-white/6 bg-white/[0.03] text-fog/62";
   }

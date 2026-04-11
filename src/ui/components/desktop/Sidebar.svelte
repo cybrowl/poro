@@ -36,8 +36,8 @@
 >
   <div class="flex items-center justify-between px-4 py-3">
     <div class="flex items-center gap-2">
-      <div class="h-2 w-2 rounded-full bg-signal-blue shadow-[0_0_14px_rgba(217,163,32,0.55)]"></div>
-      <div class="type-heading-2 leading-none text-signal-blue">Poro</div>
+      <div class="h-2 w-2 rounded-full bg-accent-gold shadow-[0_0_14px_rgba(217,163,32,0.55)]"></div>
+      <div class="type-heading-2 leading-none text-accent-gold">Poro</div>
     </div>
     <span class="rounded-md border border-white/6 bg-white/[0.025] px-2 py-1 text-[11px] text-fog/36">
       desktop

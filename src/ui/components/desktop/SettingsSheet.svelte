@@ -49,7 +49,7 @@
 
 {#if open}
   <button
-    class="fixed inset-0 z-40 bg-black/55 backdrop-blur-sm"
+    class="ui-overlay fixed inset-0 z-40"
     onclick={onClose}
     aria-label="Close settings sheet"
     type="button"
@@ -57,18 +57,16 @@
   ></button>
 
   <aside
-    class="fixed right-4 top-4 z-50 h-[calc(100vh-2rem)] w-[min(560px,calc(100vw-2rem))] overflow-y-auto rounded-[22px] border border-white/10 bg-[#0f141c]/97 p-5 shadow-[0_32px_120px_rgba(0,0,0,0.58)]"
+    class="ui-sheet fixed right-4 top-4 z-50 h-[calc(100vh-2rem)] w-[min(560px,calc(100vw-2rem))] overflow-y-auto p-5"
     transition:fly={{ duration: 180, x: 30 }}
   >
     <div class="flex items-start justify-between gap-4">
       <div>
-        <div class="font-mono text-[0.66rem] uppercase tracking-[0.34em] text-fog/48">
-          Runtime Settings
-        </div>
-        <h3 class="mt-3 text-[2rem] font-medium leading-none tracking-[-0.05em] text-soft-ivory">
+        <div class="ui-section-label">Runtime Settings</div>
+        <h3 class="mt-3 type-heading-1 tracking-[-0.05em] text-soft-ivory">
           Harness and local model defaults
         </h3>
-        <p class="mt-3 max-w-[44ch] text-sm leading-7 text-fog/68">
+        <p class="mt-3 max-w-[44ch] type-body-4 text-fog/68">
           This panel now reflects the sibling Harness integration. Local mode is
           the first-class path, with health checks for both the server binary and
           the local Ollama daemon.
@@ -79,14 +77,12 @@
     </div>
 
     <div class="mt-6 space-y-4">
-      <section class="rounded-[16px] border border-white/8 bg-carbon-black/70 p-4">
-        <div class="font-mono text-[0.66rem] uppercase tracking-[0.32em] text-fog/46">
-          Backend
-        </div>
+      <section class="ui-panel p-4">
+        <div class="ui-section-label">Backend</div>
         <label class="mt-4 block">
           <span class="sr-only">Backend path</span>
           <input
-            class="w-full rounded-[12px] border border-white/8 bg-dark-slate/90 px-4 py-3 font-mono text-sm text-fog/80 outline-none transition focus:border-signal-blue/35"
+            class="ui-input code-font px-4 py-3 text-sm"
             type="text"
             value={backendPath}
             placeholder="harness-server"
@@ -104,44 +100,40 @@
             onclick={onRunHealthCheck}
           />
           <span
-            class={`rounded-full px-3 py-2 font-mono text-[0.62rem] uppercase tracking-[0.18em] ${
-              isDesktop ? "bg-misty-green/12 text-misty-green" : "bg-white/6 text-fog/56"
+            class={`ui-chip ${
+              isDesktop ? "ui-chip-success" : "ui-chip-neutral"
             }`}
           >
             {isDesktop ? "desktop active" : "browser preview"}
           </span>
-          <span class="rounded-full bg-white/6 px-3 py-2 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fog/54">
+          <span class="ui-chip ui-chip-neutral">
             {recentWorkspaceCount} workspace(s)
           </span>
           {#if backendHealth}
             <span
-              class={`rounded-full px-3 py-2 font-mono text-[0.62rem] uppercase tracking-[0.18em] ${
-                backendHealth.runnable
-                  ? "bg-signal-blue/12 text-signal-blue"
-                  : "bg-white/6 text-fog/56"
+              class={`ui-chip ${
+                backendHealth.runnable ? "ui-chip-accent" : "ui-chip-neutral"
               }`}
             >
               {backendHealth.status}
             </span>
-            <span class="rounded-full bg-white/6 px-3 py-2 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fog/54">
+            <span class="ui-chip ui-chip-neutral">
               {backendHealth.sessionCount} session(s)
             </span>
           {/if}
         </div>
 
-        <div class="mt-4 rounded-[12px] border border-white/8 bg-white/[0.035] px-4 py-3 text-sm leading-6 text-fog/68">
+        <div class="ui-panel-soft mt-4 px-4 py-3 text-sm leading-6 text-fog/68">
           {backendHealth?.message ??
             "Run the health check to verify the `harness-server` path and the local session store."}
         </div>
 
         {#if backendHealth?.resolvedPath}
-          <div class="mt-4 rounded-[12px] border border-white/8 bg-dark-slate/90 px-4 py-3 text-sm text-fog/70">
-            <div class="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-fog/46">
-              Resolved binary
-            </div>
-            <div class="mt-2 break-all font-mono text-[0.8rem]">{backendHealth.resolvedPath}</div>
+          <div class="ui-panel-subtle mt-4 px-4 py-3 text-sm text-fog/70">
+            <div class="ui-section-label">Resolved binary</div>
+            <div class="code-font mt-2 break-all text-[0.8rem]">{backendHealth.resolvedPath}</div>
             {#if backendHealth.version}
-              <div class="mt-2 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-fog/46">
+              <div class="code-font mt-2 text-[0.68rem] uppercase tracking-[0.16em] text-fog/46">
                 {backendHealth.version}
               </div>
             {/if}
@@ -149,28 +141,26 @@
         {/if}
 
         {#if backendHealth?.localRuntime}
-          <div class="mt-4 rounded-[12px] border border-white/8 bg-dark-slate/90 px-4 py-4 text-sm text-fog/68">
+          <div class="ui-panel-subtle mt-4 px-4 py-4 text-sm text-fog/68">
             <div class="flex flex-wrap gap-2">
               <span
-                class={`rounded-full px-3 py-2 font-mono text-[0.62rem] uppercase tracking-[0.18em] ${
-                  backendHealth.localRuntime.reachable
-                    ? "bg-misty-green/12 text-misty-green"
-                    : "bg-white/6 text-fog/56"
+                class={`ui-chip ${
+                  backendHealth.localRuntime.reachable ? "ui-chip-success" : "ui-chip-neutral"
                 }`}
               >
                 {backendHealth.localRuntime.reachable ? "ollama online" : "ollama offline"}
               </span>
               <span
-                class={`rounded-full px-3 py-2 font-mono text-[0.62rem] uppercase tracking-[0.18em] ${
+                class={`ui-chip ${
                   backendHealth.localRuntime.hasSelectedModel
-                    ? "bg-signal-blue/12 text-signal-blue"
-                    : "bg-warning-amber/12 text-warning-amber"
+                    ? "ui-chip-accent"
+                    : "ui-chip-warning"
                 }`}
               >
                 {backendHealth.localRuntime.hasSelectedModel ? "model ready" : "model missing"}
               </span>
               {#if backendHealth.localRuntime.version}
-                <span class="rounded-full bg-white/6 px-3 py-2 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fog/54">
+                <span class="ui-chip ui-chip-neutral">
                   Ollama {backendHealth.localRuntime.version}
                 </span>
               {/if}
@@ -179,12 +169,10 @@
             <div class="mt-3 leading-7">{backendHealth.localRuntime.message}</div>
 
             {#if backendHealth.localRuntime.availableModels.length}
-              <div class="mt-4 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-fog/46">
-                Installed models
-              </div>
+              <div class="ui-section-label mt-4">Installed models</div>
               <div class="mt-2 flex flex-wrap gap-2">
                 {#each backendHealth.localRuntime.availableModels as model}
-                  <span class="rounded-full border border-white/8 bg-white/4 px-3 py-2 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fog/56">
+                  <span class="ui-chip code-font border border-white/8 bg-white/4 text-fog/56">
                     {model}
                   </span>
                 {/each}
@@ -194,13 +182,13 @@
         {/if}
 
         {#if selectedProviderId === "local"}
-          <div class="mt-4 rounded-[12px] border border-signal-blue/18 bg-signal-blue/8 px-4 py-4 text-sm leading-7 text-fog/70">
+          <div class="ui-panel-accent mt-4 px-4 py-4 text-sm leading-7 text-fog/70">
             Local mode expects Ollama on `http://127.0.0.1:11434` with a Gemma 4
             model available. `ollama pull gemma4:e2b` is still the easiest first
             boot path.
           </div>
         {:else if selectedProviderId === "grok"}
-          <div class="mt-4 rounded-[12px] border border-signal-blue/18 bg-signal-blue/8 px-4 py-4 text-sm leading-7 text-fog/70">
+          <div class="ui-panel-accent mt-4 px-4 py-4 text-sm leading-7 text-fog/70">
             Grok mode uses the hosted xAI API through the sibling Harness. Launch
             Poro from a terminal that exports `XAI_API_KEY`, then pick the model
             you want to test.
@@ -208,31 +196,29 @@
         {/if}
       </section>
 
-      <section class="rounded-[16px] border border-white/8 bg-carbon-black/70 p-4">
-        <div class="font-mono text-[0.66rem] uppercase tracking-[0.32em] text-fog/46">
-          Provider
-        </div>
+      <section class="ui-panel p-4">
+        <div class="ui-section-label">Provider</div>
         <div class="mt-4 space-y-2">
           {#each providers as provider}
             <button
               type="button"
-              class={`w-full rounded-[12px] border px-4 py-4 text-left transition ${
+              class={`ui-panel-soft w-full px-4 py-4 text-left transition ${
                 selectedProviderId === provider.id
-                  ? "border-signal-blue/30 bg-signal-blue/10"
-                  : "border-white/8 bg-white/[0.03] hover:border-white/14 hover:bg-white/[0.05]"
+                  ? "border-accent-gold/30 bg-accent-gold/10"
+                  : "hover:border-white/14 hover:bg-white/[0.05]"
               }`}
               onclick={() => onSelectProvider(provider.id)}
             >
               <div class="flex items-center justify-between gap-4">
                 <div>
-                  <div class="text-sm font-medium uppercase tracking-[0.18em] text-soft-ivory">
+                  <div class="type-heading-4 uppercase tracking-[0.18em] text-soft-ivory">
                     {provider.label}
                   </div>
-                  <div class="mt-2 font-mono text-[0.72rem] uppercase tracking-[0.16em] text-fog/46">
+                  <div class="code-font mt-2 text-[0.72rem] uppercase tracking-[0.16em] text-fog/46">
                     {provider.endpoint}
                   </div>
                 </div>
-                <span class="rounded-full bg-white/6 px-3 py-1 text-[0.58rem] uppercase tracking-[0.22em] text-fog/54">
+                <span class="ui-chip ui-chip-neutral">
                   {provider.status}
                 </span>
               </div>
@@ -241,17 +227,15 @@
         </div>
       </section>
 
-      <section class="rounded-[16px] border border-white/8 bg-carbon-black/70 p-4">
-        <div class="font-mono text-[0.66rem] uppercase tracking-[0.32em] text-fog/46">
-          Default Model
-        </div>
+      <section class="ui-panel p-4">
+        <div class="ui-section-label">Default Model</div>
         <div class="mt-4 flex flex-wrap gap-2">
           {#each modelOptions as model}
             <button
               type="button"
-              class={`rounded-xl border px-3 py-2 font-mono text-[0.68rem] uppercase tracking-[0.18em] transition ${
+              class={`code-font rounded-xl border px-3 py-2 text-[0.68rem] uppercase tracking-[0.18em] transition ${
                 selectedModel === model
-                  ? "border-signal-blue/35 bg-signal-blue/10 text-signal-blue"
+                  ? "border-accent-gold/35 bg-accent-gold/10 text-accent-gold"
                   : "border-white/10 bg-dark-slate/90 text-fog/58 hover:border-white/16 hover:bg-white/[0.05]"
               }`}
               onclick={() => onSelectModel(model)}
@@ -262,15 +246,13 @@
         </div>
       </section>
 
-      <section class="rounded-[16px] border border-white/8 bg-carbon-black/70 p-4">
-        <div class="font-mono text-[0.66rem] uppercase tracking-[0.32em] text-fog/46">
-          Default Permission
-        </div>
+      <section class="ui-panel p-4">
+        <div class="ui-section-label">Default Permission</div>
         <div class="mt-4 flex flex-wrap gap-2">
           {#each permissionModes as mode}
             <button
               type="button"
-              class={`rounded-xl border px-3 py-2 font-mono text-[0.68rem] uppercase tracking-[0.18em] transition ${
+              class={`code-font rounded-xl border px-3 py-2 text-[0.68rem] uppercase tracking-[0.18em] transition ${
                 selectedPermission === mode
                   ? mode === "danger-full-access"
                     ? "border-red-400/30 bg-red-400/10 text-red-200"
@@ -287,25 +269,23 @@
         </div>
       </section>
 
-      <section class="rounded-[16px] border border-white/8 bg-carbon-black/70 p-4">
-        <div class="font-mono text-[0.66rem] uppercase tracking-[0.32em] text-fog/46">
-          Review Defaults
-        </div>
+      <section class="ui-panel p-4">
+        <div class="ui-section-label">Review Defaults</div>
         <div class="mt-4 grid gap-3">
-          <div class="rounded-[12px] border border-white/8 bg-dark-slate/90 px-4 py-4">
-            <div class="text-sm font-medium uppercase tracking-[0.14em] text-soft-ivory">
+          <div class="ui-panel-subtle px-4 py-4">
+            <div class="type-heading-4 uppercase tracking-[0.14em] text-soft-ivory">
               Always show diff before apply
             </div>
-            <div class="mt-2 text-sm leading-6 text-fog/64">
+            <div class="mt-2 type-body-4 text-fog/64">
               Kept visible by default so the desktop experience feels inspectable
               instead of magical.
             </div>
           </div>
-          <div class="rounded-[12px] border border-white/8 bg-dark-slate/90 px-4 py-4">
-            <div class="text-sm font-medium uppercase tracking-[0.14em] text-soft-ivory">
+          <div class="ui-panel-subtle px-4 py-4">
+            <div class="type-heading-4 uppercase tracking-[0.14em] text-soft-ivory">
               Tool timeline density
             </div>
-            <div class="mt-2 text-sm leading-6 text-fog/64">
+            <div class="mt-2 type-body-4 text-fog/64">
               Balanced. Enough event detail to trust the harness without turning
               the app into a scrolling transcript dump.
             </div>
