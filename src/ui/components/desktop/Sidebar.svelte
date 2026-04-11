@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { WorkspaceRecord } from "$lib/mockDesktopData";
   import logoUrl from "../../assets/logo.svg";
+  import PoroIcon from "../basic_elems/PoroIcon.svelte";
 
   interface Props {
     workspaces: WorkspaceRecord[];
@@ -31,11 +32,13 @@
   class="flex min-h-0 w-full shrink-0 flex-col border-r border-white/6 bg-deep-charcoal lg:h-screen lg:w-[248px]"
 >
   <div class="px-4 py-3">
-    <img
+    <PoroIcon
       src={logoUrl}
       alt="Poro"
-      class="ui-icon w-auto object-contain"
-      style="--icon-size: 2.25rem;"
+      decorative={false}
+      size="2.25rem"
+      class="w-auto"
+      fit="contain"
     />
   </div>
 

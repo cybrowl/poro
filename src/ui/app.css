@@ -304,7 +304,7 @@ input {
   height: var(--icon-button-size, calc(var(--icon-size, 1rem) + 1rem));
   border: 0;
   border-radius: var(--icon-button-radius, 0.75rem);
-  background: transparent;
+  background-color: var(--icon-button-bg, transparent);
   color: inherit;
   transition:
     background-color 150ms ease,
@@ -313,7 +313,7 @@ input {
 }
 
 .ui-icon-button:hover {
-  background: rgb(255 255 255 / 0.03);
+  background-color: var(--icon-button-hover-bg, rgb(255 255 255 / 0.03));
 }
 
 .ui-icon-button:active {

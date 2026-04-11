@@ -1,10 +1,11 @@
 <script lang="ts">
-  import historyIconUrl from "../../assets/history.svg";
   import newChatIconUrl from "../../assets/new_chat.svg";
   import settingsIconUrl from "../../assets/settings.svg";
   import submitIconUrl from "../../assets/submit.svg";
   import logoUrl from "../../assets/logo.svg";
   import grokIconUrl from "../../assets/models/grok.svg";
+  import PoroIcon from "../basic_elems/PoroIcon.svelte";
+  import PoroIconButton from "../basic_elems/PoroIconButton.svelte";
   import type { WorkspaceGitState } from "$lib/gitRuntime";
   import type {
     ActivityItem,
@@ -38,7 +39,6 @@
     onRefreshGit: () => void;
     onOpenSettings: () => void;
     onStopRuntime: () => void;
-    onRefreshRuntime: () => void;
   }
 
   let {
@@ -66,7 +66,6 @@
     onRefreshGit,
     onOpenSettings,
     onStopRuntime,
-    onRefreshRuntime,
   }: Props = $props();
 
   type ActivityKind =
@@ -412,11 +411,9 @@
               {:else if block.message.role === "assistant"}
                 <article class="space-y-3">
                   <div class="flex items-center gap-2">
-                    <img
+                    <PoroIcon
                       src={assistantIcon()}
-                      alt=""
-                      class="ui-icon"
-                      style="--icon-size: 1.9rem;"
+                      size="1.9rem"
                     />
                     <span class="type-heading-4 text-accent-gold">{assistantName()}</span>
                   </div>
@@ -465,57 +462,47 @@
     <div class="hidden w-px bg-white/6 lg:block"></div>
 
     <div class="flex min-h-0 flex-1 flex-col">
-      <div class="flex items-center justify-end gap-2 px-6 py-5">
-        <button
-          type="button"
-          class="ui-icon-button text-fog/44 hover:text-soft-ivory"
-          style="--icon-size: 1.15rem; --icon-button-size: 2.15rem;"
-          aria-label="Clear draft"
-          title="Clear draft"
-          onclick={() => onComposerInput("")}
-        >
-          <img src={newChatIconUrl} alt="" class="ui-icon opacity-80" />
-        </button>
-        <button
-          type="button"
-          class="ui-icon-button text-fog/44 hover:text-soft-ivory"
-          style="--icon-size: 1.15rem; --icon-button-size: 2.15rem;"
-          aria-label="Refresh session"
-          title="Refresh session"
-          onclick={onRefreshRuntime}
-        >
-          <img src={historyIconUrl} alt="" class="ui-icon opacity-80" />
-        </button>
-        <button
-          type="button"
-          class="ui-icon-button text-fog/44 hover:text-soft-ivory"
-          style="--icon-size: 1.15rem; --icon-button-size: 2.15rem;"
-          aria-label="Open settings"
-          title="Open settings"
-          onclick={onOpenSettings}
-        >
-          <img src={settingsIconUrl} alt="" class="ui-icon opacity-80" />
-        </button>
+      <div class="flex items-center justify-end px-6 py-5">
+        <div class="mr-auto h-px w-20 bg-transparent"></div>
+        <div class="flex items-center gap-2">
+          <div class="h-5 w-px bg-white/8"></div>
+          <PoroIconButton
+            iconSrc={settingsIconUrl}
+            variant="ghost"
+            iconSize="1.15rem"
+            buttonSize="2.15rem"
+            ariaLabel="Open settings"
+            title="Open settings"
+            onclick={onOpenSettings}
+            iconClass="opacity-85"
+          />
+          <PoroIconButton
+            iconSrc={newChatIconUrl}
+            variant="ghost"
+            iconSize="1.15rem"
+            buttonSize="2.15rem"
+            ariaLabel="Clear draft"
+            title="Clear draft"
+            onclick={() => onComposerInput("")}
+            iconClass="opacity-85"
+          />
+        </div>
       </div>
 
       <div class="flex min-h-0 flex-1 flex-col px-6 pb-6">
         <div class="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] bg-transparent">
-          <button
-            type="button"
-            class="absolute right-3 top-3 z-10 flex items-center justify-center border-0 bg-transparent p-0 text-soft-ivory transition-opacity duration-150 hover:opacity-85 disabled:opacity-55"
-            style="line-height: 0;"
-            aria-label={submitButtonLabel}
+          <PoroIconButton
+            iconSrc={submitIconUrl}
+            variant="gold"
+            iconSize="1.35rem"
+            buttonSize="3rem"
+            class="absolute right-0 top-10 z-10 transition-transform duration-150 hover:translate-y-[-1px] disabled:translate-y-0 disabled:opacity-55"
+            ariaLabel={submitButtonLabel}
             title={submitButtonLabel}
             disabled={runtimeBusy || !composerText.trim()}
             onclick={onSubmitPrompt}
-          >
-            <img
-              src={submitIconUrl}
-              alt=""
-              class={`ui-icon ${runtimeBusy ? "animate-pulse" : ""}`}
-              style="--icon-size: 1.85rem;"
-            />
-          </button>
+            pulse={runtimeBusy}
+          />
 
           <textarea
             class="type-body-2 min-h-0 flex-1 resize-none bg-transparent px-4 py-4 pr-20 text-fog/82 outline-none placeholder:text-fog/20"

@@ -165,6 +165,7 @@ Workstreams:
 - finish the visual cleanup toward a calmer editor-like feel
 - lock typography, spacing, surface, and accent rules into a clearer design system
 - use `agent-browser` visual baselines for repeatable before/after screenshot checks
+- treat UI work as verification-required: a UI fix is not complete until a fresh rendered screenshot is captured after the last edit
 - keep refining the shell, transcript, composer, sidebar, and drawers until the product feels intentional
 
 Exit criteria:
@@ -258,6 +259,16 @@ The latest visual pass surfaced a few concrete problems we should keep using as 
 ### Screenshot Analysis Note
 
 If DOM snapshots are not enough for judging the rendered UI, we can use screenshot analysis as a helper lane. A candidate to evaluate later is [Falcon-Perception](https://github.com/tiiuae/Falcon-Perception), mainly for OCR / screenshot understanding, not as a replacement for the browser sidecar or prompt-driven browser actions.
+
+### UI Verification Rule
+
+For UI and visual tasks, source-level changes are not enough. The working rule is:
+
+- do not mark a UI task complete from code inspection alone
+- capture a fresh rendered screenshot after the last patch
+- compare it against the current goal, baseline, or reference before calling the task done
+
+This should live in the harness over time so UI verification becomes a real runtime phase instead of a guess.
 
 ### Future Product Note: Cutline
 

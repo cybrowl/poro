@@ -1501,7 +1501,6 @@
           onRefreshGit={() => refreshWorkspaceGitState(selectedWorkspaceId)}
           onOpenSettings={() => (showSettings = true)}
           onStopRuntime={stopSelectedRuntime}
-          onRefreshRuntime={refreshSelectedWorkspace}
         />
       </section>
     </main>
