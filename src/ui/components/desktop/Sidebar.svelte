@@ -148,13 +148,4 @@
     </div>
   </div>
 
-  <div class="border-t border-white/6 px-3 py-3">
-    <Button
-      label={`Settings • ${selectedWorkspace.name}`}
-      variant="ghost"
-      class="w-full justify-start"
-      height="h-9"
-      onclick={onOpenSettings}
-    />
-  </div>
 </aside>
