@@ -1,6 +1,7 @@
 <script lang="ts">
   import Button from "$components/basic_elems/Button.svelte";
   import type { WorkspaceRecord } from "$lib/mockDesktopData";
+  import logoUrl from "../../assets/logo.svg";
 
   interface Props {
     workspaces: WorkspaceRecord[];
@@ -35,10 +36,7 @@
   class="flex min-h-0 w-full shrink-0 flex-col border-r border-white/6 bg-deep-charcoal lg:h-screen lg:w-[248px]"
 >
   <div class="flex items-center justify-between px-4 py-3">
-    <div class="flex items-center gap-2">
-      <div class="h-2 w-2 rounded-full bg-accent-gold shadow-[0_0_14px_rgba(217,163,32,0.55)]"></div>
-      <div class="type-heading-2 leading-none text-accent-gold">Poro</div>
-    </div>
+    <img src={logoUrl} alt="Poro" class="h-9 w-auto object-contain" />
     <span class="rounded-md border border-white/6 bg-white/[0.025] px-2 py-1 text-[11px] text-fog/36">
       desktop
     </span>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from "$components/basic_elems/Button.svelte";
+  import submitIconUrl from "../../assets/submit.svg";
   import type {
     ActivityItem,
     PermissionMode,
@@ -325,6 +326,9 @@
   );
   let historyActivity = $derived(recordedActivity.slice(0, 4));
   let conversationBlocks = $derived(groupConversation(session.transcript, runtimeBusy));
+  let submitButtonLabel = $derived(
+    runtimeBusy ? "Working..." : runtimeActive ? "Send message" : "Launch and send"
+  );
 </script>
 
 <section class="flex min-h-0 flex-1 flex-col bg-obsidian">
@@ -531,12 +535,23 @@
               )}
           />
           <Button
-            label={runtimeBusy ? "Working..." : runtimeActive ? "Send" : "Launch + Send"}
+            label=""
+            ariaLabel={submitButtonLabel}
+            title={submitButtonLabel}
             variant="gold"
             disabled={runtimeBusy || !composerText.trim()}
-            height="h-8"
+            class="w-10 min-w-10 p-0"
+            height="h-10"
             onclick={onSubmitPrompt}
-          />
+          >
+            {#snippet children()}
+              {#if runtimeBusy}
+                <span class="text-[11px] font-medium tracking-[0.04em]">...</span>
+              {:else}
+                <img src={submitIconUrl} alt="" class="h-9 w-9" />
+              {/if}
+            {/snippet}
+          </Button>
           <Button
             label={runtimeActive ? "Stop" : "Refresh"}
             variant="ghost"

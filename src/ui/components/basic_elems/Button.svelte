@@ -8,6 +8,8 @@
     onclick?: (event: MouseEvent) => void;
     disabled?: boolean;
     class?: string;
+    ariaLabel?: string;
+    title?: string;
     children?: import("svelte").Snippet;
   }
 
@@ -19,6 +21,8 @@
     onclick = () => {},
     disabled = false,
     class: customClass = "",
+    ariaLabel = undefined,
+    title = undefined,
     children = undefined,
   }: Props = $props();
 
@@ -36,7 +40,14 @@
   );
 </script>
 
-<button class={buttonClasses} {onclick} {disabled} type="button">
+<button
+  class={buttonClasses}
+  {onclick}
+  {disabled}
+  aria-label={ariaLabel}
+  title={title}
+  type="button"
+>
   {#if children}
     {@render children()}
   {:else}
