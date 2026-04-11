@@ -7,6 +7,8 @@ export interface DesktopSettings {
   selectedProviderId: string;
   selectedModel: string;
   selectedPermission: PermissionMode;
+  xAiApiKey: string;
+  openAiApiKey: string;
 }
 
 export const defaultDesktopSettings: DesktopSettings = {
@@ -15,6 +17,8 @@ export const defaultDesktopSettings: DesktopSettings = {
   selectedProviderId: "local",
   selectedModel: "gemma4:e2b",
   selectedPermission: "workspace-write",
+  xAiApiKey: "",
+  openAiApiKey: "",
 };
 
 declare global {

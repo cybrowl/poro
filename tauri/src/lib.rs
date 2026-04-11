@@ -30,6 +30,8 @@ struct DesktopSettings {
     selected_provider_id: String,
     selected_model: String,
     selected_permission: String,
+    x_ai_api_key: String,
+    open_ai_api_key: String,
 }
 
 impl Default for DesktopSettings {
@@ -40,6 +42,8 @@ impl Default for DesktopSettings {
             selected_provider_id: "local".to_string(),
             selected_model: "gemma4:e2b".to_string(),
             selected_permission: "workspace-write".to_string(),
+            x_ai_api_key: String::new(),
+            open_ai_api_key: String::new(),
         }
     }
 }
@@ -408,6 +412,22 @@ fn normalize_desktop_settings(settings: DesktopSettings) -> DesktopSettings {
         selected_provider_id: provider_id,
         selected_model,
         selected_permission: normalize_permission(&settings.selected_permission).to_string(),
+        x_ai_api_key: settings.x_ai_api_key.trim().to_string(),
+        open_ai_api_key: settings.open_ai_api_key.trim().to_string(),
+    }
+}
+
+fn apply_api_key_env(settings: &DesktopSettings, clear_missing: bool) {
+    if !settings.x_ai_api_key.trim().is_empty() {
+        env::set_var("XAI_API_KEY", settings.x_ai_api_key.trim());
+    } else if clear_missing {
+        env::remove_var("XAI_API_KEY");
+    }
+
+    if !settings.open_ai_api_key.trim().is_empty() {
+        env::set_var("OPENAI_API_KEY", settings.open_ai_api_key.trim());
+    } else if clear_missing {
+        env::remove_var("OPENAI_API_KEY");
     }
 }
 
@@ -1784,7 +1804,9 @@ fn load_desktop_settings(app: AppHandle) -> Result<DesktopSettings, String> {
     let path = settings_path(&app)?;
 
     if !path.exists() {
-        return Ok(DesktopSettings::default());
+        let settings = DesktopSettings::default();
+        apply_api_key_env(&settings, false);
+        return Ok(settings);
     }
 
     let contents = fs::read_to_string(&path).map_err(|error| error.to_string())?;
@@ -1798,6 +1820,8 @@ fn load_desktop_settings(app: AppHandle) -> Result<DesktopSettings, String> {
         fs::write(&path, updated).map_err(|error| error.to_string())?;
     }
 
+    apply_api_key_env(&normalized, false);
+
     Ok(normalized)
 }
 
@@ -1807,6 +1831,7 @@ fn save_desktop_settings(app: AppHandle, settings: DesktopSettings) -> Result<()
     let normalized = normalize_desktop_settings(settings);
     let contents = serde_json::to_string_pretty(&normalized).map_err(|error| error.to_string())?;
     fs::write(path, contents).map_err(|error| error.to_string())
+        .map(|_| apply_api_key_env(&normalized, true))
 }
 
 #[tauri::command]

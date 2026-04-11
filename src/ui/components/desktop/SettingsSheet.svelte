@@ -7,6 +7,8 @@
   interface Props {
     open: boolean;
     backendPath: string;
+    xAiApiKey: string;
+    openAiApiKey: string;
     backendHealth: BackendHealth | null;
     healthCheckPending: boolean;
     isDesktop: boolean;
@@ -19,6 +21,8 @@
     onSelectModel: (model: string) => void;
     onSelectPermission: (mode: PermissionMode) => void;
     onBackendPathChange: (path: string) => void;
+    onXAiApiKeyChange: (value: string) => void;
+    onOpenAiApiKeyChange: (value: string) => void;
     onRunHealthCheck: () => void;
     modelOptions: string[];
     permissionModes: PermissionMode[];
@@ -28,6 +32,8 @@
   let {
     open,
     backendPath,
+    xAiApiKey,
+    openAiApiKey,
     backendHealth,
     healthCheckPending,
     isDesktop,
@@ -40,6 +46,8 @@
     onSelectModel,
     onSelectPermission,
     onBackendPathChange,
+    onXAiApiKeyChange,
+    onOpenAiApiKeyChange,
     onRunHealthCheck,
     modelOptions,
     permissionModes,
@@ -203,6 +211,43 @@
             you want to test.
           </div>
         {/if}
+      </section>
+
+      <section class="ui-panel p-4">
+        <div class="ui-section-label">API Keys</div>
+        <div class="mt-4 grid gap-3">
+          <label class="block">
+            <div class="mb-2 text-[0.875rem] text-fog/74">xAI / Grok</div>
+            <input
+              class="ui-input code-font px-4 py-3 text-sm"
+              type="password"
+              value={xAiApiKey}
+              placeholder="xai-..."
+              autocomplete="off"
+              spellcheck="false"
+              oninput={(event) =>
+                onXAiApiKeyChange((event.currentTarget as HTMLInputElement).value)}
+            />
+          </label>
+
+          <label class="block">
+            <div class="mb-2 text-[0.875rem] text-fog/74">OpenAI / ChatGPT</div>
+            <input
+              class="ui-input code-font px-4 py-3 text-sm"
+              type="password"
+              value={openAiApiKey}
+              placeholder="sk-..."
+              autocomplete="off"
+              spellcheck="false"
+              oninput={(event) =>
+                onOpenAiApiKeyChange((event.currentTarget as HTMLInputElement).value)}
+            />
+          </label>
+        </div>
+
+        <div class="ui-panel-soft mt-4 px-4 py-3 text-sm leading-6 text-fog/64">
+          Saved locally in Poro desktop settings and loaded into the app process for provider use.
+        </div>
       </section>
 
       <section class="ui-panel p-4">

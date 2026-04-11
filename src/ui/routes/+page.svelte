@@ -70,6 +70,8 @@
   let selectedModel = $state(defaultDesktopSettings.selectedModel);
   let selectedPermission = $state<PermissionMode>("workspace-write");
   let backendPath = $state(defaultDesktopSettings.backendPath);
+  let xAiApiKey = $state(defaultDesktopSettings.xAiApiKey);
+  let openAiApiKey = $state(defaultDesktopSettings.openAiApiKey);
   let composerText = $state("");
   let desktopReady = $state(false);
   let showSessionSwitcher = $state(false);
@@ -385,6 +387,8 @@
 
   function applyDesktopSettings(settings: DesktopSettings) {
     backendPath = settings.backendPath;
+    xAiApiKey = settings.xAiApiKey;
+    openAiApiKey = settings.openAiApiKey;
     selectedProviderId = settings.selectedProviderId;
     selectedModel = normalizeSelectedModel(settings.selectedProviderId, settings.selectedModel);
     selectedPermission = settings.selectedPermission;
@@ -414,6 +418,8 @@
       selectedProviderId,
       selectedModel,
       selectedPermission,
+      xAiApiKey,
+      openAiApiKey,
     };
 
     await saveDesktopSettings(settings);
@@ -628,6 +634,16 @@
 
   function setBackendPath(path: string) {
     backendPath = path;
+    void persistDesktopSettings();
+  }
+
+  function setXAiApiKey(value: string) {
+    xAiApiKey = value;
+    void persistDesktopSettings();
+  }
+
+  function setOpenAiApiKey(value: string) {
+    openAiApiKey = value;
     void persistDesktopSettings();
   }
 
@@ -1533,6 +1549,8 @@
   <SettingsSheet
     open={showSettings}
     {backendPath}
+    {xAiApiKey}
+    {openAiApiKey}
     {backendHealth}
     {healthCheckPending}
     isDesktop={desktopReady}
@@ -1545,6 +1563,8 @@
     onSelectModel={setModel}
     onSelectPermission={setPermission}
     onBackendPathChange={setBackendPath}
+    onXAiApiKeyChange={setXAiApiKey}
+    onOpenAiApiKeyChange={setOpenAiApiKey}
     onRunHealthCheck={runHealthCheck}
     modelOptions={visibleModelOptions}
     {permissionModes}
