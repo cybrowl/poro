@@ -10,6 +10,7 @@ use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use harness_client::{HarnessClientConfig, HarnessServerClient};
+use harness_core::compute_mission_state;
 use harness_events::{EventPayload, RuntimeEvent as HarnessRuntimeEvent, TaskProgress};
 use harness_policy::PermissionMode;
 use harness_providers::ProviderConfig;
@@ -21,6 +22,7 @@ use uuid::Uuid;
 
 const CLAW_RUNTIME_EVENT: &str = "claw-runtime";
 const BROWSER_RUNTIME_EVENT: &str = "browser-runtime";
+const MISSION_MAX_STEPS: usize = 24;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -125,6 +127,31 @@ struct ClawFileChange {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
+struct ClawVerificationSnapshot {
+    state: String,
+    last_command: Option<String>,
+    last_success: Option<bool>,
+    exit_code: Option<i32>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ClawMissionSnapshot {
+    goal: String,
+    task_kind: String,
+    phase: String,
+    active_step: Option<String>,
+    blocker: Option<String>,
+    verification: ClawVerificationSnapshot,
+    completed_files: Vec<String>,
+    remaining_files: Vec<String>,
+    plan_outline: Vec<String>,
+    active_subgoal: Option<String>,
+    objectively_complete: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ClawSessionSnapshot {
     id: String,
     path: String,
@@ -133,6 +160,7 @@ struct ClawSessionSnapshot {
     modified_label: String,
     message_count: usize,
     preview: String,
+    mission: Option<ClawMissionSnapshot>,
     transcript: Vec<ClawTranscriptMessage>,
     activity: Vec<ClawActivityItem>,
     changes: Vec<ClawFileChange>,
@@ -1178,6 +1206,102 @@ fn summarize_progress(progress: &TaskProgress) -> String {
     }
 }
 
+fn verification_state_label(state: &harness_events::VerificationState) -> &'static str {
+    match state {
+        harness_events::VerificationState::NotNeeded => "not_needed",
+        harness_events::VerificationState::Pending => "pending",
+        harness_events::VerificationState::Passed => "passed",
+        harness_events::VerificationState::Failed => "failed",
+    }
+}
+
+fn task_kind_label(kind: &harness_events::TaskKind) -> &'static str {
+    match kind {
+        harness_events::TaskKind::VersionSync => "version_sync",
+        harness_events::TaskKind::ManifestUpdate => "manifest_update",
+        harness_events::TaskKind::RepoInspection => "repo_inspection",
+        harness_events::TaskKind::GeneralCoding => "general_coding",
+    }
+}
+
+fn mission_snapshot_from_record(record: &SessionRecord) -> Option<ClawMissionSnapshot> {
+    let mission =
+        compute_mission_state(record, Path::new(&record.metadata.cwd), MISSION_MAX_STEPS)
+            .ok()
+            .flatten()?;
+    let objectively_complete = mission.is_objectively_complete();
+    let task_kind = mission
+        .progress
+        .as_ref()
+        .map(|progress| progress.kind.clone())
+        .unwrap_or_else(|| mission.intent.kind.clone());
+    let completed_files = mission
+        .progress
+        .as_ref()
+        .map(|progress| progress.completed_files.clone())
+        .unwrap_or_default();
+    let remaining_files = mission
+        .progress
+        .as_ref()
+        .map(|progress| progress.remaining_files.clone())
+        .unwrap_or_default();
+    let verification_state = mission
+        .progress
+        .as_ref()
+        .map(|progress| progress.verification.clone())
+        .unwrap_or(harness_events::VerificationState::NotNeeded);
+
+    let latest_finished = record.events.iter().rev().find_map(|event| {
+        if let EventPayload::VerificationFinished {
+            command,
+            success,
+            exit_code,
+            ..
+        } = &event.payload
+        {
+            Some((command.clone(), *success, *exit_code))
+        } else {
+            None
+        }
+    });
+
+    let latest_started = record.events.iter().rev().find_map(|event| {
+        if let EventPayload::VerificationStarted { command } = &event.payload {
+            Some(command.clone())
+        } else {
+            None
+        }
+    });
+
+    let (last_command, last_success, exit_code) = match latest_finished {
+        Some((command, success, exit_code)) => (Some(command), Some(success), exit_code),
+        None => (latest_started, None, None),
+    };
+
+    Some(ClawMissionSnapshot {
+        goal: mission.intent.raw_goal,
+        task_kind: task_kind_label(&task_kind).to_string(),
+        phase: mission.phase.as_str().to_string(),
+        active_step: mission.active_step,
+        blocker: mission.blocker,
+        verification: ClawVerificationSnapshot {
+            state: verification_state_label(&verification_state).to_string(),
+            last_command,
+            last_success,
+            exit_code,
+        },
+        completed_files,
+        remaining_files,
+        plan_outline: mission
+            .plan_outline
+            .into_iter()
+            .map(|step| step.summary)
+            .collect(),
+        active_subgoal: mission.active_subgoal.map(|subgoal| subgoal.summary()),
+        objectively_complete,
+    })
+}
+
 fn format_critique_reason(reason: &str) -> String {
     reason
         .split('_')
@@ -1605,6 +1729,7 @@ fn snapshot_from_record(path: &Path, record: &SessionRecord) -> ClawSessionSnaps
         modified_label: format_relative_timestamp(record.metadata.updated_at_ms / 1_000),
         message_count: transcript.len(),
         preview,
+        mission: mission_snapshot_from_record(record),
         transcript,
         activity: activity_from_record(record),
         changes: changes_from_record(record),

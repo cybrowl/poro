@@ -1,6 +1,14 @@
 export type ActivityStatus = "active" | "complete" | "queued";
 export type MessageRole = "system" | "user" | "assistant" | "tool";
 export type PermissionMode = "read-only" | "workspace-write" | "danger-full-access";
+export type MissionPhase =
+  | "planning"
+  | "executing"
+  | "verifying"
+  | "recovering"
+  | "completed"
+  | "blocked";
+export type MissionVerificationState = "not_needed" | "pending" | "passed" | "failed";
 
 export interface ActivityItem {
   id: string;
@@ -25,6 +33,27 @@ export interface TranscriptMessage {
   meta: string;
 }
 
+export interface HarnessVerificationSnapshot {
+  state: MissionVerificationState;
+  lastCommand: string | null;
+  lastSuccess: boolean | null;
+  exitCode: number | null;
+}
+
+export interface HarnessMissionState {
+  goal: string;
+  taskKind: string;
+  phase: MissionPhase;
+  activeStep: string | null;
+  blocker: string | null;
+  verification: HarnessVerificationSnapshot;
+  completedFiles: string[];
+  remainingFiles: string[];
+  planOutline: string[];
+  activeSubgoal: string | null;
+  objectivelyComplete: boolean;
+}
+
 export interface SessionRecord {
   id: string;
   sessionPath?: string;
@@ -42,6 +71,7 @@ export interface SessionRecord {
   cwd: string;
   goal: string;
   draft: string;
+  mission?: HarnessMissionState | null;
   transcript: TranscriptMessage[];
   activity: ActivityItem[];
   changes: FileChange[];

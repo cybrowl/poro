@@ -228,24 +228,69 @@
     return "bg-white/[0.04] text-fog/54";
   }
 
-  function sessionStateLabel() {
-    if (runtimeBusy) return "Working";
-    if (runtimeActive) return "Ready";
-    return "Not launched";
+  function formatPhaseLabel(phase: string | null | undefined) {
+    if (!phase) return "idle";
+    return phase.replace(/_/g, " ");
   }
 
-  function sessionStateSummary() {
-    if (runtimeBusy) return runtimeStatusLine;
+  function phaseTone(phase: string | null | undefined) {
+    if (phase === "completed") return "bg-misty-green/[0.12] text-misty-green";
+    if (phase === "blocked") return "bg-warning-amber/[0.12] text-warning-amber";
+    if (phase === "recovering") return "bg-accent-gold/[0.08] text-accent-gold";
+    if (phase === "verifying") return "bg-misty-green/[0.12] text-misty-green";
+    return "bg-white/[0.04] text-fog/58";
+  }
+
+  function verificationTone(state: string | null | undefined) {
+    if (state === "passed") return "bg-misty-green/[0.12] text-misty-green";
+    if (state === "failed") return "bg-warning-amber/[0.12] text-warning-amber";
+    if (state === "pending") return "bg-accent-gold/[0.08] text-accent-gold";
+    return "bg-white/[0.04] text-fog/54";
+  }
+
+  function verificationLabel(state: string | null | undefined) {
+    if (!state) return "verification";
+    return state.replace(/_/g, " ");
+  }
+
+  function controllerHeadline() {
+    if (session.mission?.blocker) {
+      return session.mission.blocker;
+    }
+    if (session.mission?.activeStep) {
+      return session.mission.activeStep;
+    }
+    if (session.mission?.objectivelyComplete) {
+      return "Objective completion looks satisfied.";
+    }
+    if (runtimeBusy) {
+      return currentActivity
+        ? `${currentActivity.label}: ${currentActivity.summary}`
+        : runtimeStatusLine;
+    }
     if (runtimeActive) {
-      return "Session is live. Send the next instruction, review the latest work, or stop the runtime.";
+      return "Harness runtime is ready for the next turn.";
     }
     return runtimeStatusLine;
   }
 
-  function sessionStateTone() {
-    if (runtimeBusy) return "border-accent-gold/18 bg-accent-gold/[0.055] text-accent-gold";
-    if (runtimeActive) return "border-misty-green/16 bg-misty-green/[0.055] text-misty-green";
-    return "border-white/6 bg-white/[0.03] text-fog/62";
+  function controllerSummary() {
+    if (session.mission?.remainingFiles?.length) {
+      return `Remaining files: ${session.mission.remainingFiles.join(", ")}`;
+    }
+    if (session.mission?.verification?.lastCommand) {
+      const prefix =
+        session.mission.verification.state === "passed"
+          ? "Last verification passed"
+          : session.mission.verification.state === "failed"
+            ? "Last verification failed"
+            : "Verification command";
+      return `${prefix}: ${session.mission.verification.lastCommand}`;
+    }
+    if (session.mission?.goal) {
+      return session.mission.goal;
+    }
+    return runtimeStatusLine;
   }
 
   function isCompactMessage(message: TranscriptMessage) {
@@ -367,6 +412,7 @@
   let currentActivity = $derived(
     visibleActivity.find((item) => item.status !== "complete") ?? visibleActivity[0] ?? null
   );
+  let mission = $derived(session.mission ?? null);
   let recentActivity = $derived(
     currentActivity
       ? visibleActivity.filter((item) => item.id !== currentActivity.id).slice(0, 4)
@@ -403,6 +449,76 @@
             <span class="h-2 w-2 animate-pulse rounded-full bg-accent-gold"></span>
             <span class="type-body-5">{currentActivity.label} • {currentActivity.summary}</span>
           </div>
+        {/if}
+
+        {#if mission || runtimeStatusLine}
+          <section class="rounded-2xl border border-white/6 bg-white/[0.025] px-4 py-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="type-body-5 uppercase tracking-[0.22em] text-fog/34">Controller</div>
+              <div class="flex flex-wrap items-center gap-2">
+                {#if mission}
+                  <span class={`rounded-full px-2.5 py-1 text-[0.6875rem] uppercase tracking-[0.18em] ${phaseTone(mission.phase)}`}>
+                    {formatPhaseLabel(mission.phase)}
+                  </span>
+                  <span class={`rounded-full px-2.5 py-1 text-[0.6875rem] uppercase tracking-[0.18em] ${verificationTone(mission.verification.state)}`}>
+                    {verificationLabel(mission.verification.state)}
+                  </span>
+                {:else}
+                  <span class="rounded-full bg-white/[0.04] px-2.5 py-1 text-[0.6875rem] uppercase tracking-[0.18em] text-fog/54">
+                    {runtimeBusy ? "working" : runtimeActive ? "ready" : "idle"}
+                  </span>
+                {/if}
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <div class="type-heading-4 text-soft-ivory">{controllerHeadline()}</div>
+              <div class="mt-1 text-[0.875rem] leading-[1.5] text-fog/60">{controllerSummary()}</div>
+            </div>
+
+            {#if mission}
+              <div class="mt-4 space-y-3">
+                {#if mission.completedFiles.length || mission.remainingFiles.length}
+                  <div class="flex flex-wrap gap-2">
+                    {#if mission.remainingFiles.length}
+                      <span class="rounded-full bg-white/[0.04] px-3 py-1.5 text-[0.75rem] text-fog/66">
+                        Remaining • {mission.remainingFiles.length}
+                      </span>
+                    {/if}
+                    {#if mission.completedFiles.length}
+                      <span class="rounded-full bg-white/[0.04] px-3 py-1.5 text-[0.75rem] text-fog/66">
+                        Completed • {mission.completedFiles.length}
+                      </span>
+                    {/if}
+                    {#if mission.activeSubgoal}
+                      <span class="rounded-full bg-accent-gold/[0.08] px-3 py-1.5 text-[0.75rem] text-accent-gold">
+                        {mission.activeSubgoal}
+                      </span>
+                    {/if}
+                  </div>
+                {/if}
+
+                {#if mission.planOutline.length}
+                  <div class="space-y-2">
+                    <div class="type-body-5 uppercase tracking-[0.18em] text-fog/34">Plan</div>
+                    <div class="space-y-2">
+                      {#each mission.planOutline.slice(0, 4) as step}
+                        <div
+                          class={`rounded-xl border px-3 py-2 text-[0.8125rem] leading-[1.45] ${
+                            mission.activeStep === step
+                              ? "border-accent-gold/20 bg-accent-gold/[0.055] text-soft-ivory"
+                              : "border-white/6 bg-white/[0.02] text-fog/62"
+                          }`}
+                        >
+                          {step}
+                        </div>
+                      {/each}
+                    </div>
+                  </div>
+                {/if}
+              </div>
+            {/if}
+          </section>
         {/if}
 
         <div class="space-y-8">

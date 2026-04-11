@@ -233,6 +233,7 @@
         ? runtime.message
         : "Launch a real Harness session to replace the placeholder shell state.",
       draft: "",
+      mission: null,
       transcript: [
         {
           id: `${workspace.id}-ready-system`,
@@ -319,8 +320,9 @@
       tokenUsage,
       cost: runtime?.providerId === "local" ? "On-device" : "BYO provider",
       cwd: workspace.path,
-      goal: snapshot.preview,
+      goal: snapshot.mission?.goal ?? snapshot.preview,
       draft: existing?.draft ?? "",
+      mission: snapshot.mission ?? existing?.mission ?? null,
       transcript: snapshot.transcript.map((message) => ({
         id: message.id,
         role: toTranscriptRole(message.role),
@@ -369,6 +371,7 @@
       cwd: workspace.path,
       goal: existing?.goal ?? summary.preview,
       draft: existing?.draft ?? "",
+      mission: existing?.mission ?? null,
       transcript:
         existing?.transcript ??
         [

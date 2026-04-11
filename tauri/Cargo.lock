@@ -3217,6 +3217,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "harness-client",
+ "harness-core",
  "harness-events",
  "harness-policy",
  "harness-providers",

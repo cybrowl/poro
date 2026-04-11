@@ -1,4 +1,5 @@
 import { isDesktopEnvironment } from "$lib/desktop";
+import type { HarnessMissionState } from "$lib/mockDesktopData";
 
 export interface BackendHealth {
   requestedPath: string;
@@ -69,6 +70,7 @@ export interface ClawSessionSnapshot {
   modifiedLabel: string;
   messageCount: number;
   preview: string;
+  mission: HarnessMissionState | null;
   transcript: ClawTranscriptMessage[];
   activity: ClawActivityItem[];
   changes: ClawFileChange[];

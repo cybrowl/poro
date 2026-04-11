@@ -19,6 +19,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 anyhow = "1"
 harness-client = { path = "../../harness/crates/harness-client" }
+harness-core = { path = "../../harness/crates/harness-core" }
 harness-events = { path = "../../harness/crates/harness-events" }
 harness-policy = { path = "../../harness/crates/harness-policy" }
 harness-providers = { path = "../../harness/crates/harness-providers" }
