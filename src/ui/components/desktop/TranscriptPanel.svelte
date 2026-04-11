@@ -388,7 +388,10 @@
 
 <section class="flex min-h-0 flex-1 bg-obsidian">
   <div class="flex min-h-0 flex-1 flex-col lg:flex-row">
-    <div class="ui-scrollbar-hidden min-h-0 flex-1 overflow-y-auto lg:basis-1/2 lg:flex-none">
+    <div
+      class="ui-scrollbar-hidden min-h-0 flex-1 overflow-y-auto lg:basis-1/2 lg:flex-none"
+      style="background-color: #0c0c0d;"
+    >
       <div class="mx-auto flex w-full max-w-[620px] flex-col gap-8 px-8 py-10">
         {#if currentActivity && runtimeBusy}
           <div class="flex items-center gap-3 text-fog/48">
@@ -463,7 +466,10 @@
       </div>
     </div>
 
-    <div class="ui-scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto lg:basis-1/2">
+    <div
+      class="ui-scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto lg:basis-1/2"
+      style="background-color: #111113;"
+    >
       <div class="flex min-h-0 flex-1 flex-col px-8 pb-6">
         <div class="relative mx-auto flex w-full max-w-[620px] min-h-0 flex-1 flex-col overflow-visible rounded-[28px] bg-transparent">
           <div class="absolute right-0 top-4 z-10 flex items-center gap-2">
