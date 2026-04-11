@@ -56,27 +56,36 @@
     transition:fade={{ duration: 140 }}
   ></button>
 
-  <aside
-    class="ui-sheet fixed right-4 top-4 z-50 h-[calc(100vh-2rem)] w-[min(560px,calc(100vw-2rem))] overflow-y-auto p-5"
-    transition:fly={{ duration: 180, x: 30 }}
+  <div
+    class="fixed left-1/2 top-1/2 z-50 w-[min(900px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2"
+    transition:fly={{ duration: 180, y: 18 }}
   >
-    <div class="flex items-start justify-between gap-4">
-      <div>
-        <div class="ui-section-label">Runtime Settings</div>
-        <h3 class="mt-3 type-heading-1 tracking-[-0.05em] text-soft-ivory">
-          Harness and local model defaults
-        </h3>
-        <p class="mt-3 max-w-[44ch] type-body-4 text-fog/68">
-          This panel now reflects the sibling Harness integration. Local mode is
-          the first-class path, with health checks for both the server binary and
-          the local Ollama daemon.
-        </p>
+    <section
+      class="ui-sheet overflow-hidden px-5 pb-5 pt-4"
+      style="background-color: #111113; border-color: rgb(255 255 255 / 0.08);"
+    >
+      <div class="flex items-start justify-between gap-4 border-b border-white/[0.05] pb-4">
+        <div class="max-w-[34rem]">
+          <div class="ui-section-label">Runtime Settings</div>
+          <h3 class="mt-2 text-[1.1rem] font-medium leading-[1.2] tracking-[-0.03em] text-soft-ivory">
+            Harness and local model defaults
+          </h3>
+          <p class="mt-2 text-[0.875rem] leading-6 text-fog/56">
+            Configure the local runtime, choose a default provider, and keep the
+            desktop experience grounded in inspectable behavior.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="rounded-xl px-3 py-2 text-[0.8125rem] text-fog/52 transition hover:bg-white/[0.03] hover:text-soft-ivory"
+          onclick={onClose}
+        >
+          Close
+        </button>
       </div>
 
-      <Button label="Close" variant="outline" height="h-10" onclick={onClose} />
-    </div>
-
-    <div class="mt-6 space-y-4">
+      <div class="ui-scrollbar-hidden mt-4 max-h-[72vh] space-y-3 overflow-y-auto pr-1">
       <section class="ui-panel p-4">
         <div class="ui-section-label">Backend</div>
         <label class="mt-4 block">
@@ -94,7 +103,7 @@
         <div class="mt-4 flex flex-wrap gap-2">
           <Button
             label={healthCheckPending ? "Checking..." : "Run Health Check"}
-            variant="gold"
+            variant="dark"
             height="h-10"
             disabled={healthCheckPending}
             onclick={onRunHealthCheck}
@@ -204,7 +213,7 @@
               type="button"
               class={`ui-panel-soft w-full px-4 py-4 text-left transition ${
                 selectedProviderId === provider.id
-                  ? "border-accent-gold/30 bg-accent-gold/10"
+                  ? "border-accent-gold/18 bg-accent-gold/[0.05]"
                   : "hover:border-white/14 hover:bg-white/[0.05]"
               }`}
               onclick={() => onSelectProvider(provider.id)}
@@ -292,6 +301,7 @@
           </div>
         </div>
       </section>
-    </div>
-  </aside>
+      </div>
+    </section>
+  </div>
 {/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
   import folderIconUrl from "../../assets/folder.svg";
   import newChatIconUrl from "../../assets/new_chat.svg";
+  import readingIconUrl from "../../assets/reading.svg";
   import settingsIconUrl from "../../assets/settings.svg";
   import submitIconUrl from "../../assets/submit.svg";
   import logoUrl from "../../assets/logo.svg";
@@ -71,6 +72,8 @@
     onOpenSettings,
     onStopRuntime,
   }: Props = $props();
+
+  let readingMode = $state(false);
 
   type ActivityKind =
     | "planning"
@@ -386,10 +389,12 @@
   );
 </script>
 
-<section class="flex min-h-0 flex-1 bg-obsidian">
+<section class="relative flex min-h-0 flex-1 bg-obsidian">
   <div class="flex min-h-0 flex-1 flex-col lg:flex-row">
     <div
-      class="ui-scrollbar-hidden min-h-0 flex-1 overflow-y-auto lg:basis-1/2 lg:flex-none"
+      class={`ui-scrollbar-hidden min-h-0 flex-1 overflow-y-auto transition-[flex-basis,max-width,opacity,transform] duration-300 ease-out ${
+        readingMode ? "lg:flex-[0_0_100%]" : "lg:flex-[0_0_50%]"
+      }`}
       style="background-color: #0c0c0d;"
     >
       <div class="mx-auto flex w-full max-w-[620px] flex-col gap-8 px-8 py-10">
@@ -467,7 +472,11 @@
     </div>
 
     <div
-      class="ui-scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto lg:basis-1/2"
+      class={`ui-scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto transition-[flex-basis,max-width,opacity,transform] duration-300 ease-out ${
+        readingMode
+          ? "pointer-events-none opacity-0 lg:flex-[0_0_0%] lg:max-w-0 lg:translate-x-8"
+          : "opacity-100 lg:flex-[0_0_50%] lg:max-w-none lg:translate-x-0"
+      }`}
       style="background-color: #111113;"
     >
       <div class="flex min-h-0 flex-1 flex-col px-8 pb-6">
@@ -574,5 +583,21 @@
         {/if}
       </div>
     </div>
+  </div>
+
+  <div class="pointer-events-none absolute bottom-6 right-8 z-20 flex justify-end">
+    <PoroIconButton
+      iconSrc={readingIconUrl}
+      variant={readingMode ? "outline" : "ghost"}
+      iconSize="1.35rem"
+      buttonSize="2.9rem"
+      class="pointer-events-auto rounded-[14px] border-white/10 bg-[#151518]/88 shadow-[0_12px_36px_rgba(0,0,0,0.28)] backdrop-blur-sm transition-all duration-200 hover:translate-y-[-1px]"
+      ariaLabel={readingMode ? "Return to split mode" : "Enter reading mode"}
+      title={readingMode ? "Return to split mode" : "Enter reading mode"}
+      onclick={() => {
+        readingMode = !readingMode;
+      }}
+      iconClass={readingMode ? "opacity-100" : "opacity-84"}
+    />
   </div>
 </section>
