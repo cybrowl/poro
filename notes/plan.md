@@ -270,6 +270,22 @@ For UI and visual tasks, source-level changes are not enough. The working rule i
 
 This should live in the harness over time so UI verification becomes a real runtime phase instead of a guess.
 
+### Future Milestone: Poro Can Build Poro
+
+This is a later milestone, not the current focus, but it is worth naming clearly:
+
+- the long-term bar is that Poro becomes trustworthy enough to be the natural environment we would choose to use while building Poro itself
+
+That requires:
+
+- session trust that holds up during real work
+- first-class review and verification surfaces
+- native-feeling git workflow
+- dependable agent-driven repo changes
+- screenshot-backed UI verification instead of source-only guesses
+
+This is not a Phase 3 requirement, but it is an important north-star milestone for later.
+
 ### Future Product Note: Cutline
 
 Keep a note for a possible future product branch called `Cutline`.
