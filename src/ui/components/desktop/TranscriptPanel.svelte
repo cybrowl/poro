@@ -538,9 +538,9 @@
             label=""
             ariaLabel={submitButtonLabel}
             title={submitButtonLabel}
-            variant="gold"
+            variant="ghost"
             disabled={runtimeBusy || !composerText.trim()}
-            class="w-10 min-w-10 p-0"
+            class="w-10 min-w-10 rounded-2xl bg-transparent p-0 hover:bg-white/[0.03]"
             height="h-10"
             onclick={onSubmitPrompt}
           >
