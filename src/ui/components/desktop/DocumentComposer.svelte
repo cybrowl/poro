@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { PreparedText, LayoutResult } from "@chenglou/pretext";
+  import type { LayoutLine, LayoutLinesResult, PreparedTextWithSegments } from "@chenglou/pretext";
 
   interface Props {
     value: string;
@@ -19,16 +19,17 @@
   let frameEl: HTMLDivElement | null = null;
   let contentWidth = $state(0);
   let composerHeight = $state(420);
+  let renderedLines = $state<LayoutLine[]>([]);
 
   let pretextModule: typeof import("@chenglou/pretext") | null = null;
-  let preparedText: PreparedText | null = null;
+  let preparedText: PreparedTextWithSegments | null = null;
   let preparedSource = "";
 
   const horizontalPadding = 72;
   const verticalPadding = 104;
   const lineHeight = 40;
   const minHeight = 420;
-  const font = '24px "Noto Sans"';
+  const font = '400 24px "Noto Sans"';
 
   function ensurePrepared(text: string) {
     if (!pretextModule) return null;
@@ -38,7 +39,9 @@
       return preparedText;
     }
 
-    preparedText = pretextModule.prepare(nextSource, font, { whiteSpace: "pre-wrap" });
+    preparedText = pretextModule.prepareWithSegments(nextSource, font, {
+      whiteSpace: "pre-wrap",
+    });
     preparedSource = nextSource;
     return preparedText;
   }
@@ -54,7 +57,12 @@
     }
 
     const availableWidth = Math.max(120, contentWidth - horizontalPadding);
-    const layoutResult: LayoutResult = pretextModule.layout(prepared, availableWidth, lineHeight);
+    const layoutResult: LayoutLinesResult = pretextModule.layoutWithLines(
+      prepared,
+      availableWidth,
+      lineHeight
+    );
+    renderedLines = value.length ? layoutResult.lines : [];
     composerHeight = Math.max(minHeight, Math.ceil(layoutResult.height + verticalPadding));
   }
 
@@ -92,11 +100,28 @@
 </script>
 
 <div bind:this={frameEl} class="relative mx-auto flex w-full max-w-[620px] flex-1">
+  <div
+    class="pointer-events-none absolute inset-0 overflow-hidden px-9 pb-10 pt-6 text-[24px] leading-[40px] tracking-[-0.024em] text-fog/84"
+    aria-hidden="true"
+  >
+    {#if value.length}
+      <div class="space-y-0">
+        {#each renderedLines as line}
+          <div class="min-h-[40px] whitespace-pre text-fog/84">
+            {line.text || "\u00a0"}
+          </div>
+        {/each}
+      </div>
+    {:else}
+      <div class="text-fog/16">{placeholder}</div>
+    {/if}
+  </div>
+
   <textarea
-    class="ui-scrollbar-hidden min-h-0 w-full flex-1 resize-none overflow-hidden bg-transparent px-9 pb-10 pt-6 text-[24px] leading-[1.62] tracking-[-0.024em] text-fog/84 outline-none placeholder:text-fog/16"
+    class="ui-scrollbar-hidden min-h-0 w-full flex-1 resize-none overflow-hidden bg-transparent px-9 pb-10 pt-6 text-[24px] leading-[40px] tracking-[-0.024em] text-transparent outline-none placeholder:text-transparent"
     style={`height: ${composerHeight}px;`}
     {disabled}
-    {placeholder}
+    placeholder=""
     value={value}
     spellcheck="true"
     autocapitalize="sentences"
