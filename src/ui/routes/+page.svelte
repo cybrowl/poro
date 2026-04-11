@@ -1177,7 +1177,6 @@
         <TranscriptPanel
           session={selectedSession}
           browserActivity={browserActivity}
-          selectedProviderLabel={activeProviderLabel}
           {selectedModel}
           {selectedPermission}
           modelOptions={visibleModelOptions}
@@ -1192,7 +1191,6 @@
           onSubmitPrompt={submitPrompt}
           onStopRuntime={stopSelectedRuntime}
           onRefreshRuntime={refreshSelectedWorkspace}
-          onOpenBrowserInspector={() => (showBrowserInspector = true)}
         />
       </section>
     </main>

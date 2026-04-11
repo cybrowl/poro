@@ -10,7 +10,6 @@
   interface Props {
     session: SessionRecord;
     browserActivity: ActivityItem[];
-    selectedProviderLabel: string;
     selectedModel: string;
     selectedPermission: PermissionMode;
     modelOptions: string[];
@@ -25,13 +24,11 @@
     onSubmitPrompt: () => void;
     onStopRuntime: () => void;
     onRefreshRuntime: () => void;
-    onOpenBrowserInspector: () => void;
   }
 
   let {
     session,
     browserActivity,
-    selectedProviderLabel,
     selectedModel,
     selectedPermission,
     modelOptions,
@@ -46,7 +43,6 @@
     onSubmitPrompt,
     onStopRuntime,
     onRefreshRuntime,
-    onOpenBrowserInspector,
   }: Props = $props();
 
   function messageStyle(message: TranscriptMessage) {
@@ -114,31 +110,6 @@
 </script>
 
 <section class="flex min-h-0 flex-1 flex-col bg-obsidian">
-  <div class="border-b border-white/6 px-6 py-3">
-    <div class="mx-auto flex w-full max-w-[760px] items-center justify-between gap-4">
-      <div class="min-w-0">
-        <div class="truncate type-heading-4 text-soft-ivory">
-          {session.id} <span class="text-fog/36">{session.branch}</span>
-        </div>
-        <div class="mt-1 type-body-4 truncate text-fog/42">{session.title}</div>
-      </div>
-
-      <div class="flex shrink-0 items-center gap-2">
-        <span class="rounded-md border border-white/6 bg-white/[0.025] px-2.5 py-1 text-[11px] text-fog/52">
-          {selectedProviderLabel}
-        </span>
-        <span class="rounded-md border border-white/6 bg-white/[0.025] px-2.5 py-1 text-[11px] text-fog/52">
-          {selectedModel}
-        </span>
-        <span class="rounded-md border border-white/6 bg-white/[0.025] px-2.5 py-1 text-[11px] text-fog/52">
-          {selectedPermission}
-        </span>
-        <Button label="Browser" variant="ghost" height="h-8" onclick={onOpenBrowserInspector} />
-        <Button label="Settings" variant="ghost" height="h-8" onclick={onRefreshRuntime} />
-      </div>
-    </div>
-  </div>
-
   <div class="min-h-0 flex-1 overflow-y-auto">
     <div class="mx-auto flex w-full max-w-[760px] flex-col gap-5 px-6 py-8">
       {#if visibleActivity.length}
@@ -184,54 +155,52 @@
     </div>
   </div>
 
-  <div class="border-t border-white/6 bg-deep-charcoal">
-    <div class="mx-auto flex w-full max-w-[760px] flex-col gap-4 px-6 py-5">
-      <div class="rounded-2xl border border-white/6 bg-dark-slate p-2">
-        <textarea
-          class="type-body-3 min-h-28 w-full resize-none bg-transparent px-3 py-3 text-fog/88 outline-none placeholder:text-fog/34"
-          value={composerText}
-          placeholder="Ask Poro to edit code, inspect the repo, or use the browser when needed."
-          oninput={(event) => onComposerInput((event.currentTarget as HTMLTextAreaElement).value)}
-        ></textarea>
+  <div class="mt-auto border-t border-white/6 bg-obsidian">
+    <div class="mx-auto flex w-full max-w-[760px] flex-col gap-3 px-6 pb-3 pt-4">
+      <textarea
+        class="type-body-3 min-h-28 w-full resize-none bg-transparent px-0 py-0 text-fog/88 outline-none placeholder:text-fog/34"
+        value={composerText}
+        placeholder="Ask Poro to edit code, inspect the repo, or use the browser when needed."
+        oninput={(event) => onComposerInput((event.currentTarget as HTMLTextAreaElement).value)}
+      ></textarea>
 
-        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-white/6 px-3 pt-3">
-          <div class="type-body-5 text-fog/46">{runtimeStatusLine}</div>
-          <div class="flex flex-wrap gap-2">
-            <Button
-              label="Model"
-              variant="outline"
-              height="h-8"
-              onclick={() =>
-                onSelectModel(
-                  modelOptions[(modelOptions.indexOf(selectedModel) + 1) % modelOptions.length] ??
-                    selectedModel
-                )}
-            />
-            <Button
-              label="Permission"
-              variant="outline"
-              height="h-8"
-              onclick={() =>
-                onSelectPermission(
-                  permissionModes[
-                    (permissionModes.indexOf(selectedPermission) + 1) % permissionModes.length
-                  ] ?? selectedPermission
-                )}
-            />
-            <Button
-              label={runtimeBusy ? "Working..." : runtimeActive ? "Send" : "Launch + Send"}
-              variant="gold"
-              disabled={runtimeBusy || !composerText.trim()}
-              height="h-8"
-              onclick={onSubmitPrompt}
-            />
-            <Button
-              label={runtimeActive ? "Stop" : "Refresh"}
-              variant="ghost"
-              height="h-8"
-              onclick={runtimeActive ? onStopRuntime : onRefreshRuntime}
-            />
-          </div>
+      <div class="flex flex-wrap items-center justify-between gap-3 border-t border-white/6 pt-3">
+        <div class="type-body-5 text-fog/46">{runtimeStatusLine}</div>
+        <div class="flex flex-wrap gap-2">
+          <Button
+            label="Model"
+            variant="outline"
+            height="h-8"
+            onclick={() =>
+              onSelectModel(
+                modelOptions[(modelOptions.indexOf(selectedModel) + 1) % modelOptions.length] ??
+                  selectedModel
+              )}
+          />
+          <Button
+            label="Permission"
+            variant="outline"
+            height="h-8"
+            onclick={() =>
+              onSelectPermission(
+                permissionModes[
+                  (permissionModes.indexOf(selectedPermission) + 1) % permissionModes.length
+                ] ?? selectedPermission
+              )}
+          />
+          <Button
+            label={runtimeBusy ? "Working..." : runtimeActive ? "Send" : "Launch + Send"}
+            variant="gold"
+            disabled={runtimeBusy || !composerText.trim()}
+            height="h-8"
+            onclick={onSubmitPrompt}
+          />
+          <Button
+            label={runtimeActive ? "Stop" : "Refresh"}
+            variant="ghost"
+            height="h-8"
+            onclick={runtimeActive ? onStopRuntime : onRefreshRuntime}
+          />
         </div>
       </div>
     </div>
